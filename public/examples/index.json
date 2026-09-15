@@ -1,0 +1,23 @@
+[
+ {
+  "id": "genshin",
+  "file": "genshin.zenith.json",
+  "name": "Genshin Impact",
+  "items": 0,
+  "description": "Arma + 5 artefactos, 44 conjuntos, 121 personajes con estadisticas reales e iconos oficiales. Sin objetos: carga tu export GOOD."
+ },
+ {
+  "id": "terraria",
+  "file": "terraria.zenith.json",
+  "name": "Terraria (simplificado)",
+  "items": 245,
+  "description": "7 ranuras y conjuntos de 3 piezas. Estructura completamente distinta, mismo motor."
+ },
+ {
+  "id": "souls",
+  "file": "souls.zenith.json",
+  "name": "Souls (simplificado)",
+  "items": 137,
+  "description": "Requisitos de atributo, presupuesto de carga y ranuras que comparten inventario."
+ }
+]

@@ -1,0 +1,33 @@
+# Servicio de Zenith
+# ==================
+#   sudo cp deploy/zenith.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now zenith
+#
+# Ajusta User y WorkingDirectory a tu usuario y a donde dejaste el proyecto.
+
+[Unit]
+Description=Zenith Optimizer (estatico)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=REEMPLAZA_USUARIO
+WorkingDirectory=/home/REEMPLAZA_USUARIO/zenith-demo
+ExecStart=/usr/bin/node deploy/serve.mjs --port 4173 --host 127.0.0.1
+Restart=always
+RestartSec=3
+
+# El servidor solo necesita leer el proyecto. Todo lo demas queda fuera de su
+# alcance, que es lo minimo exigible a un proceso que mira a internet.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=
+PrivateDevices=true
+RestrictAddressFamilies=AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

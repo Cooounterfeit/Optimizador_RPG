@@ -1,0 +1,27 @@
+# Tunel de Cloudflare
+# ===================
+# Publica el puerto local 4173 en una URL https, SIN abrir un solo puerto en el
+# router. La conexion la abre la laptop hacia Cloudflare, nunca al reves: por
+# eso no hay que tocar el firewall ni exponer la maquina.
+#
+# Este archivo es para el tunel CON NOMBRE (URL estable). Para una demo rapida
+# no hace falta: ver deploy/README-despliegue.md.
+#
+#   sudo cp deploy/zenith-tunnel.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now zenith-tunnel
+
+[Unit]
+Description=Tunel Cloudflare para Zenith
+After=network-online.target zenith.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=REEMPLAZA_USUARIO
+ExecStart=/usr/local/bin/cloudflared tunnel run zenith
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

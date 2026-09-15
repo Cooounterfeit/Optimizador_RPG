@@ -1,0 +1,16 @@
+# Dependencias: se regeneran con "npm ci" desde package-lock.json.
+node_modules
+
+# Resultado de compilar: se regenera con "npm run build".
+dist
+
+# Cache incremental de TypeScript.
+tsconfig.tsbuildinfo
+
+# Restos de las actualizaciones por zip.
+_s*
+_stage
+_to_delete
+
+.DS_Store
+Thumbs.db

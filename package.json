@@ -1,0 +1,31 @@
+{
+  "name": "zenith-optimizer-demo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "bench": "tsx scripts/bench.ts",
+    "expresividad": "tsx scripts/expresividad.ts",
+    "agregacion": "tsx scripts/agregacion.ts",
+    "validar": "tsx scripts/validar.ts",
+    "ejes": "tsx scripts/ejes.ts",
+    "serve": "node deploy/serve.mjs",
+    "grafo": "tsx scripts/grafo.ts"
+  },
+  "dependencies": {
+    "@xyflow/react": "^12.11.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tsx": "^4.23.12",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
+}
