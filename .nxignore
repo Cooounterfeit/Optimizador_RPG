@@ -1,0 +1,5 @@
+# Carpetas que NX no debe tratar como proyectos del workspace.
+# - "Fase 1" es evidencia APT exigida por la universidad.
+# - "demo" es el prototipo archivado (congelado).
+Fase 1/
+demo/
