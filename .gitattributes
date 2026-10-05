@@ -1,0 +1,13 @@
+# Normaliza saltos de linea a LF para todo el equipo (Windows + Mac/Linux).
+* text=auto eol=lf
+
+# Binarios: nunca tocar
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
