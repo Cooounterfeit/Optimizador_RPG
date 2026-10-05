@@ -42,7 +42,22 @@ export interface UserGame {
   updatedAt: number
   /** De que plantilla se bifurco, si se bifurco de alguna. */
   forkedFrom?: string
+  /** El usuario activo la copia en la nube para este juego (INV-8). */
+  cloud?: boolean
+  /** updatedAt de la ultima vez que este dispositivo y la nube coincidieron. */
+  syncedAt?: number
 }
+
+// ----------------------------------------------------------- avisos de cambio
+// La sincronizacion con la nube escucha los cambios locales para subirlos, y la
+// app escucha los que llegan de la nube para refrescar la pantalla.
+export type GamesChange = { id: string; kind: 'save' | 'delete'; source: 'local' | 'remote' }
+const oyentes = new Set<(c: GamesChange) => void>()
+export function onUserGamesChanged(fn: (c: GamesChange) => void): () => void {
+  oyentes.add(fn)
+  return () => { oyentes.delete(fn) }
+}
+const avisar = (c: GamesChange) => oyentes.forEach((fn) => { try { fn(c) } catch { /* un oyente no rompe el guardado */ } })
 
 function read(): UserGame[] {
   try {
@@ -66,16 +81,38 @@ function write(list: UserGame[]): void {
 
 export const listUserGames = (): UserGame[] => read().sort((a, b) => b.updatedAt - a.updatedAt)
 
+export const getUserGame = (id: string): UserGame | undefined => read().find((g) => g.id === id)
+
 export function saveUserGame(game: Omit<UserGame, 'updatedAt'>): UserGame[] {
-  const list = read().filter((g) => g.id !== game.id)
-  list.push({ ...game, updatedAt: Date.now() })
+  const all = read()
+  const prev = all.find((g) => g.id === game.id)
+  const list = all.filter((g) => g.id !== game.id)
+  // Las marcas de la nube se conservan aunque quien guarda no las conozca.
+  list.push({ cloud: prev?.cloud, syncedAt: prev?.syncedAt, forkedFrom: prev?.forkedFrom, ...game, updatedAt: Date.now() })
   write(list)
+  avisar({ id: game.id, kind: 'save', source: 'local' })
   return list
+}
+
+/** Escribe un juego tal cual (con su updatedAt). Para la sincronizacion: no dispara subidas. */
+export function putUserGame(game: UserGame, source: 'local' | 'remote' = 'remote'): UserGame[] {
+  const list = read().filter((g) => g.id !== game.id)
+  list.push(game)
+  write(list)
+  avisar({ id: game.id, kind: 'save', source })
+  return list
+}
+
+/** Cambia solo las marcas de la nube, sin tocar updatedAt ni avisar de un cambio de contenido. */
+export function setCloudMarks(id: string, marks: Pick<UserGame, 'cloud' | 'syncedAt'>): void {
+  const list = read().map((g) => (g.id === id ? { ...g, ...marks } : g))
+  write(list)
 }
 
 export function deleteUserGame(id: string): UserGame[] {
   const list = read().filter((g) => g.id !== id)
   write(list)
+  avisar({ id, kind: 'delete', source: 'local' })
   return list
 }
 
@@ -93,9 +130,15 @@ export function freeId(base: string, taken: Set<string>): string {
   return id
 }
 
-/** Paquete estandar de intercambio: es lo que se exporta y lo que se importa. */
-export function makePackage(template: unknown, items: unknown): unknown {
-  return { zenith: '0.1', exportedAt: new Date().toISOString(), template, items }
+/**
+ * Paquete estandar de intercambio: es lo que se exporta y lo que se importa.
+ * `images` (opcional) son las imagenes propias de los objetos, por nombre: asi
+ * un juego compartido llega con sus iconos y no "sin cara".
+ */
+export function makePackage(template: unknown, items: unknown, images?: Record<string, string>): unknown {
+  const pkg: Record<string, unknown> = { zenith: '0.1', exportedAt: new Date().toISOString(), template, items }
+  if (images && Object.keys(images).length > 0) pkg.images = images
+  return pkg
 }
 
 export function downloadJson(name: string, data: unknown): void {

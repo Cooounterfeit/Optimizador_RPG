@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export function Metric(
   { k, v, s, tone }: { k: string; v: string; s?: string; tone?: 'accent' | 'good' },
@@ -18,6 +18,8 @@ export function Icon(
   { src: string | null; alt: string; rarity?: number; size?: number },
 ) {
   const [broken, setBroken] = useState(false)
+  // Si cambia la imagen (por ejemplo, el usuario sube la suya), se vuelve a intentar.
+  useEffect(() => setBroken(false), [src])
   const initials = alt.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase()
   return (
     <div className={`icon r${rarity}`} style={{ width: size, height: size }} title={alt}>

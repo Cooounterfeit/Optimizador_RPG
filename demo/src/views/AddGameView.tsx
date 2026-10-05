@@ -6,6 +6,9 @@ import {
   saveUserGame, slugify, type UserGame,
 } from '../store/userGames'
 import { describeDetected, detectJsonFile } from '../store/detectFile'
+import {
+  copyGameImages, deleteGameImages, getImages, imagesForItems, importImages, type ImageMap,
+} from '../store/itemImages'
 import type { ExampleInfo } from '../store/examples'
 import {
   buildItems, guessRoles, parseTable, type ColumnRole, type ParsedTable,
@@ -33,6 +36,13 @@ export default function AddGameView({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [json, setJson] = useState('')
   const [items, setItems] = useState<Item[]>([])
+  /**
+   * Imagenes que llegaron con un paquete importado, o el juego del que se
+   * bifurco. Todavia no tienen juego al que pertenecer: se guardan al pulsar
+   * Guardar, con el id definitivo.
+   */
+  const [pendingImages, setPendingImages] = useState<ImageMap>({})
+  const [pendingFrom, setPendingFrom] = useState<string | null>(null)
   const [tableText, setTableText] = useState('')
   const [roles, setRoles] = useState<ColumnRole[]>([])
   const [table, setTable] = useState<ParsedTable | null>(null)
@@ -83,6 +93,7 @@ export default function AddGameView({
     setEditingId(null)
     setJson(JSON.stringify(clone, null, 1))
     setItems(JSON.parse(JSON.stringify(src.items)))
+    setPendingImages({}); setPendingFrom(src.id)
     setMsg({ kind: 'ok', text: `Partiste de ${src.template.name}. Cambia lo que quieras y guarda.` })
   }
 
@@ -118,6 +129,7 @@ export default function AddGameView({
     setEditingId(null)
     setJson(JSON.stringify(skeleton, null, 1))
     setItems([])
+    setPendingImages({}); setPendingFrom(null)
     setMsg({ kind: 'ok', text: 'Esqueleto minimo listo. Edita el JSON y pega tus objetos abajo.' })
   }
 
@@ -134,12 +146,14 @@ export default function AddGameView({
           setEditingId(null)
           setJson(JSON.stringify(d.template, null, 1))
           setItems(d.items)
+          setPendingImages(d.images); setPendingFrom(null)
           setMsg({ kind: 'ok', text: `${describeDetected(d)} Listo para revisar y guardar.` })
           break
         case 'template':
           setEditingId(null)
           setJson(JSON.stringify(d.template, null, 1))
           setItems([])
+          setPendingImages({}); setPendingFrom(null)
           setMsg({ kind: 'ok', text: `${describeDetected(d)} Pega tu tabla de objetos abajo para completarla.` })
           break
         case 'items':
@@ -171,11 +185,15 @@ export default function AddGameView({
     })
   }
 
-  function save() {
+  async function save() {
     if (!template || !report?.ok) return
     const id = editingId ?? freeId(template.gameId || slugify(template.name), taken)
     try {
       const list = saveUserGame({ id, template: { ...template, gameId: id }, items })
+      // Las imagenes pendientes ya tienen juego: se guardan con el id definitivo.
+      if (Object.keys(pendingImages).length) await importImages(id, pendingImages)
+      if (pendingFrom && pendingFrom !== id) await copyGameImages(pendingFrom, id)
+      setPendingImages({}); setPendingFrom(null)
       setMine(list.sort((a, b) => b.updatedAt - a.updatedAt))
       setEditingId(id)
       onChanged()
@@ -247,16 +265,20 @@ export default function AddGameView({
                       copia.template.gameId = copia.id
                       copia.template.name = `${g.template.name} (copia)`
                       setMine(saveUserGame(copia).sort((a, b) => b.updatedAt - a.updatedAt))
+                      copyGameImages(g.id, copia.id).catch(() => undefined)
                       onChanged()
                       setMsg({ kind: 'ok', text: `Duplicado como "${copia.template.name}".` })
                     }}>duplicar</button>
-                    <button className="mini" onClick={() =>
-                      downloadJson(`${g.id}.zenith.json`, makePackage(g.template, g.items))}>
+                    <button className="mini" onClick={async () => {
+                      const imgs = imagesForItems(await getImages(g.id).catch(() => ({})), g.items)
+                      downloadJson(`${g.id}.zenith.json`, makePackage(g.template, g.items, imgs))
+                    }}>
                       exportar
                     </button>
                     <button className="mini" onClick={() => {
                       if (!confirm(`Borrar "${g.template.name}"? No se puede deshacer.`)) return
                       setMine(deleteUserGame(g.id).sort((a, b) => b.updatedAt - a.updatedAt))
+                      deleteGameImages(g.id).catch(() => undefined)
                       if (editingId === g.id) { setEditingId(null); setJson(''); setItems([]) }
                       onChanged()
                       setMsg({ kind: 'ok', text: `"${g.template.name}" borrado.` })
@@ -526,8 +548,12 @@ export default function AddGameView({
                 {editingId ? 'Guardar cambios' : 'Guardar juego'}
               </button>
               {template && (
-                <button className="mini" onClick={() =>
-                  downloadJson(`${template.gameId || 'plantilla'}.zenith.json`, makePackage(template, items))}>
+                <button className="mini" onClick={async () => {
+                  const todas = editingId ? await getImages(editingId).catch(() => ({}))
+                    : pendingFrom ? await getImages(pendingFrom).catch(() => ({})) : pendingImages
+                  downloadJson(`${template.gameId || 'plantilla'}.zenith.json`,
+                    makePackage(template, items, imagesForItems(todas, items)))
+                }}>
                   exportar para compartir
                 </button>
               )}

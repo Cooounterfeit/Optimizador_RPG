@@ -12,9 +12,10 @@
  */
 
 import type { GameTemplate, Item } from '../core/types'
+import { sanitizeImages, type ImageMap } from './itemImages'
 
 export type Detected =
-  | { kind: 'zenith-package'; template: GameTemplate; items: Item[] }
+  | { kind: 'zenith-package'; template: GameTemplate; items: Item[]; images: ImageMap }
   | { kind: 'template'; template: GameTemplate }
   | { kind: 'items'; items: Item[] }
   | { kind: 'good'; artifacts: number; weapons: number; characters: number }
@@ -36,6 +37,7 @@ export function detectJsonFile(data: unknown): Detected {
       kind: 'zenith-package',
       template: data.template,
       items: looksLikeItems(data.items) ? data.items : [],
+      images: sanitizeImages(data.images),
     }
   }
 
@@ -76,7 +78,8 @@ export function detectJsonFile(data: unknown): Detected {
 export function describeDetected(d: Detected): string {
   switch (d.kind) {
     case 'zenith-package':
-      return `Paquete de Zenith: la plantilla "${d.template.name}" con ${d.items.length} objetos.`
+      return `Paquete de Zenith: la plantilla "${d.template.name}" con ${d.items.length} objetos${
+        Object.keys(d.images).length ? ` y ${Object.keys(d.images).length} imagenes` : ''}.`
     case 'template':
       return `Plantilla de Zenith: "${d.template.name}", sin objetos incluidos.`
     case 'items':

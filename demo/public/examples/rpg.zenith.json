@@ -1,0 +1,485 @@
+{
+ "zenith": "0.1",
+ "exportedAt": "2026-10-04T00:00:00.000Z",
+ "template": {
+  "schemaVersion": "0.1",
+  "gameId": "rpg",
+  "name": "RPG clasico (con niveles)",
+  "description": "Tres clases con curvas de crecimiento distintas. Proyecta tus estadisticas a cualquier nivel, guarda tu historial y compara pasado, presente y futuro.",
+  "stats": [
+   {
+    "id": "atk",
+    "name": "Ataque de arma",
+    "unit": "flat",
+    "group": "Ataque"
+   },
+   {
+    "id": "magia",
+    "name": "Poder magico",
+    "unit": "flat",
+    "group": "Ataque"
+   },
+   {
+    "id": "critico",
+    "name": "Critico",
+    "unit": "percent",
+    "group": "Ataque"
+   },
+   {
+    "id": "def",
+    "name": "Defensa",
+    "unit": "flat",
+    "group": "Defensa"
+   },
+   {
+    "id": "vidaExtra",
+    "name": "Vida adicional",
+    "unit": "flat",
+    "group": "Defensa"
+   },
+   {
+    "id": "manaExtra",
+    "name": "Mana adicional",
+    "unit": "flat",
+    "group": "Recursos"
+   }
+  ],
+  "slots": [
+   {
+    "id": "arma",
+    "name": "Arma"
+   },
+   {
+    "id": "casco",
+    "name": "Casco"
+   },
+   {
+    "id": "armadura",
+    "name": "Armadura"
+   },
+   {
+    "id": "accesorio",
+    "name": "Accesorio"
+   }
+  ],
+  "sets": [],
+  "derived": [
+   {
+    "id": "ataqueFisico",
+    "name": "Ataque fisico",
+    "group": "Ataque",
+    "formula": "atk * (1 + base_fuerza / 50) + base_destreza * 0.5"
+   },
+   {
+    "id": "ataqueMagico",
+    "name": "Ataque magico",
+    "group": "Ataque",
+    "formula": "magia * (1 + base_inteligencia / 40)"
+   },
+   {
+    "id": "probCritico",
+    "name": "Probabilidad de critico",
+    "group": "Ataque",
+    "unit": "%",
+    "formula": "min(5 + critico + base_destreza * 0.4, 100)"
+   },
+   {
+    "id": "vidaTotal",
+    "name": "Vida total",
+    "group": "Defensa",
+    "formula": "base_vida + vidaExtra"
+   },
+   {
+    "id": "manaTotal",
+    "name": "Mana total",
+    "group": "Recursos",
+    "formula": "base_mana + manaExtra"
+   }
+  ],
+  "objectives": [
+   {
+    "id": "fisico",
+    "name": "Dano fisico",
+    "kind": "nonlinear",
+    "monotonic": true,
+    "decimals": 1,
+    "description": "Ataque fisico con el critico promedio (los criticos hacen x1.5).",
+    "formula": "ataqueFisico * (1 + probCritico / 100 * 0.5)"
+   },
+   {
+    "id": "magico",
+    "name": "Dano magico",
+    "kind": "nonlinear",
+    "monotonic": true,
+    "decimals": 1,
+    "description": "Ataque magico limitado por el mana: sin mana suficiente pierdes hechizos.",
+    "formula": "ataqueMagico * min(manaTotal / 150, 1.5)"
+   },
+   {
+    "id": "aguante",
+    "name": "Supervivencia",
+    "kind": "linear",
+    "monotonic": true,
+    "decimals": 0,
+    "description": "Vida total mas la defensa ponderada.",
+    "formula": "vidaTotal + def * 8"
+   }
+  ],
+  "baseProfiles": [
+   {
+    "id": "guerrero",
+    "name": "Guerrero",
+    "base": {
+     "nivel": 10,
+     "fuerza": 20,
+     "destreza": 15,
+     "inteligencia": 12,
+     "vida": 180,
+     "mana": 40,
+     "crecFuerza": 1.6,
+     "crecDestreza": 1.0,
+     "crecInteligencia": 0.4,
+     "crecVida": 12,
+     "crecMana": 2
+    },
+    "levelable": [],
+    "labels": {
+     "nivel": "Nivel",
+     "fuerza": "Fuerza",
+     "destreza": "Destreza",
+     "inteligencia": "Inteligencia",
+     "vida": "Vida base",
+     "mana": "Mana base",
+     "crecFuerza": "Crecimiento de fuerza",
+     "crecDestreza": "Crecimiento de destreza",
+     "crecInteligencia": "Crecimiento de inteligencia",
+     "crecVida": "Crecimiento de vida",
+     "crecMana": "Crecimiento de mana"
+    }
+   },
+   {
+    "id": "mago",
+    "name": "Mago",
+    "base": {
+     "nivel": 8,
+     "fuerza": 8,
+     "destreza": 11,
+     "inteligencia": 24,
+     "vida": 110,
+     "mana": 120,
+     "crecFuerza": 0.4,
+     "crecDestreza": 0.8,
+     "crecInteligencia": 2.0,
+     "crecVida": 6,
+     "crecMana": 9
+    },
+    "levelable": [],
+    "labels": {
+     "nivel": "Nivel",
+     "fuerza": "Fuerza",
+     "destreza": "Destreza",
+     "inteligencia": "Inteligencia",
+     "vida": "Vida base",
+     "mana": "Mana base",
+     "crecFuerza": "Crecimiento de fuerza",
+     "crecDestreza": "Crecimiento de destreza",
+     "crecInteligencia": "Crecimiento de inteligencia",
+     "crecVida": "Crecimiento de vida",
+     "crecMana": "Crecimiento de mana"
+    }
+   },
+   {
+    "id": "picaro",
+    "name": "Picaro",
+    "base": {
+     "nivel": 12,
+     "fuerza": 14,
+     "destreza": 26,
+     "inteligencia": 13,
+     "vida": 150,
+     "mana": 60,
+     "crecFuerza": 0.8,
+     "crecDestreza": 1.8,
+     "crecInteligencia": 0.6,
+     "crecVida": 9,
+     "crecMana": 4
+    },
+    "levelable": [],
+    "labels": {
+     "nivel": "Nivel",
+     "fuerza": "Fuerza",
+     "destreza": "Destreza",
+     "inteligencia": "Inteligencia",
+     "vida": "Vida base",
+     "mana": "Mana base",
+     "crecFuerza": "Crecimiento de fuerza",
+     "crecDestreza": "Crecimiento de destreza",
+     "crecInteligencia": "Crecimiento de inteligencia",
+     "crecVida": "Crecimiento de vida",
+     "crecMana": "Crecimiento de mana"
+    }
+   }
+  ],
+  "constrainableStats": [
+   "def",
+   "critico",
+   "vidaExtra"
+  ],
+  "budgets": [],
+  "leveling": {
+   "levelKey": "nivel",
+   "min": 1,
+   "max": 60,
+   "growth": {
+    "fuerza": "base_crecFuerza",
+    "destreza": "base_crecDestreza",
+    "inteligencia": "base_crecInteligencia",
+    "vida": "base_crecVida + floor(nivel / 10) * 4",
+    "mana": "base_crecMana"
+   }
+  },
+  "notes": "Plantilla de demostracion con datos inventados para la proyeccion por nivel. Cada clase guarda en su perfil cuanto crece cada atributo por nivel (crecFuerza, etc.) y la plantilla declara las curvas en 'leveling.growth'. La vida acelera: cada 10 niveles gana 4 puntos extra por nivel. Varias armas exigen atributos que el personaje alcanza al subir, asi que la build optima cambia con el nivel."
+ },
+ "items": [
+  {
+   "id": "r1",
+   "slot": "arma",
+   "setId": null,
+   "name": "Espada corta",
+   "stats": {
+    "atk": 18,
+    "critico": 3
+   }
+  },
+  {
+   "id": "r2",
+   "slot": "arma",
+   "setId": null,
+   "name": "Espada larga",
+   "stats": {
+    "atk": 30,
+    "critico": 2
+   },
+   "requires": {
+    "fuerza": 22
+   }
+  },
+  {
+   "id": "r3",
+   "slot": "arma",
+   "setId": null,
+   "name": "Mandoble",
+   "stats": {
+    "atk": 46
+   },
+   "requires": {
+    "fuerza": 28
+   }
+  },
+  {
+   "id": "r4",
+   "slot": "arma",
+   "setId": null,
+   "name": "Hacha de guerra",
+   "stats": {
+    "atk": 58,
+    "def": 2
+   },
+   "requires": {
+    "fuerza": 36
+   }
+  },
+  {
+   "id": "r5",
+   "slot": "arma",
+   "setId": null,
+   "name": "Daga gemela",
+   "stats": {
+    "atk": 20,
+    "critico": 9
+   },
+   "requires": {
+    "destreza": 24
+   }
+  },
+  {
+   "id": "r6",
+   "slot": "arma",
+   "setId": null,
+   "name": "Estoque",
+   "stats": {
+    "atk": 28,
+    "critico": 12
+   },
+   "requires": {
+    "destreza": 32
+   }
+  },
+  {
+   "id": "r7",
+   "slot": "arma",
+   "setId": null,
+   "name": "Baculo de roble",
+   "stats": {
+    "magia": 26,
+    "manaExtra": 20
+   }
+  },
+  {
+   "id": "r8",
+   "slot": "arma",
+   "setId": null,
+   "name": "Cetro arcano",
+   "stats": {
+    "magia": 44,
+    "manaExtra": 35
+   },
+   "requires": {
+    "inteligencia": 30
+   }
+  },
+  {
+   "id": "r9",
+   "slot": "arma",
+   "setId": null,
+   "name": "Orbe del vacio",
+   "stats": {
+    "magia": 62,
+    "manaExtra": 10
+   },
+   "requires": {
+    "inteligencia": 40
+   }
+  },
+  {
+   "id": "r10",
+   "slot": "casco",
+   "setId": null,
+   "name": "Capucha de cuero",
+   "stats": {
+    "def": 3,
+    "critico": 3
+   }
+  },
+  {
+   "id": "r11",
+   "slot": "casco",
+   "setId": null,
+   "name": "Yelmo de hierro",
+   "stats": {
+    "def": 8,
+    "vidaExtra": 20
+   },
+   "requires": {
+    "fuerza": 18
+   }
+  },
+  {
+   "id": "r12",
+   "slot": "casco",
+   "setId": null,
+   "name": "Corona de sabio",
+   "stats": {
+    "def": 2,
+    "magia": 8,
+    "manaExtra": 30
+   },
+   "requires": {
+    "inteligencia": 20
+   }
+  },
+  {
+   "id": "r13",
+   "slot": "armadura",
+   "setId": null,
+   "name": "Tunica",
+   "stats": {
+    "def": 4,
+    "manaExtra": 25
+   }
+  },
+  {
+   "id": "r14",
+   "slot": "armadura",
+   "setId": null,
+   "name": "Cota de mallas",
+   "stats": {
+    "def": 14,
+    "vidaExtra": 30
+   },
+   "requires": {
+    "fuerza": 20
+   }
+  },
+  {
+   "id": "r15",
+   "slot": "armadura",
+   "setId": null,
+   "name": "Placas de caballero",
+   "stats": {
+    "def": 24,
+    "vidaExtra": 60
+   },
+   "requires": {
+    "fuerza": 30
+   }
+  },
+  {
+   "id": "r16",
+   "slot": "armadura",
+   "setId": null,
+   "name": "Jubon de sombras",
+   "stats": {
+    "def": 9,
+    "critico": 6
+   },
+   "requires": {
+    "destreza": 22
+   }
+  },
+  {
+   "id": "r17",
+   "slot": "accesorio",
+   "setId": null,
+   "name": "Anillo de cobre",
+   "stats": {
+    "vidaExtra": 15
+   }
+  },
+  {
+   "id": "r18",
+   "slot": "accesorio",
+   "setId": null,
+   "name": "Amuleto de furia",
+   "stats": {
+    "atk": 8,
+    "critico": 4
+   },
+   "requires": {
+    "fuerza": 16
+   }
+  },
+  {
+   "id": "r19",
+   "slot": "accesorio",
+   "setId": null,
+   "name": "Colgante de mana",
+   "stats": {
+    "manaExtra": 50,
+    "magia": 6
+   }
+  },
+  {
+   "id": "r20",
+   "slot": "accesorio",
+   "setId": null,
+   "name": "Anillo del halcon",
+   "stats": {
+    "critico": 10
+   },
+   "requires": {
+    "destreza": 28
+   }
+  }
+ ]
+}

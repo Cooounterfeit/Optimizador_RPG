@@ -1,6 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { GameTemplate, Item } from '../core/types'
-import { Empty, Icon } from '../ui/components'
+import { Banner, Empty, Icon } from '../ui/components'
+import { useItemImages } from '../ui/useItemImages'
+import {
+  imageKeyOf, keyFromFileName, removeImage, setImage, shrinkIcon,
+} from '../store/itemImages'
 import { nf } from '../ui/format'
 import { characterIcon, characterRarity, itemIcon, itemRarity } from '../adapters/genshinAssets'
 import ItemImporter from './ItemImporter'
@@ -44,6 +48,40 @@ export default function InventoryView({
 
   const reset = (fn: () => void) => { fn(); setShown(PAGE) }
 
+  const { imageOf } = useItemImages(gameId)
+  const [aviso, setAviso] = useState<{ kind: 'ok' | 'warn' | 'err'; text: string } | null>(null)
+  const loteRef = useRef<HTMLInputElement>(null)
+
+  /** Asigna una imagen al tipo de objeto (todas sus copias la comparten). */
+  async function asignar(it: Item, file: File) {
+    try {
+      await setImage(gameId, imageKeyOf(it), await shrinkIcon(file))
+      setAviso(null)
+    } catch (e) {
+      setAviso({ kind: 'err', text: (e as Error).message })
+    }
+  }
+
+  /**
+   * Varias imagenes de una vez: cada archivo va al objeto con el mismo nombre.
+   * "Espada larga.png" -> todos los objetos llamados "Espada larga".
+   */
+  async function asignarLote(files: FileList) {
+    const claves = new Set(items.map(imageKeyOf))
+    const sinObjeto: string[] = []
+    const fallidas: string[] = []
+    let ok = 0
+    for (const f of Array.from(files)) {
+      const key = keyFromFileName(f.name)
+      if (!claves.has(key)) { sinObjeto.push(f.name); continue }
+      try { await setImage(gameId, key, await shrinkIcon(f)); ok++ } catch { fallidas.push(f.name) }
+    }
+    const partes = [`${ok} imagen(es) asignada(s).`]
+    if (sinObjeto.length) partes.push(`Sin objeto con ese nombre: ${sinObjeto.slice(0, 8).join(', ')}${sinObjeto.length > 8 ? '…' : ''}.`)
+    if (fallidas.length) partes.push(`No se pudieron leer: ${fallidas.join(', ')}.`)
+    setAviso({ kind: sinObjeto.length || fallidas.length ? 'warn' : 'ok', text: partes.join(' ') })
+  }
+
   return (
     <>
       <div className="card">
@@ -62,6 +100,12 @@ export default function InventoryView({
           <button className={`mini${tab === 'chars' ? ' on' : ''}`} onClick={() => reset(() => setTab('chars'))}>
             Personajes ({nf.format(perfiles.length)})
           </button>
+          <button className="mini" onClick={() => loteRef.current?.click()}
+            title="Cada archivo se asigna al objeto con el mismo nombre (Espada larga.png → Espada larga)">
+            + imagenes en lote
+          </button>
+          <input ref={loteRef} type="file" accept="image/*" multiple hidden
+            onChange={(e) => { if (e.target.files?.length) asignarLote(e.target.files); e.target.value = '' }} />
           <div style={{ flex: 1 }} />
           <input type="text" placeholder="Buscar…" value={query}
             onChange={(e) => reset(() => setQuery(e.target.value))} />
@@ -83,6 +127,13 @@ export default function InventoryView({
             </span>
           </div>
         )}
+        {tab === 'items' && (
+          <p className="hint" style={{ margin: '8px 0 0' }}>
+            Pulsa el icono de un objeto o arrastra una imagen encima para ponerle la tuya. La imagen
+            es del tipo de objeto: todas las copias con el mismo nombre la comparten.
+          </p>
+        )}
+        {aviso && <div style={{ marginTop: 10 }}><Banner kind={aviso.kind}>{aviso.text}</Banner></div>}
       </div>
 
       {tab === 'cargar' && (
@@ -104,7 +155,10 @@ export default function InventoryView({
             : <>
                 <div className="invgrid">
                   {filtered.slice(0, shown).map((it) => (
-                    <ItemCard key={it.id} it={it} gameId={gameId} template={template} />
+                    <ItemCard key={it.id} it={it} gameId={gameId} template={template}
+                      own={imageOf(it)}
+                      onImage={(f) => asignar(it, f)}
+                      onRemoveImage={() => removeImage(gameId, imageKeyOf(it))} />
                   ))}
                 </div>
                 {shown < filtered.length && (
@@ -155,7 +209,15 @@ export default function InventoryView({
   )
 }
 
-function ItemCard({ it, gameId, template }: { it: Item; gameId: string; template: GameTemplate }) {
+function ItemCard({ it, gameId, template, own, onImage, onRemoveImage }: {
+  it: Item; gameId: string; template: GameTemplate
+  /** Imagen subida por el usuario para este tipo de objeto, si tiene. */
+  own: string | null
+  onImage: (file: File) => void
+  onRemoveImage: () => void
+}) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [sobre, setSobre] = useState(false)
   const setName = it.setId ? template.sets.find((s) => s.id === it.setId)?.name ?? it.setId : null
   const slotName = template.slots.find((s) => s.id === it.slot)?.name ?? it.slot
   void slotName
@@ -165,8 +227,26 @@ function ItemCard({ it, gameId, template }: { it: Item; gameId: string; template
   const main = entries[0]
   const subs = entries.slice(1)
   return (
-    <div className="invcard">
-      <Icon src={itemIcon(gameId, it)} alt={setName ?? it.name} rarity={itemRarity(it)} size={48} />
+    <div className={`invcard${sobre ? ' drop' : ''}`}
+      onDragOver={(e) => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); setSobre(true) } }}
+      onDragLeave={() => setSobre(false)}
+      onDrop={(e) => {
+        e.preventDefault(); setSobre(false)
+        const f = e.dataTransfer.files[0]
+        if (f) onImage(f)
+      }}>
+      <div className="icon-edit">
+        <button type="button" className="icon-btn" title={own ? 'Cambiar la imagen' : 'Poner una imagen'}
+          onClick={() => fileRef.current?.click()}>
+          <Icon src={own ?? itemIcon(gameId, it)} alt={setName ?? it.name} rarity={itemRarity(it)} size={48} />
+        </button>
+        {own && (
+          <button type="button" className="icon-del" title="Quitar la imagen" aria-label="Quitar la imagen"
+            onClick={onRemoveImage}>×</button>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" hidden
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) onImage(f); e.target.value = '' }} />
+      </div>
       <div className="meta">
         <div className="t">{setName ?? it.name}</div>
         {main && (

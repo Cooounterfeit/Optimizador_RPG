@@ -12,6 +12,8 @@
  */
 
 import type { GameTemplate, Item } from '../core/types'
+import { sanitizeImages, type ImageMap } from './itemImages'
+import { fetchJson } from '../ui/errors'
 
 export interface ExampleInfo {
   id: string
@@ -24,17 +26,21 @@ export interface ExampleInfo {
 export interface ExamplePackage {
   template: GameTemplate
   items: Item[]
+  images: ImageMap
 }
 
 export async function listExamples(): Promise<ExampleInfo[]> {
-  const r = await fetch('examples/index.json')
-  if (!r.ok) throw new Error('No se encontro el catalogo de ejemplos.')
-  return r.json()
+  const data = await fetchJson<unknown>(`${import.meta.env.BASE_URL}examples/index.json`)
+  if (!Array.isArray(data)) throw new Error('El catálogo de ejemplos no tiene el formato esperado.')
+  return data as ExampleInfo[]
 }
 
 export async function loadExample(file: string): Promise<ExamplePackage> {
-  const r = await fetch(`examples/${file}`)
-  if (!r.ok) throw new Error(`No se pudo cargar ${file}.`)
-  const data = await r.json()
-  return { template: data.template as GameTemplate, items: (data.items ?? []) as Item[] }
+  const data = await fetchJson<{ template?: GameTemplate; items?: Item[]; images?: unknown }>(`${import.meta.env.BASE_URL}examples/${file}`, { timeoutMs: 30_000 })
+  if (!data?.template) throw new Error(`"${file}" no es un paquete de juego válido.`)
+  return {
+    template: data.template as GameTemplate,
+    items: (data.items ?? []) as Item[],
+    images: sanitizeImages(data.images),
+  }
 }

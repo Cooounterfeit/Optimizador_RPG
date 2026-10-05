@@ -1,5 +1,12 @@
 [
  {
+  "id": "rpg",
+  "file": "rpg.zenith.json",
+  "name": "RPG clasico (con niveles)",
+  "items": 20,
+  "description": "Tres clases con curvas de crecimiento: proyecta tus estadisticas por nivel y compara pasado, presente y futuro."
+ },
+ {
   "id": "genshin",
   "file": "genshin.zenith.json",
   "name": "Genshin Impact",
@@ -18,6 +25,27 @@
   "file": "souls.zenith.json",
   "name": "Souls (simplificado)",
   "items": 137,
-  "description": "Requisitos de atributo, presupuesto de carga y ranuras que comparten inventario."
+  "description": "Subir de nivel reparte puntos en atributos con topes blandos, requisitos por pieza, presupuesto de carga y talismanes que comparten inventario."
+ },
+ {
+  "id": "wow-paladin-reprension",
+  "file": "wow-paladin-reprension.zenith.json",
+  "name": "WoW Midnight · Paladin Reprension",
+  "items": 43,
+  "description": "Clase completa: arbol de clase, reprension, talento apice y dos clases de heroe (build 12.1.0.69933). Botin de la banda de la Temporada 2 a nivel 311."
+ },
+ {
+  "id": "wow-paladin-proteccion",
+  "file": "wow-paladin-proteccion.zenith.json",
+  "name": "WoW Midnight · Paladin Proteccion",
+  "items": 45,
+  "description": "Clase completa: arbol de clase, proteccion, talento apice y dos clases de heroe (build 12.1.0.69933). Botin de la banda de la Temporada 2 a nivel 311."
+ },
+ {
+  "id": "wow-paladin-sagrado",
+  "file": "wow-paladin-sagrado.zenith.json",
+  "name": "WoW Midnight · Paladin Sagrado",
+  "items": 43,
+  "description": "Clase completa: arbol de clase, sagrado, talento apice y dos clases de heroe (build 12.1.0.69933). Botin de la banda de la Temporada 2 a nivel 311."
  }
 ]

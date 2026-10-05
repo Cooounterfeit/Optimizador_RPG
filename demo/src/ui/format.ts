@@ -15,3 +15,19 @@ export function fmtBig(n: number): string {
 }
 
 export const secs = (ms: number) => `${(ms / 1000).toFixed(2)} s`
+
+/**
+ * Duracion legible a cualquier escala.
+ *
+ * `secs()` valia mientras las busquedas duraban treinta segundos. Sin limite de
+ * tiempo pueden durar horas, y "14400.00 s" no lo lee nadie.
+ */
+export function dur(ms: number): string {
+  const t = Math.max(0, Math.floor(ms / 1000))
+  if (t < 60) return `${(ms / 1000).toFixed(1)} s`
+  const h = Math.floor(t / 3600)
+  const m = Math.floor((t % 3600) / 60)
+  const s = t % 60
+  if (h > 0) return `${h} h ${String(m).padStart(2, '0')} min`
+  return `${m} min ${String(s).padStart(2, '0')} s`
+}

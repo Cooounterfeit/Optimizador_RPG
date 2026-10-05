@@ -47,9 +47,12 @@ Abre la URL que imprime Vite (normalmente `http://localhost:5173`).
 El inventario de ejemplo se carga solo. También puedes arrastrar cualquier
 export **GOOD** de Genshin Optimizer sobre la caja de la izquierda.
 
-Cuatro comprobaciones sin interfaz:
+Comprobaciones sin interfaz:
 
 ```bash
+npm test               # regresion, habilidades, niveles, sincronizacion y reglas de Supabase (lo que corre el CI)
+npm run typecheck      # TypeScript estricto, sin emitir
+npm run regresion      # casos que antes fallaban + fuzz de miles de instancias contra fuerza bruta
 npm run bench          # correctitud contra fuerza bruta + rendimiento
 npm run ejes           # requisitos, presupuestos, exclusión mutua y agregación multiplicativa
 npm run expresividad   # ¿qué mecánicas de WoW, PoE, ZZZ y Endfield se pueden escribir?
@@ -83,23 +86,38 @@ tardaría décadas.
 
 El motor trabaja en cuatro capas:
 
-**0. Detección numérica de relevancia.** Antes de nada, perturba cada estadística
-y observa si el objetivo cambia. Para un DPS de personaje Geo descarta solo los
-bonos Pyro, Hydro, Cryo, la curación y la defensa. El problema pasa de ~20
-dimensiones a 5. *No hay una sola línea de código específica de ningún juego:
-sale de evaluar la fórmula de la plantilla.* Además fusiona ejes que entran de
-forma idéntica en el objetivo.
+**0. Análisis simbólico de la fórmula** (`src/core/analysis.ts`). Antes de
+buscar, recorre el árbol de la fórmula y **demuestra** tres cosas:
+
+- *De qué stats depende.* Para un DPS de personaje Geo descarta los bonos Pyro,
+  Hydro, Cryo, la curación y la defensa, porque van multiplicados por un
+  selector que vale 0. El problema pasa de ~20 dimensiones a 6.
+- *En qué dirección se mueve con cada una* (sube, baja o «depende»), con reglas
+  de signo y, cuando no alcanzan, con **derivadas sobre intervalos**: sabe que
+  `EM / (EM + 1400)` sube con la maestría.
+- *Qué stats entran juntas* como `c·(a + b)`, para fusionarlas en un eje.
+
+Antes esto se averiguaba probando puntos al azar, que falla en silencio cuando
+una stat solo importa pasado un umbral que ningún punto tocó. Ahora, ante la
+duda, la respuesta es la conservadora («depende», «no se fusiona»): más lenta,
+nunca incorrecta. *No hay una sola línea de código específica de ningún juego.*
 
 **1. Filtro de dominancia.** Dentro de una misma ranura y un mismo conjunto, si
-un ítem es peor o igual que otro en todas las estadísticas que importan, no puede
-estar en la solución óptima y se elimina.
+un ítem es peor o igual que al menos *N* otros en todas las estadísticas que
+importan (*N* = tamaño del top pedido), se elimina. Cada eje tiene su sentido:
+más es mejor para el objetivo, los mínimos y los requisitos; menos es mejor para
+los presupuestos; y si un eje tira en los dos sentidos, solo cuentan las piezas
+idénticas.
 
-**2. Branch and bound con cota superior.** En cada nodo se construye un vector
-"utópico": lo acumulado + el máximo que aún se puede conseguir + el mejor bono de
-conjunto todavía formable. Si evaluar el objetivo sobre ese vector imposible ya
-da menos que la mejor build encontrada, el subárbol entero se descarta.
+**2. Branch and bound con cota superior.** En cada nodo se acota el mejor
+resultado posible del subárbol: lo acumulado + el máximo que aún se puede
+conseguir + los bonos de conjunto todavía formables (los de cada conjunto activo
+se **suman**: un 2+2 cuenta los dos bonos). Si esa cota ya da menos que la mejor
+build encontrada, el subárbol entero se descarta.
 
-**3. Poda por restricciones.** Igual, con los mínimos exigidos.
+**3. Poda por restricciones.** Mínimos contra el mejor caso, máximos y
+presupuestos contra el peor caso, requisitos de cada pieza contra el mejor caso
+del subárbol.
 
 Hay además un **arranque en caliente** (greedy + ascenso de colina) que consigue
 una build muy buena antes de empezar el árbol, para que la cota sea exigente
@@ -107,9 +125,20 @@ desde el primer nodo.
 
 ### La poda es exacta, no heurística
 
-El motor exige `monotonic: true` en el objetivo: que sea no-decreciente respecto
-de cada estadística. Si lo es, el vector utópico acota por arriba cualquier hoja
-del subárbol, y podar **no puede perder el óptimo**.
+Hay dos cotas, y las dos son exactas:
+
+- **De esquina.** Si el análisis demuestra una dirección para cada eje (sube o
+  baja; por ejemplo, el daño sube y la penalización por peso baja), el máximo
+  de la caja del subárbol está en una esquina conocida y basta **una**
+  evaluación. Es la rápida.
+- **Por intervalos.** Si algún eje «depende» («recarga exacta 200%»), el motor
+  evalúa la fórmula sobre **intervalos** —la caja `[peor, mejor]` de cada eje
+  en el subárbol— y usa el máximo del resultado. Más lenta, igual de válida.
+
+El motor **no se fía** de `monotonic` en la plantilla: la dirección sale del
+análisis simbólico, no de una declaración ni de un muestreo. Además, la poda
+deja un margen relativo de 1e-9 para que el redondeo de coma flotante nunca
+descarte un empate. En los dos casos podar **no puede perder el óptimo**.
 
 Por eso la interfaz distingue dos estados:
 
@@ -117,7 +146,10 @@ Por eso la interfaz distingue dos estados:
 - **«Se agotó el tiempo»** — devuelve la mejor encontrada y lo dice claramente.
 
 `npm run bench` verifica esto comparando contra fuerza bruta exhaustiva sobre
-subconjuntos pequeños: los resultados coinciden exactamente.
+subconjuntos pequeños, y `npm run regresion` lo hace sobre miles de plantillas
+aleatorias (conjuntos, mínimos, máximos, presupuestos, ranuras opcionales,
+piezas multi-ranura, requisitos, objetivos no monótonos, top N): el top N
+completo coincide exactamente.
 
 ---
 
@@ -175,8 +207,9 @@ su columna de grid y arrastra scroll a toda la página. Verificado a 1440, 1100,
 menos dependencias significa menos riesgo de que `npm install` falle el día de la
 demo. Migrar después es trivial.
 
-**Sin React Flow.** Aquí no hay árboles de habilidades: esto es optimización de
-equipamiento. React Flow entra cuando toque el *Graph Manager*.
+**React Flow solo para el diagrama.** Se usa únicamente en el diagrama de
+fórmulas (ver más abajo) y se carga bajo demanda. Los árboles de habilidades
+siguen fuera: necesitan su propio solver (*Graph Manager*).
 
 **Íconos oficiales, servidos por terceros.** Los íconos de artefactos, armas y
 personajes vienen de [Project Amber](https://gi.yatta.moe), un proyecto
@@ -194,15 +227,17 @@ aproximaciones a nivel 90 con arma incluida. Los bonos de 4 piezas que en el
 juego real son condicionales se aproximan a un valor plano equivalente. Está
 documentado dentro de la propia plantilla, en *Notas de la plantilla*.
 
-**Sin restricción de unicidad entre ranuras.** Si dos ranuras comparten el mismo
-pool de ítems, el motor podría elegir el mismo objeto dos veces. Por eso las
-ranuras de accesorio de Terraria están categorizadas. Es la limitación más real
-de v0.1 y toca resolverla antes de soportar juegos con accesorios libres.
+**Unicidad entre ranuras: resuelta.** Una pieza que cabe en varias ranuras se
+declara una vez (`Item.slots`) y el motor garantiza que no se equipe dos veces
+ni explora sus permutaciones; `Item.exclusiveGroup` limita a una pieza por
+grupo. Lo cubre `npm test`.
 
 **El objetivo más duro no siempre converge.** *DPS con reacción amplificadora*
 añade una dimensión más y una segunda curva no lineal; sobre el inventario
-completo puede agotar los 30 s. La interfaz lo dice en vez de fingir que
-terminó. Subir el nivel mínimo o añadir una restricción lo resuelve.
+completo puede tardar bastante. Por defecto no hay tope: el usuario decide
+cuándo detener y se queda con la mejor build encontrada hasta ese momento (ver
+*Quien decide cuándo parar es el usuario*). Subir el nivel mínimo o añadir una
+restricción lo acelera.
 
 ---
 
@@ -272,14 +307,19 @@ superior deja de ser válida.
 multiplicando. Los modificadores «more» de Path of Exile ya se calculan bien:
 dos fuentes de +30% dan ×1,69, no ×1,60.
 
-**Cerrado: no-monotonía.** No con aritmética de intervalos sino con algo más
-directo y honesto — el motor **cambia de modo**. Si el objetivo es monótono, poda
-por cota y demuestra el óptimo. Si no lo es, desactiva esa poda, busca con
-reinicios y ascenso de colina, y lo dice: *«el resultado es bueno, pero no está
-demostrado que sea el óptimo»*. Objetivos como «recarga exacta 200%» o «resistir
-mucho sin ir cargado» pasan de imposibles a usables.
+**Cerrado: no-monotonía.** Con aritmética de intervalos (`compileFormulaInterval`
+en `src/core/formula.ts`). Objetivos como «recarga exacta 200%» o «resistir mucho
+sin ir cargado» ya no caen en un modo heurístico: se optimizan con **óptimo
+demostrado**, solo que más despacio. El lenguaje suma además `if(c, a, b)`,
+comparaciones (`< <= > >= == !=`), `&&`, `||`, `!`, `log`, `log10`, `exp`, `pow`
+y notación `1e-3` / `.5`.
 
-**Abierto: la forma del problema.** Sigue siendo una pieza por ranura.
+**A medias: la forma del problema.** Sigue siendo una pieza por ranura, pero una
+ranura puede ser **opcional** (`SlotDef.optional`: ir sin casco para caber en la
+carga) y una pieza puede caber en **varias ranuras** (`Item.slots`: un anillo
+para Anillo 1 y Anillo 2, sin duplicarlo ni explorar las permutaciones). Los
+requisitos pueden mirarse contra la **build final** (`requirementsFrom: 'final'`):
+un anillo de +Fuerza habilita el arma. Árboles de pasivas y talentos siguen fuera.
 
 ### Los tres huecos originales
 
@@ -352,9 +392,9 @@ debería tener que entenderla: el validador la mide y avisa.
 | Eje | Qué es | Estado |
 |---|---|---|
 | **1. Expresividad** | cómo se calculan los valores | fórmulas de la plantilla, sin `eval`, con acumulación por suma **o por producto** |
-| **2. Forma del problema** | qué se está eligiendo | una pieza por ranura |
-| **3. Restricciones** | qué es legal equipar | mínimos, **máximos/presupuestos**, **requisitos por pieza**, **exclusión mutua** |
-| **4. Objetivos** | qué se optimiza | maximizar uno, en modo **exacto** o **heurístico** |
+| **2. Forma del problema** | qué se está eligiendo | una pieza por ranura, con ranuras **opcionales** y piezas **multi-ranura** |
+| **3. Restricciones** | qué es legal equipar | mínimos, **máximos/presupuestos**, **ventanas**, **requisitos por pieza** (contra base o build final), **exclusión mutua** |
+| **4. Objetivos** | qué se optimiza | maximizar uno, siempre **exacto**: cota monótona o **por intervalos** |
 
 Lo que no era obvio: **el eje 3 desbloquea más juegos por unidad de esfuerzo que
 el eje 2.** Lo que le faltaba al motor para cubrir géneros enteros —souls-likes,
@@ -831,6 +871,194 @@ diagrama son otros 63 KB que solo bajan al abrirlo.
 
 ---
 
+## Árbol de habilidades
+
+Cada juego puede declarar uno o varios árboles (`skillTrees` en la plantilla) con la
+forma que quiera su autor: no hay jerarquía impuesta, solo las reglas que cada nodo
+declara.
+
+| Campo del nodo | Qué hace |
+|---|---|
+| `cost`, `maxRank` | Puntos por rango y rangos máximos (por defecto 1 y 1) |
+| `requires` | Hace falta tener **todos** estos nodos |
+| `requiresAny` | Hace falta tener **al menos uno** de estos nodos |
+| `requiresPoints` | Puntos gastados en el mismo árbol antes de poder tomarlo |
+| `effects` | Efecto **por rango** sobre las estadísticas declaradas |
+
+Y en el árbol, `budget` limita los puntos totales.
+
+**Las estadísticas funcionan con los datos del juego.** Los efectos de los nodos elegidos
+se suman exactamente como una pieza de equipo más: respetan si la estadística suma o
+multiplica (dos rangos de +10% "more" dan +21%), cuentan para los requisitos contra la
+build final y entran en derivados y objetivos sin escribir nada especial. Además, el rango
+de cada nodo está disponible en las fórmulas como `skill_<id>`, así que un nodo puede
+**activar una mecánica**: `danoArma * if(skill_sangreFria > 0 && cargaPct < 50, 1.2, 1)`.
+
+**El motor no cambió.** Los efectos entran como una ranura extra con una sola pieza fija,
+así que el branch and bound, la dominancia y las cotas siguen siendo exactos.
+`npm run habilidades` lo comprueba: reglas de selección, efectos, validación de plantillas
+mal armadas (ciclos, estadísticas inexistentes, umbrales imposibles) y 400 instancias
+aleatorias contra fuerza bruta.
+
+**Se crean de forma visual, sin JSON.** En *Mis juegos → editar → Habilidades* hay un
+editor con lienzo (React Flow): **+ Habilidad** agrega un nodo, se arrastra para moverlo,
+una flecha de A a B significa "B requiere A" (pulsándola se elige si es obligatoria o una
+alternativa), y la ficha lateral pide solo datos del juego: nombre, rangos, puntos por rango,
+puntos previos y qué suma a cada estadística. **Probar como jugador** deja usar el árbol
+tal como lo verá el jugador. El editor impide flechas que crearían un ciclo, no deja borrar
+una habilidad que una fórmula usa y genera solo el nombre interno de cada nodo. Para
+compartir el árbol basta con **exportar** el juego: va dentro del mismo `.zenith.json`.
+
+El ejemplo *Souls (simplificado)* trae un árbol de 7 nodos para probarlo desde el
+Optimizador → **Abrir el árbol de habilidades**.
+
+---
+
+## World of Warcraft: Midnight — Paladín
+
+Tres juegos de ejemplo, uno por especialización (**Reprensión**, **Protección**, **Sagrado**),
+generados desde datos del juego para la build **12.1.0.69933** (parche 12.1, Temporada 2):
+
+- **Árboles de talentos completos**: árbol de clase (34 puntos, umbrales de 8 y 23), árbol de
+  especialización con su talento ápice (34 puntos, umbrales de 8 y 20) y las dos clases de héroe
+  de cada especialización (13 puntos; solo se puede usar una). Nodos, posiciones, rangos,
+  elecciones ("elige uno de dos") y nodos gratis salen de los datos de talentos de Raidbots. Rige
+  la regla de WoW: un nodo se desbloquea con **uno** de los nodos que llegan a él, y completo.
+- **Objetos reales**: botín de la banda de la Temporada 2 y el conjunto de catalizador, con sus
+  estadísticas calculadas a nivel de objeto 311 con la fórmula de SimulationCraft.
+- **Conversión de índices** a nivel 90 (crítico 46, celeridad 44, maestría 46, versatilidad 54) y
+  la **curva oficial de rendimientos decrecientes**.
+- **Aproximación declarada**: el objetivo de daño o sanación multiplica las estadísticas; no
+  simula la rotación. Efectos de abalorios, bonificaciones de conjunto, engarces y encantamientos
+  no se modelan. Todo está explicado en las *Notas de la plantilla*.
+
+Para regenerarlos con datos más nuevos: `scripts/datos/generar-paladin-wow.py`.
+
+## Hoja de personaje
+
+La pestaña **Personaje** junta tres ideas:
+
+- **World of Warcraft**: el personaje al centro y sus ranuras alrededor. Pulsando una ranura se
+  elige la pieza del inventario. A la derecha, las estadísticas agrupadas como las define la
+  plantilla (campo `group` de cada estadística y de cada valor calculado).
+- **Genshin Impact**: retrato grande del personaje; se puede subir una imagen propia.
+- **Dark Souls 3**: *Subir de nivel*. Los atributos del perfil (`levelable`) se suben y bajan con
+  + y −, y cada cifra muestra `actual ⇒ nueva`, en azul si mejora y en rojo si empeora, antes de
+  confirmar. El ejemplo *Souls* lo trae con Fuerza, Destreza e Inteligencia.
+
+Todas las cifras salen del motor (las mismas funciones que usa el optimizador). Desde cada build
+del optimizador, **ver en el personaje** la pone en la hoja.
+
+---
+
+## Proyección por nivel (TEC-12, SIM-02, SIM-03, SIM-04)
+
+Un juego puede declarar **niveles** y cuánto crece cada atributo por nivel:
+
+```json
+"leveling": {
+  "levelKey": "nivel", "min": 1, "max": 60,
+  "growth": { "fuerza": "base_crecFuerza", "vida": "base_crecVida + floor(nivel / 10) * 4" }
+}
+```
+
+Cada curva dice cuánto **sube** ese valor al llegar al nivel `nivel`. Puede ser un número fijo o
+una fórmula con `nivel` y los valores del perfil (`base_crecFuerza`), así cada clase crece distinto
+y las curvas pueden acelerar. El nivel actual vive en el perfil (`base.nivel`). Proyectar del nivel
+N al L suma las curvas de N+1 a L.
+
+- **Motor** (`src/core/leveling.ts`, puro, sin UI ni red): `proyectarEstadisticas(personaje,
+  nivelObjetivo)` con el nombre del Jira, más `projectProfile`, `currentLevel`, `futureLevels` y
+  `checkLeveling` (conectado al validador de plantillas). Devuelve los mensajes de los criterios de
+  aceptación tal cual ("Elige un nivel superior al actual", "El nivel elegido debe ser mayor al
+  actual", "No tienes estadísticas base para simular. Sube de nivel primero.", "Simulación futura no
+  disponible").
+- **Pruebas** (`npm run niveles`, incluidas en `npm test`): el ejemplo del Jira (Guerrero nivel 10,
+  Fuerza 20, +1,6 por nivel → nivel 15 = 28, +8), los mensajes de error, curvas que dependen del
+  nivel, que proyectar 1→6→10 dé lo mismo que 1→10, la validación y que en el ejemplo publicado la
+  mejor arma cambie al subir de nivel.
+- **Editor** (*Mis juegos → editar → Niveles*): activar niveles, mínimo y máximo, nivel actual de
+  cada personaje y qué sube al subir: *igual para todos* (un número), *distinto por clase* (un
+  número por perfil) o *fórmula* (avanzado). Vista previa a +1, +5 y +10 niveles. Sin JSON.
+- **Hoja de personaje → Evolución por nivel** (`?vista=evolucion`):
+  - *Proyectar* (SIM-02): elige un nivel futuro; el actual no se puede elegir y uno menor muestra
+    el error. Presente en blanco, futuro en naranjo, con `↑ +8` y el detalle "Fuerza: 20 → 28 (+8)"
+    al pasar el cursor. Debajo, los resultados del juego con el equipo puesto (daño, vida total…)
+    calculados por el motor, y las piezas que se desbloquean a ese nivel. **Subir al nivel N+1** /
+    **Subir hasta el nivel N** guarda el estado actual y cada nivel intermedio en el historial.
+  - *Historial* (SIM-03): elige un nivel anterior; pasado en azul. Si no hay registro para ese nivel,
+    "No hay registros de estadísticas para el nivel N"; sin historial, el mensaje del Jira.
+  - *Comparar los tres* (SIM-04): pasado, presente y futuro lado a lado con niveles independientes;
+    la diferencia siempre se mide contra la columna anterior.
+  - Orden por valor (de mayor a menor) o alfabético pulsando **Nombre** (SIM-01). Cada estadística
+    acepta una imagen propia (se guarda con las imágenes de los objetos); sin imagen, sus iniciales.
+- **Historial** (`src/store/levelHistory.ts`): un registro por nivel, por juego y perfil, en
+  `localStorage`. Con Supabase pasa a una tabla `historial_estadisticas`.
+- **Ejemplo**: *RPG clásico (con niveles)* (`scripts/datos/generar-rpg.py`): Guerrero, Mago y
+  Pícaro con curvas distintas y armas con requisitos que se alcanzan subiendo.
+
+### Juegos donde se reparten puntos (Souls, Elden Ring, Diablo)
+
+En esos juegos subir de nivel no hace crecer nada solo: da **un punto** que el jugador pone en un
+atributo, y ese atributo mueve otras cifras con **topes blandos** (en Dark Souls, el Vigor da mucha
+vida hasta 27, menos hasta 50 y casi nada después). Zenith lo modela con dos piezas:
+
+- **Niveles por puntos** (`leveling.mode: "points"`, `points: { attributes, perLevel, maxValue }`):
+  qué atributos reciben puntos, cuántos da cada nivel y el tope (99). El nivel avanza con los puntos.
+  `growth` sigue disponible para lo que sube solo.
+- **Curvas por tramos** (`derived[].curve: { input, points }`): "con 10 de Vigor, 580 de vida; con 27,
+  1000; con 50, 1400; con 99, 1650". Entre puntos se interpola en línea recta y fuera del rango queda
+  plano. El editor genera la fórmula (`300 + 31.1 * (clamp(base_vigor, 1, 10) - 1) + …`), así que para
+  el motor es un valor calculado más: entra en el optimizador, la hoja, el diagrama y las cotas por
+  intervalos sin código especial. El validador avisa si la fórmula deja de coincidir con la curva.
+
+En la app:
+
+- **Editor → Niveles**: elegir *Los atributos crecen solos* o *Cada nivel da puntos para repartir*,
+  marcar los atributos, editar los de cada personaje en una tabla y, en **Qué da cada atributo**,
+  dibujar las curvas con puntos (con gráfico). En *Fórmulas*, las curvas aparecen como solo lectura.
+- **Evolución por nivel → Proyectar**: al elegir un nivel aparece **Reparte tus puntos** (con − y + por
+  atributo) y la tabla muestra al instante qué cifras mueve cada punto. **Sugerir reparto** reparte
+  para el objetivo elegido (daño, supervivencia…) con el equipo puesto, cubriendo primero los
+  requisitos de esas piezas. Para subir hay que repartir todos los puntos.
+- **Subir de nivel** (panel tipo Dark Souls de la hoja): cada + es un nivel (*Nivel 80 ⇒ 83*), no se
+  puede bajar de lo que ya tienes y al confirmar queda en el historial.
+
+El reparto automático (`allocatePoints` en `leveling.ts`) cubre requisitos, avanza comparando pasos
+de un punto con saltos de hasta 15 (para umbrales: un efecto que aparece a los 4 puntos) y termina con
+búsqueda local moviendo puntos entre atributos. Es una heurística; las pruebas la comparan con fuerza
+bruta en 30 casos con topes blandos y coincide en todos.
+
+El ejemplo **Souls** ahora sube por puntos (Vigor, Fuerza, Destreza, Inteligencia; tope 99) y usa
+curvas para la vida y el escalado del arma.
+
+> El Jira usa naranjo para el futuro en SIM-02 y verde en SIM-04 (y en un escenario de SIM-02).
+> La app usa **naranjo** en todas las vistas para que el futuro tenga un solo color.
+
+---
+
+## Cuentas y nube (Supabase)
+
+Sin configurar nada, Zenith funciona igual que siempre: todo en el navegador. Con un proyecto de
+Supabase (pasos en [`supabase/README.md`](supabase/README.md)) se activan:
+
+- **Cuentas** (AUT-1 a AUT-3): registro con nombre, correo y contraseña; inicio de sesión con
+  «recordarme» y recuperación de contraseña; perfil con nombre, foto y descripción, y perfil público
+  en `/perfil/<id>` sin el correo. El botón **Salir** está en la cabecera de todas las pantallas.
+- **Mis juegos en la nube** (INV-8, TEC-08): en *Mi perfil*, cada juego tiene «copia en la nube».
+  Al guardar se sube solo; al entrar desde otro dispositivo se baja; los cambios de otro dispositivo
+  llegan en vivo. Si un juego cambió en los dos lados, la app pregunta qué versión conservar. Viajan
+  la plantilla, los objetos, el equipo y las habilidades elegidas; las imágenes propias todavía no.
+- **Base de datos** (TEC-02, TEC-03): `profiles`, `subscriptions`, `optimizers`, `votes`,
+  `favorites`, `reports` y `cloud_inventory`, con RLS en todas. Cada juego se guarda como un
+  documento `jsonb` (el mismo `.zenith.json` que se exporta), así el modelo puede seguir creciendo
+  sin migraciones. `npm run rls` prueba las reglas con distintos usuarios sobre PostgreSQL en memoria.
+
+El código está en `src/cloud/` (cliente, sesión, sincronización y su plan puro, que prueba
+`npm run sincronizacion`) y las pantallas en `src/views/AccountViews.tsx`.
+
+---
+
 ## Despliegue
 
 Zenith no tiene backend. El motor —branch and bound, parser, Web Worker— corre
@@ -877,3 +1105,72 @@ Genshin, cargar 2.622 objetos desde un GOOD, abrir el diagrama —que llega por
 carga diferida— y optimizar. **El Web Worker arranca**, que es exactamente lo que
 rompería un MIME mal servido: score 9.340 en el panel, 9.339,66 en el nodo
 objetivo del grafo. Sin errores de consola.
+
+---
+
+## Quien decide cuándo parar es el usuario
+
+El motor tenía un tope de 30 segundos y se detenía solo. Es la decisión
+equivocada, y por una razón concreta: **quien sabe si merece la pena esperar
+cuatro horas por un óptimo demostrado es el usuario, no el programa.** Un tope
+fijo le quita esa decisión y le devuelve un resultado peor sin preguntarle.
+
+Ahora el valor por defecto es **sin límite**. La búsqueda corre hasta que
+termina —demostrando el óptimo— o hasta que alguien pulsa *Detener*. En
+Configuración se puede poner un tope (30 s, 2 min, 10 min, 1 h, 4 h) para quien
+lo prefiera, y los usos automáticos siguen teniendo el suyo: las autopruebas de
+plantillas corren en el hilo principal con 4 segundos, porque no pueden congelar
+la pantalla mientras alguien escribe.
+
+### El cambio de verdad no fue quitar el límite
+
+Fue lo que quitarlo destapó: **detener la búsqueda perdía todo el trabajo.**
+
+Cancelar significa *matar el worker*, porque un worker ocupado no puede leer un
+mensaje que le diga «para» — nunca vuelve al bucle de eventos. Y si lo matas, el
+`return` de `solve()` no llega nunca. Con 30 segundos de tope eso era un
+inconveniente. Con búsquedas de horas es inaceptable: parar a las tres horas
+devolvía exactamente nada.
+
+La solución fue mover el resultado al canal que sí funciona. Cada aviso de
+progreso arrastra ahora **las mejores builds encontradas hasta ese instante, ya
+materializadas** —estadísticas finales, conjuntos activos, todo—, y el hilo
+principal las va guardando. Detener arma el resultado con el último parcial
+recibido. Se materializa solo cuando el podio cambió, así que el coste es
+prácticamente cero.
+
+### Ningún cero disfrazado de medición
+
+El primer intento rellenaba con ceros los campos que el progreso no llevaba, y
+el panel mostraba «espacio de búsqueda: 0», «0 % podado», «el motor dedujo que
+solo importan .». Números inventados presentados como mediciones — justo lo que
+este proyecto se niega a hacer en todas partes.
+
+Pero esas cifras **sí se conocen**: se calculan antes del primer nodo y no
+cambian. Así que ahora el motor las emite una vez, por un hook `onSetup`, justo
+antes de empezar a buscar. Una búsqueda detenida a mano enseña su espacio real
+de 421 mil millones de combinaciones, su 99,9987 % podado y sus ejes relevantes,
+porque son datos medidos, no huecos rellenos.
+
+### El mensaje también cambia
+
+Agotar un límite y parar a mano no son lo mismo, así que `SolveStats` distingue
+`stoppedBy: 'tiempo' | 'usuario'`. Un límite alcanzado sugiere subirlo o
+restringir más; una parada manual no sugiere nada — la decisión ya fue suya, y
+el mensaje se limita a explicar que la build está igual de bien calculada y que
+lo único que falta es la demostración.
+
+### Probado
+
+`npx tsx scripts/detener.ts` comprueba, en los 13 objetivos de las tres
+plantillas: que sin límite la búsqueda termina y **sigue demostrando el óptimo**;
+que la build que viaja en el progreso está **completa** (una pieza por ranura) y
+**bien calculada** (su puntuación reevaluada por el camino del motor coincide con
+error < 1e-9); y que nunca supera al óptimo real. Cuando una búsqueda termina
+sola antes de que la parada llegue, el test verifica que se declara demostrada,
+que es la respuesta correcta.
+
+En navegador, con 2.622 objetos: pasa de los 45 segundos sin detenerse —antes
+moría a los 30—, y *Detener* entrega la build de 9.340 con sus seis piezas, sus
+bonos de conjunto, sus estadísticas finales y los mismos 9.339,66 en el nodo
+objetivo del diagrama.

@@ -22,7 +22,7 @@ import {
   type Edge, type EdgeProps, type Node, type NodeProps,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import type { GameTemplate, ObjectiveDef } from '../core/types'
+import type { GameTemplate, ObjectiveDef, SkillSelection } from '../core/types'
 import { OBJ, buildGraph, evalGraph, type GraphNode, type NodeKind } from '../core/graph'
 import { fmt } from '../ui/format'
 
@@ -109,13 +109,15 @@ const TIPOS = { f: NodoFormula }
 const TIPOS_E = { f: Arista }
 
 export default function FormulaGraph({
-  template, objective, finalStats, profileId,
+  template, objective, finalStats, profileId, skills,
 }: {
   template: GameTemplate
   objective: ObjectiveDef
   /** Estadisticas de la mejor build, si ya se optimizo. */
   finalStats?: Record<string, number>
   profileId: string
+  /** Habilidades con las que se calculo la build (para los nodos skill_*). */
+  skills?: SkillSelection
 }) {
   const [sel, setSel] = useState<string | null>(null)
   useEffect(() => setSel(null), [objective.id, finalStats])
@@ -123,8 +125,8 @@ export default function FormulaGraph({
   const g = useMemo(() => buildGraph(template, objective), [template, objective])
 
   const valores = useMemo(
-    () => (finalStats ? evalGraph(template, objective, finalStats, profileId) : null),
-    [template, objective, finalStats, profileId],
+    () => (finalStats ? evalGraph(template, objective, finalStats, profileId, skills) : null),
+    [template, objective, finalStats, profileId, skills],
   )
 
   /**
