@@ -37,7 +37,7 @@ function iconoConjunto(gameId: string, setId: string, t: GameTemplate): string |
 
 export default function GamesView({
   templates, current, itemCounts, userGameIds, examples, loadingExample,
-  query, onQuery, onLoadExample, onPick, onAdd, onEditCover,
+  query, onQuery, onTryExample, onPick, onAdd, onEditCover,
 }: {
   templates: Record<string, GameTemplate>
   current: string
@@ -47,7 +47,8 @@ export default function GamesView({
   loadingExample: string | null
   query: string
   onQuery: (q: string) => void
-  onLoadExample: (info: ExampleInfo) => void
+  /** Importa el ejemplo (si hace falta) y lleva directo al optimizador. */
+  onTryExample: (info: ExampleInfo) => void
   onPick: (id: string) => void
   onAdd: () => void
   onEditCover: (id: string) => void
@@ -75,10 +76,13 @@ export default function GamesView({
     })
   }, [templates, cat, query])
 
-  const ejemplosVisibles = useMemo(() => {
+  /** Ejemplos que el usuario todavia no importo (los importados ya salen en "Tus juegos"). */
+  const ejemplosPendientes = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return q ? examples.filter((e) => `${e.name} ${e.description}`.toLowerCase().includes(q)) : examples
-  }, [examples, query])
+    return examples
+      .filter((e) => !userGameIds.has(e.id))
+      .filter((e) => !q || `${e.name} ${e.description}`.toLowerCase().includes(q))
+  }, [examples, query, userGameIds])
 
   return (
     <>
@@ -93,11 +97,10 @@ export default function GamesView({
           ))}
         </div>
         <div className="mkt-hero-in">
-          <h2>Un motor. Cualquier juego.</h2>
+          <h2>Encuentra la mejor build de tu personaje</h2>
           <p>
-            {vacio
-              ? 'El catalogo arranca vacio a proposito: no hay ningun juego incorporado. El producto es el motor, y los juegos son contenido que se escribe, se importa y se comparte.'
-              : 'Cada tarjeta corre sobre exactamente el mismo codigo. Lo unico que cambia es un archivo JSON con las ranuras, las estadisticas, los conjuntos y las formulas del titulo.'}
+            Elige un juego, carga tus objetos y el optimizador prueba todas las combinaciones por ti.
+            Un mismo motor para cualquier juego.
           </p>
           <div className="mkt-search">
             <span aria-hidden>⌕</span>
@@ -121,37 +124,18 @@ export default function GamesView({
             </button>
           ))}
 
-          <h3 style={{ marginTop: 20 }}>Anadir</h3>
+          <h3 style={{ marginTop: 20 }}>Crear</h3>
           <button onClick={onAdd}>+ Crear un juego</button>
 
-          {ejemplosVisibles.length > 0 && (
-            <>
-              <h3 style={{ marginTop: 20 }}>Ejemplos</h3>
-              <p className="mkt-side-note">
-                Paquetes normales, del mismo formato que exporta cualquier usuario.
-              </p>
-              {ejemplosVisibles.map((ex) => (
-                <button key={ex.id} disabled={loadingExample === ex.id} onClick={() => onLoadExample(ex)}>
-                  {loadingExample === ex.id ? 'cargando…' : ex.name}
-                  <span>{userGameIds.has(ex.id) ? '✓' : '+'}</span>
-                </button>
-              ))}
-            </>
-          )}
         </aside>
 
         <div className="mkt-main">
-          {visibles.length === 0 && (
-            <div className="card">
-              <div className="empty">
-                {vacio
-                  ? <>Todavia no hay ningun juego. Importa un ejemplo desde la izquierda o crea el tuyo.</>
-                  : <>Ningun juego coincide con la busqueda.</>}
-              </div>
-            </div>
+          {!vacio && <h2 className="mkt-title">Tus juegos</h2>}
+          {!vacio && visibles.length === 0 && (
+            <div className="card"><div className="empty">Ningún juego tuyo coincide con la búsqueda.</div></div>
           )}
 
-          <div className="gamegrid">
+          {!vacio && <div className="gamegrid">
             {visibles.map(([id, t]) => {
               const previewSets = t.sets.slice(0, 5)
               return (
@@ -200,19 +184,49 @@ export default function GamesView({
               )
             })}
 
-            <div className="gamecard nuevo" onClick={onAdd} role="button" tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter') onAdd() }}>
-              <div style={{ fontSize: 38, color: 'var(--dim)', lineHeight: 1 }}>+</div>
-              <div className="gt" style={{ marginTop: 10 }}>Anadir un juego</div>
-              <div className="gd" style={{ maxWidth: 260, textAlign: 'center' }}>
-                Bifurca una plantilla existente o parte de un esqueleto, pega tus objetos desde
-                una tabla y ponle su portada. Se valida mientras escribes.
-              </div>
-            </div>
-          </div>
+          </div>}
 
-          <div className="card" style={{ marginTop: 16 }}>
-            <h2>Por que esto importa</h2>
+          {/* --- ejemplos listos para probar ---------------------------- */}
+          {ejemplosPendientes.length > 0 && (
+            <>
+              <h2 className="mkt-title">{vacio ? 'Empieza con un ejemplo' : 'Más juegos para probar'}</h2>
+              {vacio && (
+                <p className="hint" style={{ marginTop: -4 }}>
+                  Vienen con objetos de muestra: pulsa <b>Probar</b> y optimiza en un clic. Después puedes cargar los tuyos.
+                </p>
+              )}
+              <div className="gamegrid">
+                {ejemplosPendientes.map((ex) => (
+                  <div key={ex.id} className="gamecard ejemplo" role="button" tabIndex={0}
+                    onClick={() => onTryExample(ex)} onKeyDown={(e) => { if (e.key === 'Enter') onTryExample(ex) }}>
+                    <Cover name={ex.name} id={ex.id} height={96} />
+                    <div className="gbody">
+                      <div className="gt">{ex.name}</div>
+                      <div className="gd">{ex.description}</div>
+                      <div className="gd" style={{ color: 'var(--accent-2)' }}>
+                        {ex.items > 0 ? `${nf.format(ex.items)} objetos incluidos` : 'Sin objetos: carga los tuyos'}
+                      </div>
+                      <button className="primary" disabled={loadingExample === ex.id}
+                        onClick={(e) => { e.stopPropagation(); onTryExample(ex) }}>
+                        {loadingExample === ex.id ? 'Cargando…' : 'Probar'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <div className="gamecard nuevo" onClick={onAdd} role="button" tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter') onAdd() }}>
+                  <div style={{ fontSize: 38, color: 'var(--dim)', lineHeight: 1 }}>+</div>
+                  <div className="gt" style={{ marginTop: 10 }}>Crear tu propio juego</div>
+                  <div className="gd" style={{ maxWidth: 260, textAlign: 'center' }}>
+                    Desde una tabla de objetos o paso a paso con formularios. Sin escribir código.
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          <details className="card mkt-about" style={{ marginTop: 16 }}>
+            <summary>Sobre el proyecto</summary>
             <div className="twocol">
               <div>
                 <h3>El motor no sabe de juegos</h3>
@@ -234,7 +248,7 @@ export default function GamesView({
                 </p>
               </div>
             </div>
-          </div>
+          </details>
         </div>
       </div>
     </>

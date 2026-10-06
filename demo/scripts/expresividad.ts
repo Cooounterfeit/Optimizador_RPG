@@ -6,10 +6,10 @@
  *
  * Comprueba dos cosas por mecanica:
  *   1. COMPILA  — el interprete puede parsear y evaluar la expresion.
- *   2. MONOTONA — el objetivo es no-decreciente en cada variable. Es el
- *      requisito que hace que la poda del branch and bound sea exacta. Si falla,
- *      la formula se puede escribir pero el optimizador actual NO puede
- *      garantizar el optimo sobre ella.
+ *   2. MONOTONA — el objetivo es no-decreciente en cada variable. Ya no es un
+ *      requisito: si falla, el optimizador acota por aritmetica de intervalos
+ *      y el optimo se sigue demostrando. Solo decide que cota se usa (la
+ *      monotona es mas rapida).
  *
  *   npx tsx scripts/expresividad.ts
  */
@@ -103,6 +103,12 @@ const CASOS: Caso[] = [
     formula: 'dmg * min(manaRegen / max(manaCost,1), 1)',
     nota: 'Decreciente en manaCost',
   },
+  {
+    juego: 'Souls', nombre: 'Rodar rapido solo por debajo del 70% de carga',
+    vars: ['poise', 'weight', 'cap'],
+    formula: 'if(weight / max(cap, 1) <= 0.7, poise * 1.5, poise)',
+    nota: 'Condicional con comparacion: escalon hacia abajo al pasarse de carga',
+  },
 ]
 
 // -------------------------------------------------------------------------
@@ -144,7 +150,7 @@ for (const c of CASOS) {
   const r = analizar(c)
   let veredicto: string
   if (!r.compila) { veredicto = 'NO EXPRESABLE'; noComp++ }
-  else if (!r.monotona) { veredicto = `optimizable NO (baja con ${r.culpable})`; noMono++ }
+  else if (!r.monotona) { veredicto = `listo, cota por intervalos (baja con ${r.culpable})`; noMono++ }
   else { veredicto = 'listo'; ok++ }
   console.log(
     '  ' + c.juego.padEnd(9) + c.nombre.slice(0, 45).padEnd(47) +
@@ -153,4 +159,4 @@ for (const c of CASOS) {
   )
   if (c.nota) console.log('  ' + ' '.repeat(9) + '↳ ' + c.nota)
 }
-console.log('\n  ' + `${ok} listas · ${noMono} se escriben pero rompen la poda · ${noComp} no expresables\n`)
+console.log('\n  ' + `${ok} monotonas · ${noMono} no monotonas (exactas por intervalos, mas lentas) · ${noComp} no expresables\n`)

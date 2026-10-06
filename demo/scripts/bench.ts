@@ -31,7 +31,7 @@ function subset(perSlot: number): Item[] {
 let allMatch = true
 for (const objectiveId of ['maxHp', 'dps', 'dpsReaction']) {
   const small = subset(7)
-  const req = { template, items: small, profileId: 'navia', objectiveId, constraints: [], topN: 1 }
+  const req = { template, items: small, profileId: 'Navia', objectiveId, constraints: [], topN: 1 }
   const bb = solve(req)
   const bf = solveBruteForce(req)
   const ok = bf !== null && Math.abs(bb.builds[0].score - bf.score) < 1e-6
@@ -42,7 +42,7 @@ console.log(`\n  Correctitud: ${allMatch ? 'el optimo coincide en todos los caso
 
 // ---- 2. Inventario completo ----------------------------------------------
 for (const objectiveId of ['maxHp', 'dps', 'dpsReaction']) {
-  const r = solve({ template, items, profileId: 'navia', objectiveId, constraints: [], topN: 3 })
+  const r = solve({ template, items, profileId: 'Navia', objectiveId, constraints: [], topN: 3 })
   const pct = (100 * (1 - r.stats.evaluated / r.stats.totalCombinations)).toFixed(6)
   console.log(`  ${objectiveId.padEnd(12)} ${String(r.stats.elapsedMs).padStart(6)} ms  espacio ${fmt(r.stats.totalCombinations).padStart(20)}  evaluadas ${fmt(r.stats.evaluated).padStart(10)}  podado ${pct}%  dominados ${fmt(r.stats.dominated)}`)
 }
@@ -51,7 +51,7 @@ for (const objectiveId of ['maxHp', 'dps', 'dpsReaction']) {
 console.log('')
 for (const min of [50, 70, 80]) {
   const r = solve({
-    template, items, profileId: 'navia', objectiveId: 'dps',
+    template, items, profileId: 'Navia', objectiveId: 'dps',
     constraints: [{ statId: 'critRate_', min }], topN: 1,
   })
   const ok = r.builds.length > 0 ? r.builds[0].finalStats.critRate_ >= min - 1e-9 : false

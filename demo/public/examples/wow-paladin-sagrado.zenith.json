@@ -1,0 +1,2670 @@
+{
+ "zenith": "0.1",
+ "exportedAt": "2026-10-04T00:00:00Z",
+ "template": {
+  "schemaVersion": "0.1",
+  "gameId": "wow-paladin-sagrado",
+  "name": "WoW Midnight · Paladin Sagrado",
+  "description": "Clase completa: arbol de clase, sagrado, talento apice y dos clases de heroe (build 12.1.0.69933). Botin de la banda de la Temporada 2 a nivel 311.",
+  "category": "MMORPG",
+  "accent": "#f2c14e",
+  "stats": [
+   {
+    "id": "str",
+    "name": "Fuerza",
+    "unit": "flat",
+    "group": "Atributos"
+   },
+   {
+    "id": "int",
+    "name": "Intelecto",
+    "unit": "flat",
+    "group": "Atributos"
+   },
+   {
+    "id": "sta",
+    "name": "Aguante",
+    "unit": "flat",
+    "group": "Atributos"
+   },
+   {
+    "id": "crit",
+    "name": "Golpe critico (indice)",
+    "unit": "flat",
+    "group": "Indices secundarios"
+   },
+   {
+    "id": "haste",
+    "name": "Celeridad (indice)",
+    "unit": "flat",
+    "group": "Indices secundarios"
+   },
+   {
+    "id": "mastery",
+    "name": "Maestria (indice)",
+    "unit": "flat",
+    "group": "Indices secundarios"
+   },
+   {
+    "id": "vers",
+    "name": "Versatilidad (indice)",
+    "unit": "flat",
+    "group": "Indices secundarios"
+   },
+   {
+    "id": "primPct",
+    "name": "Intelecto %",
+    "unit": "percent",
+    "group": "Bonificaciones de talentos"
+   },
+   {
+    "id": "staPct",
+    "name": "Aguante %",
+    "unit": "percent",
+    "group": "Bonificaciones de talentos"
+   },
+   {
+    "id": "critExtra",
+    "name": "Critico extra %",
+    "unit": "percent",
+    "group": "Bonificaciones de talentos"
+   },
+   {
+    "id": "masteryPts",
+    "name": "Maestria extra (puntos)",
+    "unit": "flat",
+    "group": "Bonificaciones de talentos"
+   }
+  ],
+  "slots": [
+   {
+    "id": "head",
+    "name": "Cabeza"
+   },
+   {
+    "id": "neck",
+    "name": "Cuello"
+   },
+   {
+    "id": "shoulder",
+    "name": "Hombros"
+   },
+   {
+    "id": "back",
+    "name": "Espalda"
+   },
+   {
+    "id": "chest",
+    "name": "Pecho"
+   },
+   {
+    "id": "wrist",
+    "name": "Munecas"
+   },
+   {
+    "id": "hands",
+    "name": "Manos"
+   },
+   {
+    "id": "waist",
+    "name": "Cintura"
+   },
+   {
+    "id": "legs",
+    "name": "Piernas"
+   },
+   {
+    "id": "feet",
+    "name": "Pies"
+   },
+   {
+    "id": "ring1",
+    "name": "Dedo 1"
+   },
+   {
+    "id": "ring2",
+    "name": "Dedo 2"
+   },
+   {
+    "id": "trinket1",
+    "name": "Abalorio 1"
+   },
+   {
+    "id": "trinket2",
+    "name": "Abalorio 2"
+   },
+   {
+    "id": "mainhand",
+    "name": "Mano derecha"
+   },
+   {
+    "id": "offhand",
+    "name": "Mano izquierda (escudo)"
+   }
+  ],
+  "sets": [
+   {
+    "id": "consagrada",
+    "name": "Radiance of the Consecrated Flame",
+    "tiers": [
+     {
+      "pieces": 2,
+      "label": "2 piezas (hechizo, no modelado)",
+      "effects": {}
+     },
+     {
+      "pieces": 4,
+      "label": "4 piezas (hechizo, no modelado)",
+      "effects": {}
+     }
+    ]
+   }
+  ],
+  "derived": [
+   {
+    "id": "primario",
+    "name": "Intelecto total",
+    "group": "Personaje",
+    "formula": "(base_int + int) * (1 + primPct / 100) * base_placas"
+   },
+   {
+    "id": "aguanteTotal",
+    "name": "Aguante total",
+    "group": "Personaje",
+    "formula": "(base_sta + sta) * (1 + staPct / 100)"
+   },
+   {
+    "id": "vida",
+    "name": "Salud",
+    "group": "Personaje",
+    "formula": "aguanteTotal * base_saludPorAguante"
+   },
+   {
+    "id": "critPct",
+    "name": "Probabilidad de critico",
+    "unit": "%",
+    "group": "Ofensiva",
+    "formula": "base_critBase + critExtra + min(crit / base_indiceCrit, 30 + (crit / base_indiceCrit - 30) * 0.9, 39 + (crit / base_indiceCrit - 40) * 0.8, 47 + (crit / base_indiceCrit - 50) * 0.7, 54 + (crit / base_indiceCrit - 60) * 0.6, 66 + (crit / base_indiceCrit - 80) * 0.5)"
+   },
+   {
+    "id": "celeridadPct",
+    "name": "Celeridad",
+    "unit": "%",
+    "group": "Ofensiva",
+    "formula": "min(haste / base_indiceCeleridad, 30 + (haste / base_indiceCeleridad - 30) * 0.9, 39 + (haste / base_indiceCeleridad - 40) * 0.8, 47 + (haste / base_indiceCeleridad - 50) * 0.7, 54 + (haste / base_indiceCeleridad - 60) * 0.6, 66 + (haste / base_indiceCeleridad - 80) * 0.5)"
+   },
+   {
+    "id": "maestriaPts",
+    "name": "Maestria (puntos)",
+    "group": "Ofensiva",
+    "formula": "base_maestriaBase + masteryPts + min(mastery / base_indiceMaestria, 30 + (mastery / base_indiceMaestria - 30) * 0.9, 39 + (mastery / base_indiceMaestria - 40) * 0.8, 47 + (mastery / base_indiceMaestria - 50) * 0.7, 54 + (mastery / base_indiceMaestria - 60) * 0.6, 66 + (mastery / base_indiceMaestria - 80) * 0.5)"
+   },
+   {
+    "id": "maestriaPct",
+    "name": "Maestria: Portador de la Luz (Lightbringer)",
+    "unit": "%",
+    "group": "Ofensiva",
+    "formula": "maestriaPts * base_coefMaestria"
+   },
+   {
+    "id": "versPct",
+    "name": "Versatilidad (dano y sanacion)",
+    "unit": "%",
+    "group": "Ofensiva",
+    "formula": "min(vers / base_indiceVers, 30 + (vers / base_indiceVers - 30) * 0.9, 39 + (vers / base_indiceVers - 40) * 0.8, 47 + (vers / base_indiceVers - 50) * 0.7, 54 + (vers / base_indiceVers - 60) * 0.6, 66 + (vers / base_indiceVers - 80) * 0.5)"
+   },
+   {
+    "id": "versMitPct",
+    "name": "Versatilidad (reduccion de dano)",
+    "unit": "%",
+    "group": "Defensa",
+    "formula": "min(vers / base_indiceVersMit, 15 + (vers / base_indiceVersMit - 15) * 0.9, 19.5 + (vers / base_indiceVersMit - 20) * 0.8, 23.5 + (vers / base_indiceVersMit - 25) * 0.7, 27 + (vers / base_indiceVersMit - 30) * 0.6, 33 + (vers / base_indiceVersMit - 40) * 0.5)"
+   }
+  ],
+  "objectives": [
+   {
+    "id": "sanacion",
+    "name": "Sanacion (modelo de estadisticas)",
+    "description": "Intelecto multiplicado por critico, celeridad, versatilidad y maestria (como si estuvieras cerca del objetivo). No simula la rotacion: compara equipos por el valor de sus estadisticas.",
+    "kind": "nonlinear",
+    "monotonic": true,
+    "decimals": 0,
+    "formula": "primario * (1 + critPct / 100) * (1 + celeridadPct / 100) * (1 + versPct / 100) * (1 + maestriaPct / 100)"
+   },
+   {
+    "id": "vidaEfectiva",
+    "name": "Vida efectiva",
+    "description": "Salud dividida por el dano que deja pasar la versatilidad.",
+    "kind": "nonlinear",
+    "monotonic": true,
+    "decimals": 0,
+    "formula": "vida / (1 - versMitPct / 100)"
+   }
+  ],
+  "baseProfiles": [
+   {
+    "id": "humano90",
+    "name": "Paladin Sagrado · humano nivel 90",
+    "base": {
+     "str": 620,
+     "int": 620,
+     "sta": 4600,
+     "critBase": 5,
+     "maestriaBase": 8,
+     "coefMaestria": 1.5,
+     "placas": 1.05,
+     "saludPorAguante": 20,
+     "indiceCrit": 46,
+     "indiceCeleridad": 44,
+     "indiceMaestria": 46,
+     "indiceVers": 54,
+     "indiceVersMit": 108
+    },
+    "levelable": [],
+    "labels": {
+     "critBase": "Critico base %",
+     "maestriaBase": "Maestria base"
+    }
+   }
+  ],
+  "constrainableStats": [
+   "crit",
+   "haste",
+   "mastery",
+   "vers",
+   "sta"
+  ],
+  "skillTrees": [
+   {
+    "id": "clase",
+    "name": "Paladin (arbol de clase)",
+    "description": "34 puntos a nivel 90. Los nodos gratis se toman sin gastar puntos. Umbrales de 8 y 23 puntos.",
+    "budget": 34,
+    "requireFullRanks": true,
+    "nodes": [
+     {
+      "id": "lay_on_hands",
+      "name": "Lay on Hands",
+      "cost": 0,
+      "description": "Nodo gratuito. Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=633",
+      "x": 222,
+      "y": 0
+     },
+     {
+      "id": "auras_of_the_resolute",
+      "name": "Auras of the Resolute",
+      "cost": 0,
+      "description": "Nodo gratuito. Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=385633",
+      "x": 666,
+      "y": 0
+     },
+     {
+      "id": "hammer_of_wrath",
+      "name": "Hammer of Wrath",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1241288",
+      "x": 1110,
+      "y": 0
+     },
+     {
+      "id": "improved_cleanse",
+      "name": "Improved Cleanse",
+      "requiresAny": [
+       "lay_on_hands"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=393024",
+      "x": 0,
+      "y": 228
+     },
+     {
+      "id": "empyreal_ward",
+      "name": "Empyreal Ward",
+      "requiresAny": [
+       "lay_on_hands"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=387791",
+      "x": 222,
+      "y": 228
+     },
+     {
+      "id": "fist_of_justice",
+      "name": "Fist of Justice",
+      "requiresAny": [
+       "auras_of_the_resolute",
+       "lay_on_hands"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=234299",
+      "x": 444,
+      "y": 228
+     },
+     {
+      "id": "blinding_light",
+      "name": "Blinding Light",
+      "requiresAny": [
+       "hammer_of_wrath",
+       "auras_of_the_resolute"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=115750",
+      "x": 888,
+      "y": 228
+     },
+     {
+      "id": "turn_evil",
+      "name": "Turn Evil",
+      "requiresAny": [
+       "hammer_of_wrath"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=10326",
+      "x": 1332,
+      "y": 228
+     },
+     {
+      "id": "a_just_reward",
+      "name": "A Just Reward",
+      "maxRank": 2,
+      "requiresAny": [
+       "improved_cleanse"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469411",
+      "x": 0,
+      "y": 456
+     },
+     {
+      "id": "afterimage",
+      "name": "Afterimage",
+      "requiresAny": [
+       "improved_cleanse",
+       "empyreal_ward",
+       "fist_of_justice"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=385414",
+      "x": 222,
+      "y": 456
+     },
+     {
+      "id": "guided_prayer",
+      "name": "Guided Prayer",
+      "requiresAny": [
+       "fist_of_justice"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=404357",
+      "x": 444,
+      "y": 456
+     },
+     {
+      "id": "divine_steed",
+      "name": "Divine Steed",
+      "cost": 0,
+      "requiresAny": [
+       "blinding_light",
+       "auras_of_the_resolute",
+       "fist_of_justice"
+      ],
+      "description": "Nodo gratuito. Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=190784",
+      "x": 666,
+      "y": 456
+     },
+     {
+      "id": "light_s_countenance",
+      "name": "Light's Countenance",
+      "requiresAny": [
+       "blinding_light"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469325",
+      "x": 888,
+      "y": 456
+     },
+     {
+      "id": "greater_judgment",
+      "name": "Greater Judgment",
+      "requiresAny": [
+       "hammer_of_wrath",
+       "blinding_light"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=231644",
+      "x": 1110,
+      "y": 456
+     },
+     {
+      "id": "wrench_evil",
+      "name": "Wrench Evil",
+      "requiresAny": [
+       "turn_evil"
+      ],
+      "choiceGroup": "c_103855",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=460720",
+      "x": 1332,
+      "y": 456
+     },
+     {
+      "id": "stand_against_evil",
+      "name": "Stand Against Evil",
+      "requiresAny": [
+       "turn_evil"
+      ],
+      "choiceGroup": "c_103855",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469317",
+      "x": 1332,
+      "y": 572
+     },
+     {
+      "id": "holy_reprieve",
+      "name": "Holy Reprieve",
+      "requiresAny": [
+       "a_just_reward",
+       "afterimage"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469445",
+      "x": 0,
+      "y": 684
+     },
+     {
+      "id": "cavalier",
+      "name": "Cavalier",
+      "requiresAny": [
+       "divine_steed"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=230332",
+      "x": 444,
+      "y": 684
+     },
+     {
+      "id": "divine_spurs",
+      "name": "Divine Spurs",
+      "requiresAny": [
+       "divine_steed"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469409",
+      "x": 666,
+      "y": 684
+     },
+     {
+      "id": "steed_of_liberty",
+      "name": "Steed of Liberty",
+      "requiresAny": [
+       "divine_steed"
+      ],
+      "choiceGroup": "c_81631",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469304",
+      "x": 888,
+      "y": 684
+     },
+     {
+      "id": "blessing_of_freedom",
+      "name": "Blessing of Freedom",
+      "requiresAny": [
+       "divine_steed"
+      ],
+      "choiceGroup": "c_81631",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1044",
+      "x": 888,
+      "y": 800
+     },
+     {
+      "id": "armory_of_light",
+      "name": "Armory of Light",
+      "requiresAny": [
+       "wrench_evil",
+       "stand_against_evil",
+       "greater_judgment"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1277443",
+      "x": 1332,
+      "y": 684
+     },
+     {
+      "id": "obduracy",
+      "name": "Obduracy",
+      "maxRank": 2,
+      "requiresAny": [
+       "cavalier",
+       "holy_reprieve"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=385427",
+      "x": 222,
+      "y": 912
+     },
+     {
+      "id": "divine_toll",
+      "name": "Divine Toll",
+      "requiresAny": [
+       "steed_of_liberty",
+       "blessing_of_freedom",
+       "cavalier"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "c_81496",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=375576",
+      "x": 666,
+      "y": 912
+     },
+     {
+      "id": "holy_prism",
+      "name": "Holy Prism",
+      "requiresAny": [
+       "steed_of_liberty",
+       "blessing_of_freedom",
+       "cavalier"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "c_81496",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=114165",
+      "x": 666,
+      "y": 1028
+     },
+     {
+      "id": "echoing_blessings",
+      "name": "Echoing Blessings",
+      "requiresAny": [
+       "steed_of_liberty",
+       "blessing_of_freedom"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "c_93520",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=387801",
+      "x": 888,
+      "y": 912
+     },
+     {
+      "id": "unbound_freedom",
+      "name": "Unbound Freedom",
+      "requiresAny": [
+       "steed_of_liberty",
+       "blessing_of_freedom"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "c_93520",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=305394",
+      "x": 888,
+      "y": 1028
+     },
+     {
+      "id": "sanctified_plates",
+      "name": "Sanctified Plates",
+      "maxRank": 2,
+      "requiresAny": [
+       "steed_of_liberty",
+       "blessing_of_freedom",
+       "greater_judgment",
+       "armory_of_light"
+      ],
+      "requiresPoints": 8,
+      "effects": {
+       "staPct": 5
+      },
+      "description": "Sus efectos sobre estadisticas estan modelados. Descripcion oficial: es.wowhead.com/spell=402964",
+      "x": 1110,
+      "y": 912
+     },
+     {
+      "id": "divine_reach",
+      "name": "Divine Reach",
+      "requiresAny": [
+       "holy_reprieve",
+       "obduracy"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469476",
+      "x": 0,
+      "y": 1140
+     },
+     {
+      "id": "brought_to_light",
+      "name": "Brought to Light",
+      "requiresAny": [
+       "obduracy"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1265549",
+      "x": 222,
+      "y": 1140
+     },
+     {
+      "id": "blessing_of_sacrifice",
+      "name": "Blessing of Sacrifice",
+      "requiresAny": [
+       "cavalier",
+       "divine_toll",
+       "holy_prism",
+       "obduracy"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=6940",
+      "x": 444,
+      "y": 1140
+     },
+     {
+      "id": "divine_resonance",
+      "name": "Divine Resonance",
+      "requiresAny": [
+       "divine_toll",
+       "holy_prism"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "c_93180",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=386738",
+      "x": 666,
+      "y": 1140
+     },
+     {
+      "id": "quickened_invocation",
+      "name": "Quickened Invocation",
+      "requiresAny": [
+       "divine_toll",
+       "holy_prism"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "c_93180",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=379391",
+      "x": 666,
+      "y": 1256
+     },
+     {
+      "id": "blessing_of_protection",
+      "name": "Blessing of Protection",
+      "requiresAny": [
+       "echoing_blessings",
+       "unbound_freedom",
+       "divine_toll",
+       "holy_prism",
+       "sanctified_plates"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1022",
+      "x": 888,
+      "y": 1140
+     },
+     {
+      "id": "fear_no_evil",
+      "name": "Fear No Evil",
+      "requiresAny": [
+       "sanctified_plates"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1265541",
+      "x": 1110,
+      "y": 1140
+     },
+     {
+      "id": "consecrated_ground",
+      "name": "Consecrated Ground",
+      "requiresAny": [
+       "sanctified_plates"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=204054",
+      "x": 1332,
+      "y": 1140
+     },
+     {
+      "id": "holy_aegis",
+      "name": "Holy Aegis",
+      "requiresAny": [
+       "divine_reach",
+       "blessing_of_sacrifice",
+       "brought_to_light"
+      ],
+      "requiresPoints": 8,
+      "effects": {
+       "critExtra": 4
+      },
+      "description": "Sus efectos sobre estadisticas estan modelados. Descripcion oficial: es.wowhead.com/spell=385515",
+      "x": 222,
+      "y": 1368
+     },
+     {
+      "id": "sacrifice_of_the_just",
+      "name": "Sacrifice of the Just",
+      "requiresAny": [
+       "blessing_of_sacrifice"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "c_81607",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=384820",
+      "x": 444,
+      "y": 1368
+     },
+     {
+      "id": "recompense",
+      "name": "Recompense",
+      "requiresAny": [
+       "blessing_of_sacrifice"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "c_81607",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=384914",
+      "x": 444,
+      "y": 1484
+     },
+     {
+      "id": "sacred_strength",
+      "name": "Sacred Strength",
+      "requiresAny": [
+       "blessing_of_sacrifice",
+       "blessing_of_protection"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "c_93191",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469337",
+      "x": 666,
+      "y": 1368
+     },
+     {
+      "id": "divine_purpose",
+      "name": "Divine Purpose",
+      "requiresAny": [
+       "blessing_of_sacrifice",
+       "blessing_of_protection"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "c_93191",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=223817",
+      "x": 666,
+      "y": 1484
+     },
+     {
+      "id": "improved_blessing_of_protection",
+      "name": "Improved Blessing of Protection",
+      "requiresAny": [
+       "blessing_of_protection"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=384909",
+      "x": 888,
+      "y": 1368
+     },
+     {
+      "id": "unbreakable_spirit",
+      "name": "Unbreakable Spirit",
+      "requiresAny": [
+       "consecrated_ground",
+       "blessing_of_protection",
+       "fear_no_evil"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=114154",
+      "x": 1110,
+      "y": 1368
+     },
+     {
+      "id": "lightforged_blessing",
+      "name": "Lightforged Blessing",
+      "requiresAny": [
+       "divine_reach",
+       "holy_aegis"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=406468",
+      "x": 0,
+      "y": 1596
+     },
+     {
+      "id": "lead_the_charge",
+      "name": "Lead the Charge",
+      "requiresAny": [
+       "holy_aegis",
+       "sacrifice_of_the_just",
+       "recompense"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469780",
+      "x": 222,
+      "y": 1596
+     },
+     {
+      "id": "worthy_sacrifice",
+      "name": "Worthy Sacrifice",
+      "requiresAny": [
+       "sacrifice_of_the_just",
+       "recompense"
+      ],
+      "requiresPoints": 23,
+      "choiceGroup": "c_103865",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469279",
+      "x": 444,
+      "y": 1596
+     },
+     {
+      "id": "righteous_protection",
+      "name": "Righteous Protection",
+      "requiresAny": [
+       "sacrifice_of_the_just",
+       "recompense"
+      ],
+      "requiresPoints": 23,
+      "choiceGroup": "c_103865",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469321",
+      "x": 444,
+      "y": 1712
+     },
+     {
+      "id": "holy_ritual",
+      "name": "Holy Ritual",
+      "requiresAny": [
+       "sacrifice_of_the_just",
+       "recompense",
+       "sacred_strength",
+       "divine_purpose"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=199422",
+      "x": 666,
+      "y": 1596
+     },
+     {
+      "id": "blessed_calling",
+      "name": "Blessed Calling",
+      "requiresAny": [
+       "improved_blessing_of_protection",
+       "sacred_strength",
+       "divine_purpose"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469770",
+      "x": 888,
+      "y": 1596
+     },
+     {
+      "id": "inspired_guard",
+      "name": "Inspired Guard",
+      "requiresAny": [
+       "improved_blessing_of_protection",
+       "unbreakable_spirit"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469439",
+      "x": 1110,
+      "y": 1596
+     },
+     {
+      "id": "light_s_revocation",
+      "name": "Light's Revocation",
+      "requiresAny": [
+       "unbreakable_spirit",
+       "consecrated_ground"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=146956",
+      "x": 1332,
+      "y": 1596
+     },
+     {
+      "id": "faith_s_armor",
+      "name": "Faith's Armor",
+      "requiresAny": [
+       "lightforged_blessing",
+       "lead_the_charge"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=406101",
+      "x": 0,
+      "y": 1824
+     },
+     {
+      "id": "stoicism",
+      "name": "Stoicism",
+      "requiresAny": [
+       "lead_the_charge"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469316",
+      "x": 222,
+      "y": 1824
+     },
+     {
+      "id": "seal_of_might",
+      "name": "Seal of Might",
+      "maxRank": 2,
+      "requiresAny": [
+       "holy_ritual",
+       "worthy_sacrifice",
+       "righteous_protection",
+       "lead_the_charge"
+      ],
+      "requiresPoints": 23,
+      "effects": {
+       "primPct": 2,
+       "masteryPts": 2
+      },
+      "description": "Sus efectos sobre estadisticas estan modelados. Descripcion oficial: es.wowhead.com/spell=385450",
+      "x": 444,
+      "y": 1824
+     },
+     {
+      "id": "vengeful_wrath",
+      "name": "Vengeful Wrath",
+      "maxRank": 2,
+      "requiresAny": [
+       "holy_ritual",
+       "inspired_guard",
+       "blessed_calling"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1241958",
+      "x": 888,
+      "y": 1824
+     },
+     {
+      "id": "eye_for_an_eye",
+      "name": "Eye for an Eye",
+      "requiresAny": [
+       "inspired_guard"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469309",
+      "x": 1110,
+      "y": 1824
+     },
+     {
+      "id": "golden_path",
+      "name": "Golden Path",
+      "requiresAny": [
+       "inspired_guard",
+       "light_s_revocation"
+      ],
+      "requiresPoints": 23,
+      "choiceGroup": "c_103856",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=377128",
+      "x": 1332,
+      "y": 1824
+     },
+     {
+      "id": "selfless_healer",
+      "name": "Selfless Healer",
+      "requiresAny": [
+       "inspired_guard",
+       "light_s_revocation"
+      ],
+      "requiresPoints": 23,
+      "choiceGroup": "c_103856",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469434",
+      "x": 1332,
+      "y": 1940
+     },
+     {
+      "id": "blessing_of_dawn",
+      "name": "Blessing of Dawn",
+      "requiresAny": [
+       "faith_s_armor",
+       "seal_of_might",
+       "stoicism"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=183416",
+      "x": 222,
+      "y": 2052
+     },
+     {
+      "id": "lightbearer",
+      "name": "Lightbearer",
+      "requiresAny": [
+       "vengeful_wrath",
+       "seal_of_might"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469416",
+      "x": 666,
+      "y": 2052
+     },
+     {
+      "id": "blessing_of_dusk",
+      "name": "Blessing of Dusk",
+      "requiresAny": [
+       "vengeful_wrath",
+       "golden_path",
+       "selfless_healer",
+       "eye_for_an_eye"
+      ],
+      "requiresPoints": 23,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1241945",
+      "x": 1110,
+      "y": 2052
+     }
+    ]
+   },
+   {
+    "id": "especializacion",
+    "name": "Sagrado (arbol de especializacion)",
+    "description": "34 puntos a nivel 90, incluido el talento apice de 4 rangos. Umbrales de 8 y 20 puntos.",
+    "budget": 34,
+    "requireFullRanks": true,
+    "nodes": [
+     {
+      "id": "holy_shock",
+      "name": "Holy Shock",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=20473",
+      "x": 888,
+      "y": 0
+     },
+     {
+      "id": "infusion_of_light",
+      "name": "Infusion of Light",
+      "requiresAny": [
+       "holy_shock"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=53576",
+      "x": 666,
+      "y": 228
+     },
+     {
+      "id": "light_of_dawn",
+      "name": "Light of Dawn",
+      "requiresAny": [
+       "holy_shock"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=85222",
+      "x": 1110,
+      "y": 228
+     },
+     {
+      "id": "light_s_conviction",
+      "name": "Light's Conviction",
+      "requiresAny": [
+       "infusion_of_light"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=414073",
+      "x": 444,
+      "y": 456
+     },
+     {
+      "id": "aura_mastery",
+      "name": "Aura Mastery",
+      "requiresAny": [
+       "light_of_dawn",
+       "infusion_of_light"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=31821",
+      "x": 888,
+      "y": 456
+     },
+     {
+      "id": "beacon_of_the_lightbringer",
+      "name": "Beacon of the Lightbringer",
+      "requiresAny": [
+       "light_of_dawn"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=197446",
+      "x": 1332,
+      "y": 456
+     },
+     {
+      "id": "extrication",
+      "name": "Extrication",
+      "requiresAny": [
+       "light_s_conviction"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=461278",
+      "x": 222,
+      "y": 684
+     },
+     {
+      "id": "ringing_of_the_heavens",
+      "name": "Ringing of the Heavens",
+      "requiresAny": [
+       "aura_mastery"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1241542",
+      "x": 666,
+      "y": 684
+     },
+     {
+      "id": "unending_light",
+      "name": "Unending Light",
+      "requiresAny": [
+       "aura_mastery"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1271221",
+      "x": 1110,
+      "y": 684
+     },
+     {
+      "id": "awestruck",
+      "name": "Awestruck",
+      "requiresAny": [
+       "beacon_of_the_lightbringer"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=417855",
+      "x": 1554,
+      "y": 684
+     },
+     {
+      "id": "moment_of_compassion",
+      "name": "Moment of Compassion",
+      "requiresAny": [
+       "extrication"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "e_81571",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=387786",
+      "x": 0,
+      "y": 912
+     },
+     {
+      "id": "resplendent_light",
+      "name": "Resplendent Light",
+      "requiresAny": [
+       "extrication"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "e_81571",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=392902",
+      "x": 0,
+      "y": 1028
+     },
+     {
+      "id": "divine_favor",
+      "name": "Divine Favor",
+      "requiresAny": [
+       "ringing_of_the_heavens",
+       "light_s_conviction"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1270916",
+      "x": 444,
+      "y": 912
+     },
+     {
+      "id": "unwavering_spirit",
+      "name": "Unwavering Spirit",
+      "requiresAny": [
+       "aura_mastery"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "e_81566",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=392911",
+      "x": 888,
+      "y": 912
+     },
+     {
+      "id": "protection_of_tyr",
+      "name": "Protection of Tyr",
+      "requiresAny": [
+       "aura_mastery"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "e_81566",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=200430",
+      "x": 888,
+      "y": 1028
+     },
+     {
+      "id": "imbued_infusions",
+      "name": "Imbued Infusions",
+      "requiresAny": [
+       "beacon_of_the_lightbringer",
+       "unending_light"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=392961",
+      "x": 1332,
+      "y": 912
+     },
+     {
+      "id": "light_of_the_martyr",
+      "name": "Light of the Martyr",
+      "requiresAny": [
+       "awestruck"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=447985",
+      "x": 1776,
+      "y": 912
+     },
+     {
+      "id": "righteous_judgment",
+      "name": "Righteous Judgment",
+      "requiresAny": [
+       "moment_of_compassion",
+       "resplendent_light",
+       "extrication",
+       "divine_favor"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=414113",
+      "x": 222,
+      "y": 1140
+     },
+     {
+      "id": "saved_by_the_light",
+      "name": "Saved by the Light",
+      "requiresAny": [
+       "unwavering_spirit",
+       "protection_of_tyr",
+       "divine_favor",
+       "ringing_of_the_heavens"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=157047",
+      "x": 666,
+      "y": 1140
+     },
+     {
+      "id": "light_s_protection",
+      "name": "Light's Protection",
+      "requiresAny": [
+       "imbued_infusions",
+       "unwavering_spirit",
+       "protection_of_tyr"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=461243",
+      "x": 1110,
+      "y": 1140
+     },
+     {
+      "id": "overflowing_light",
+      "name": "Overflowing Light",
+      "requiresAny": [
+       "imbued_infusions"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=461244",
+      "x": 1332,
+      "y": 1140
+     },
+     {
+      "id": "shining_righteousness",
+      "name": "Shining Righteousness",
+      "requiresAny": [
+       "imbued_infusions",
+       "awestruck"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=414443",
+      "x": 1554,
+      "y": 1140
+     },
+     {
+      "id": "liberation",
+      "name": "Liberation",
+      "requiresAny": [
+       "righteous_judgment",
+       "moment_of_compassion",
+       "resplendent_light"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "e_102502",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=461287",
+      "x": 0,
+      "y": 1368
+     },
+     {
+      "id": "crusader_s_might",
+      "name": "Crusader's Might",
+      "requiresAny": [
+       "righteous_judgment",
+       "moment_of_compassion",
+       "resplendent_light"
+      ],
+      "requiresPoints": 8,
+      "choiceGroup": "e_102502",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=196926",
+      "x": 0,
+      "y": 1484
+     },
+     {
+      "id": "tirion_s_devotion",
+      "name": "Tirion's Devotion",
+      "requiresAny": [
+       "righteous_judgment"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=414720",
+      "x": 222,
+      "y": 1368
+     },
+     {
+      "id": "commanding_light",
+      "name": "Commanding Light",
+      "requiresAny": [
+       "saved_by_the_light",
+       "righteous_judgment",
+       "divine_favor"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=387781",
+      "x": 444,
+      "y": 1368
+     },
+     {
+      "id": "glistening_radiance",
+      "name": "Glistening Radiance",
+      "requiresAny": [
+       "saved_by_the_light"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1241805",
+      "x": 666,
+      "y": 1368
+     },
+     {
+      "id": "breaking_dawn",
+      "name": "Breaking Dawn",
+      "maxRank": 2,
+      "requiresAny": [
+       "light_s_protection",
+       "saved_by_the_light"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=387879",
+      "x": 888,
+      "y": 1368
+     },
+     {
+      "id": "divine_revelations",
+      "name": "Divine Revelations",
+      "requiresAny": [
+       "light_s_protection"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=387808",
+      "x": 1110,
+      "y": 1368
+     },
+     {
+      "id": "divine_glimpse",
+      "name": "Divine Glimpse",
+      "requiresAny": [
+       "overflowing_light",
+       "light_s_protection",
+       "shining_righteousness"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=387805",
+      "x": 1332,
+      "y": 1368
+     },
+     {
+      "id": "bestow_light",
+      "name": "Bestow Light",
+      "requiresAny": [
+       "light_of_the_martyr"
+      ],
+      "requiresPoints": 8,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=448040",
+      "x": 1776,
+      "y": 1368
+     },
+     {
+      "id": "beacon_of_faith",
+      "name": "Beacon of Faith",
+      "requiresAny": [
+       "commanding_light",
+       "liberation",
+       "crusader_s_might",
+       "tirion_s_devotion"
+      ],
+      "requiresPoints": 20,
+      "choiceGroup": "e_81554",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=156910",
+      "x": 222,
+      "y": 1596
+     },
+     {
+      "id": "beacon_of_virtue",
+      "name": "Beacon of Virtue",
+      "requiresAny": [
+       "commanding_light",
+       "liberation",
+       "crusader_s_might",
+       "tirion_s_devotion"
+      ],
+      "requiresPoints": 20,
+      "choiceGroup": "e_81554",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=200025",
+      "x": 222,
+      "y": 1712
+     },
+     {
+      "id": "empyrean_legacy",
+      "name": "Empyrean Legacy",
+      "requiresAny": [
+       "commanding_light"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1241358",
+      "x": 444,
+      "y": 1596
+     },
+     {
+      "id": "veneration",
+      "name": "Veneration",
+      "requiresAny": [
+       "commanding_light",
+       "breaking_dawn",
+       "glistening_radiance"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=392938",
+      "x": 666,
+      "y": 1596
+     },
+     {
+      "id": "avenging_wrath",
+      "name": "Avenging Wrath",
+      "requiresAny": [
+       "breaking_dawn",
+       "divine_glimpse",
+       "divine_revelations"
+      ],
+      "requiresPoints": 20,
+      "choiceGroup": "e_81584",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=31884",
+      "x": 1110,
+      "y": 1596
+     },
+     {
+      "id": "avenging_crusader",
+      "name": "Avenging Crusader",
+      "requiresAny": [
+       "breaking_dawn",
+       "divine_glimpse",
+       "divine_revelations"
+      ],
+      "requiresPoints": 20,
+      "choiceGroup": "e_81584",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=394088",
+      "x": 1110,
+      "y": 1712
+     },
+     {
+      "id": "reclamation",
+      "name": "Reclamation",
+      "requiresAny": [
+       "bestow_light",
+       "divine_glimpse"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=415364",
+      "x": 1554,
+      "y": 1596
+     },
+     {
+      "id": "pillars_of_light",
+      "name": "Pillars of Light",
+      "requiresAny": [
+       "beacon_of_faith",
+       "beacon_of_virtue"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1232616",
+      "x": 0,
+      "y": 1824
+     },
+     {
+      "id": "seek_deliverance",
+      "name": "Seek Deliverance",
+      "requiresAny": [
+       "beacon_of_faith",
+       "beacon_of_virtue",
+       "veneration",
+       "empyrean_legacy"
+      ],
+      "requiresPoints": 20,
+      "effects": {
+       "masteryPts": 5
+      },
+      "description": "Sus efectos sobre estadisticas estan modelados. Descripcion oficial: es.wowhead.com/spell=1271016",
+      "x": 444,
+      "y": 1824
+     },
+     {
+      "id": "sanctified_wrath",
+      "name": "Sanctified Wrath",
+      "requiresAny": [
+       "avenging_wrath",
+       "avenging_crusader"
+      ],
+      "requiresPoints": 20,
+      "choiceGroup": "e_81592",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=53376",
+      "x": 888,
+      "y": 1824
+     },
+     {
+      "id": "awakening",
+      "name": "Awakening",
+      "requiresAny": [
+       "avenging_wrath",
+       "avenging_crusader"
+      ],
+      "requiresPoints": 20,
+      "choiceGroup": "e_81592",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=414195",
+      "x": 888,
+      "y": 1940
+     },
+     {
+      "id": "call_of_the_righteous",
+      "name": "Call of the Righteous",
+      "maxRank": 2,
+      "requiresAny": [
+       "avenging_wrath",
+       "avenging_crusader"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1241511",
+      "x": 1332,
+      "y": 1824
+     },
+     {
+      "id": "truth_prevails",
+      "name": "Truth Prevails",
+      "requiresAny": [
+       "reclamation"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=461273",
+      "x": 1554,
+      "y": 1824
+     },
+     {
+      "id": "divine_overload",
+      "name": "Divine Overload",
+      "requiresAny": [
+       "bestow_light",
+       "reclamation"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1271077",
+      "x": 1776,
+      "y": 1824
+     },
+     {
+      "id": "rising_sunlight",
+      "name": "Rising Sunlight",
+      "requiresAny": [
+       "beacon_of_faith",
+       "beacon_of_virtue"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1277651",
+      "x": 222,
+      "y": 2052
+     },
+     {
+      "id": "glorious_dawn",
+      "name": "Glorious Dawn",
+      "requiresAny": [
+       "seek_deliverance",
+       "sanctified_wrath",
+       "awakening"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=461246",
+      "x": 666,
+      "y": 2052
+     },
+     {
+      "id": "seraphic_barrier",
+      "name": "Seraphic Barrier",
+      "requiresAny": [
+       "sanctified_wrath",
+       "awakening"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1241714",
+      "x": 888,
+      "y": 2052
+     },
+     {
+      "id": "tyr_s_deliverance",
+      "name": "Tyr's Deliverance",
+      "requiresAny": [
+       "sanctified_wrath",
+       "awakening",
+       "call_of_the_righteous",
+       "avenging_wrath",
+       "avenging_crusader"
+      ],
+      "requiresPoints": 20,
+      "choiceGroup": "e_81588",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1241275",
+      "x": 1110,
+      "y": 2052
+     },
+     {
+      "id": "hand_of_divinity",
+      "name": "Hand of Divinity",
+      "requiresAny": [
+       "sanctified_wrath",
+       "awakening",
+       "call_of_the_righteous",
+       "avenging_wrath",
+       "avenging_crusader"
+      ],
+      "requiresPoints": 20,
+      "choiceGroup": "e_81588",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1242008",
+      "x": 1110,
+      "y": 2168
+     },
+     {
+      "id": "inflorescence_of_the_sunwell",
+      "name": "Inflorescence of the Sunwell",
+      "requiresAny": [
+       "divine_overload",
+       "truth_prevails",
+       "call_of_the_righteous"
+      ],
+      "requiresPoints": 20,
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=392907",
+      "x": 1554,
+      "y": 2052
+     },
+     {
+      "id": "beacon_of_the_savior",
+      "name": "Beacon of the Savior",
+      "maxRank": 4,
+      "requiresPoints": 20,
+      "description": "Talento apice: 4 rangos (se desbloquean en los niveles 81, 84 y 90). Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1244878",
+      "x": 888,
+      "y": 2337
+     }
+    ]
+   },
+   {
+    "id": "heroe_herald_of_the_sun",
+    "name": "Heraldo del Sol (Herald of the Sun) — talentos de heroe",
+    "description": "Solo se puede usar una clase de heroe: su primer nodo (gratis) es una eleccion con el de la otra. 13 puntos a nivel 90.",
+    "budget": 13,
+    "requireFullRanks": true,
+    "nodes": [
+     {
+      "id": "dawnlight",
+      "name": "Dawnlight",
+      "cost": 0,
+      "choiceGroup": "clase_de_heroe",
+      "description": "Nodo gratuito. Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431377",
+      "x": 333,
+      "y": 0
+     },
+     {
+      "id": "morning_star",
+      "name": "Morning Star",
+      "requiresAny": [
+       "dawnlight"
+      ],
+      "choiceGroup": "h_95073",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431482",
+      "x": 0,
+      "y": 228
+     },
+     {
+      "id": "gleaming_rays",
+      "name": "Gleaming Rays",
+      "requiresAny": [
+       "dawnlight"
+      ],
+      "choiceGroup": "h_95073",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431480",
+      "x": 0,
+      "y": 344
+     },
+     {
+      "id": "eternal_flame",
+      "name": "Eternal Flame",
+      "requiresAny": [
+       "dawnlight"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=156322",
+      "x": 222,
+      "y": 228
+     },
+     {
+      "id": "luminosity",
+      "name": "Luminosity",
+      "requiresAny": [
+       "dawnlight"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431402",
+      "x": 444,
+      "y": 228
+     },
+     {
+      "id": "endless_gleam",
+      "name": "Endless Gleam",
+      "requiresAny": [
+       "dawnlight"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1263787",
+      "x": 666,
+      "y": 228
+     },
+     {
+      "id": "illumine",
+      "name": "Illumine",
+      "requiresAny": [
+       "morning_star",
+       "gleaming_rays"
+      ],
+      "choiceGroup": "h_95098",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431423",
+      "x": 0,
+      "y": 456
+     },
+     {
+      "id": "will_of_the_dawn",
+      "name": "Will of the Dawn",
+      "requiresAny": [
+       "morning_star",
+       "gleaming_rays"
+      ],
+      "choiceGroup": "h_95098",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431406",
+      "x": 0,
+      "y": 572
+     },
+     {
+      "id": "blessing_of_an_she",
+      "name": "Blessing of An'she",
+      "requiresAny": [
+       "eternal_flame"
+      ],
+      "choiceGroup": "h_95071",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=445200",
+      "x": 222,
+      "y": 456
+     },
+     {
+      "id": "lingering_radiance",
+      "name": "Lingering Radiance",
+      "requiresAny": [
+       "eternal_flame"
+      ],
+      "choiceGroup": "h_95071",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431407",
+      "x": 222,
+      "y": 572
+     },
+     {
+      "id": "sun_sear",
+      "name": "Sun Sear",
+      "requiresAny": [
+       "luminosity"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431413",
+      "x": 444,
+      "y": 456
+     },
+     {
+      "id": "solar_grace",
+      "name": "Solar Grace",
+      "requiresAny": [
+       "endless_gleam"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431404",
+      "x": 666,
+      "y": 456
+     },
+     {
+      "id": "aurora",
+      "name": "Aurora",
+      "requiresAny": [
+       "illumine",
+       "will_of_the_dawn"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=439760",
+      "x": 0,
+      "y": 684
+     },
+     {
+      "id": "walk_into_light",
+      "name": "Walk Into Light",
+      "requiresAny": [
+       "blessing_of_an_she",
+       "lingering_radiance"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1263782",
+      "x": 222,
+      "y": 684
+     },
+     {
+      "id": "second_sunrise",
+      "name": "Second Sunrise",
+      "requiresAny": [
+       "sun_sear"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431474",
+      "x": 444,
+      "y": 684
+     },
+     {
+      "id": "born_in_sunlight",
+      "name": "Born in Sunlight",
+      "requiresAny": [
+       "solar_grace"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1263920",
+      "x": 666,
+      "y": 684
+     },
+     {
+      "id": "sun_s_avatar",
+      "name": "Sun's Avatar",
+      "requiresAny": [
+       "walk_into_light",
+       "aurora",
+       "second_sunrise",
+       "born_in_sunlight"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=431425",
+      "x": 333,
+      "y": 912
+     }
+    ]
+   },
+   {
+    "id": "heroe_lightsmith",
+    "name": "Forjador de Luz (Lightsmith) — talentos de heroe",
+    "description": "Solo se puede usar una clase de heroe: su primer nodo (gratis) es una eleccion con el de la otra. 13 puntos a nivel 90.",
+    "budget": 13,
+    "requireFullRanks": true,
+    "nodes": [
+     {
+      "id": "holy_armaments",
+      "name": "Holy Armaments",
+      "cost": 0,
+      "choiceGroup": "clase_de_heroe",
+      "description": "Nodo gratuito. Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1289728",
+      "x": 351,
+      "y": 0
+     },
+     {
+      "id": "rite_of_sanctification",
+      "name": "Rite of Sanctification",
+      "requiresAny": [
+       "holy_armaments"
+      ],
+      "choiceGroup": "h_95233",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=433568",
+      "x": 0,
+      "y": 236
+     },
+     {
+      "id": "rite_of_adjuration",
+      "name": "Rite of Adjuration",
+      "requiresAny": [
+       "holy_armaments"
+      ],
+      "choiceGroup": "h_95233",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=433583",
+      "x": 0,
+      "y": 352
+     },
+     {
+      "id": "solidarity",
+      "name": "Solidarity",
+      "requiresAny": [
+       "holy_armaments"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=432802",
+      "x": 234,
+      "y": 240
+     },
+     {
+      "id": "divine_guidance",
+      "name": "Divine Guidance",
+      "requiresAny": [
+       "holy_armaments"
+      ],
+      "choiceGroup": "h_95235",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=433106",
+      "x": 468,
+      "y": 240
+     },
+     {
+      "id": "blessed_assurance",
+      "name": "Blessed Assurance",
+      "requiresAny": [
+       "holy_armaments"
+      ],
+      "choiceGroup": "h_95235",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=433015",
+      "x": 468,
+      "y": 356
+     },
+     {
+      "id": "masterwork",
+      "name": "Masterwork",
+      "requiresAny": [
+       "holy_armaments"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1271387",
+      "x": 702,
+      "y": 240
+     },
+     {
+      "id": "divine_inspiration",
+      "name": "Divine Inspiration",
+      "requiresAny": [
+       "solidarity"
+      ],
+      "choiceGroup": "h_95231",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=432964",
+      "x": 234,
+      "y": 476
+     },
+     {
+      "id": "forewarning",
+      "name": "Forewarning",
+      "requiresAny": [
+       "solidarity"
+      ],
+      "choiceGroup": "h_95231",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=432804",
+      "x": 234,
+      "y": 592
+     },
+     {
+      "id": "authoritative_rebuke",
+      "name": "Authoritative Rebuke",
+      "requiresAny": [
+       "divine_guidance",
+       "blessed_assurance"
+      ],
+      "choiceGroup": "h_95232",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469886",
+      "x": 464,
+      "y": 476
+     },
+     {
+      "id": "tempered_in_battle",
+      "name": "Tempered in Battle",
+      "requiresAny": [
+       "divine_guidance",
+       "blessed_assurance"
+      ],
+      "choiceGroup": "h_95232",
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=469701",
+      "x": 464,
+      "y": 592
+     },
+     {
+      "id": "laying_down_arms",
+      "name": "Laying Down Arms",
+      "requiresAny": [
+       "rite_of_sanctification",
+       "rite_of_adjuration"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=432866",
+      "x": 0,
+      "y": 480
+     },
+     {
+      "id": "hammer_and_anvil",
+      "name": "Hammer and Anvil",
+      "requiresAny": [
+       "masterwork"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=433718",
+      "x": 702,
+      "y": 480
+     },
+     {
+      "id": "valiance",
+      "name": "Valiance",
+      "requiresAny": [
+       "divine_inspiration",
+       "forewarning"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=432919",
+      "x": 234,
+      "y": 712
+     },
+     {
+      "id": "shared_resolve",
+      "name": "Shared Resolve",
+      "requiresAny": [
+       "laying_down_arms"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=432821",
+      "x": 0,
+      "y": 720
+     },
+     {
+      "id": "reflection_of_radiance",
+      "name": "Reflection of Radiance",
+      "requiresAny": [
+       "authoritative_rebuke",
+       "tempered_in_battle"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1271466",
+      "x": 468,
+      "y": 720
+     },
+     {
+      "id": "resounding_strike",
+      "name": "Resounding Strike",
+      "requiresAny": [
+       "hammer_and_anvil"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=1271553",
+      "x": 702,
+      "y": 720
+     },
+     {
+      "id": "blessing_of_the_forge",
+      "name": "Blessing of the Forge",
+      "requiresAny": [
+       "valiance",
+       "shared_resolve",
+       "reflection_of_radiance",
+       "resounding_strike"
+      ],
+      "description": "Efecto de habilidad: no cambia estadisticas, no se modela en el calculo. Descripcion oficial: es.wowhead.com/spell=433011",
+      "x": 351,
+      "y": 960
+     }
+    ]
+   }
+  ],
+  "notes": "World of Warcraft: Midnight — Paladin Sagrado (Holy).\nDatos del juego, build 12.1.0.69933 (parche 12.1, Temporada 2).\n\nQUE ES EXACTO\n- Arboles de talentos: nodos, posiciones, rangos, elecciones, nodos gratis, umbrales de puntos (8/23 en clase, 8/20 en especializacion),\n  talento apice y las dos clases de heroe de la especializacion. Fuente: datos de talentos de Raidbots para la build 12.1.0.69933.\n  Regla de WoW: para desbloquear un nodo basta con UNO de los nodos que llegan a el, y tiene que estar completo.\n- Objetos: botin real de la banda de la Temporada 2 y las piezas del conjunto de catalizador \"Radiance of the Consecrated Flame\",\n  con sus estadisticas calculadas a nivel de objeto 311 (Heroe 3/6) con la misma formula que SimulationCraft\n  (puntos de propiedad aleatoria x asignacion, multiplicadores de indice y de aguante por nivel de objeto).\n- Conversion de indices a porcentaje a nivel 90: critico 46, celeridad 44, maestria 46, versatilidad 54 (108 para la reduccion de dano).\n- Rendimientos decrecientes de los indices secundarios (curva oficial: 30%→30, 40→39, 50→47, 60→54, 80→66, 100→76).\n- Coeficiente de maestria de Sagrado: 1.5 por punto. Maestria base: 8 puntos.\n- Talentos pasivos que cambian estadisticas: Sanctified Plates (+5% aguante por rango), Seal of Might (+2% intelecto y +2 maestria por rango),\n  Holy Aegis (+4% critico), Seek Deliverance (+5 maestria).\n\nQUE ES UNA APROXIMACION (dicho claro)\n- El objetivo \"Sanacion (modelo de estadisticas)\" NO simula la rotacion: multiplica el atributo principal por (1+critico)(1+celeridad)(1+versatilidad)(1+maestria).\n  Sirve para comparar equipos por sus estadisticas, no para predecir el DPS real. Para eso existe SimulationCraft.\n- La maestria se aplica como si afectara a todo el dano o sanacion.\n- Los efectos especiales de abalorios, las bonificaciones del conjunto (son hechizos), los engarces, los encantamientos,\n  el dano del arma y la armadura no se modelan. Las piezas tienen solo sus estadisticas.\n- Atributos base del personaje (humano, nivel 90, sin equipo): Fuerza 620, Intelecto 620, Aguante 4600; critico base 5%;\n  especializacion en placas +5% al atributo principal; 20 de salud por punto de aguante.\n- Los nombres de talentos y objetos estan en ingles (asi vienen en los datos); la descripcion de cada talento enlaza a Wowhead en espanol.\n\nPiezas omitidas por usar estadisticas que este modelo no conoce: Bound Serpent's Jade Eye, Fanged Brute's Greatbelt, Pauldrons of the Forgotten Sacrifice.\n"
+ },
+ "items": [
+  {
+   "id": "wow268196",
+   "slot": "offhand",
+   "setId": null,
+   "name": "Venom-Slashed Scuteward",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "sta": 1501,
+    "haste": 61,
+    "crit": 30,
+    "int": 233
+   }
+  },
+  {
+   "id": "wow268210",
+   "slot": "mainhand",
+   "setId": null,
+   "name": "Malevolent Spiritcudgel",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 443,
+    "sta": 1501,
+    "mastery": 64,
+    "crit": 27
+   }
+  },
+  {
+   "id": "wow268211",
+   "slot": "mainhand",
+   "setId": null,
+   "name": "Baleful Hexblade",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 443,
+    "sta": 1501,
+    "haste": 62,
+    "mastery": 29
+   }
+  },
+  {
+   "id": "wow268220",
+   "slot": "hands",
+   "setId": null,
+   "name": "Scaleplate Strangulators",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 114,
+    "sta": 2252,
+    "crit": 91,
+    "haste": 46
+   }
+  },
+  {
+   "id": "wow268222",
+   "slot": "chest",
+   "setId": null,
+   "name": "Reckless Spirit Breastplate",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 152,
+    "sta": 3002,
+    "haste": 130,
+    "mastery": 52
+   }
+  },
+  {
+   "id": "wow268224",
+   "slot": "legs",
+   "setId": null,
+   "name": "Venom Warden's Greaves",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 152,
+    "sta": 3002,
+    "haste": 123,
+    "mastery": 59
+   }
+  },
+  {
+   "id": "wow268226",
+   "slot": "shoulder",
+   "setId": null,
+   "name": "Swelling Sea Spaulders",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 114,
+    "sta": 2252,
+    "crit": 97,
+    "mastery": 40
+   }
+  },
+  {
+   "id": "wow268229",
+   "slot": "head",
+   "setId": null,
+   "name": "Skullguard of the Risen Sacrifice",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 152,
+    "sta": 3002,
+    "haste": 127,
+    "crit": 55
+   }
+  },
+  {
+   "id": "wow268239",
+   "slot": "wrist",
+   "setId": null,
+   "name": "Shellbound Bracers",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 86,
+    "sta": 1689,
+    "mastery": 71,
+    "crit": 31
+   }
+  },
+  {
+   "id": "wow268244",
+   "slot": "waist",
+   "setId": null,
+   "name": "Forgotten Grotto Girdle",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 114,
+    "sta": 2252,
+    "haste": 97,
+    "vers": 40
+   }
+  },
+  {
+   "id": "wow268245",
+   "slot": "feet",
+   "setId": null,
+   "name": "Entombed Cultist's Sabatons",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 114,
+    "sta": 2252,
+    "crit": 95,
+    "haste": 41
+   }
+  },
+  {
+   "id": "wow268248",
+   "slot": "back",
+   "setId": null,
+   "name": "Amani Summoning Shawl",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 86,
+    "sta": 1689,
+    "crit": 71,
+    "vers": 31
+   }
+  },
+  {
+   "id": "wow268249",
+   "slot": "ring1",
+   "setId": null,
+   "name": "Vile Alchemist's Band",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "sta": 1689,
+    "mastery": 289,
+    "crit": 64
+   },
+   "slots": [
+    "ring2"
+   ]
+  },
+  {
+   "id": "wow268250",
+   "slot": "neck",
+   "setId": null,
+   "name": "Sentinel's Vitriolic Chain",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "sta": 1689,
+    "haste": 270,
+    "crit": 83
+   }
+  },
+  {
+   "id": "wow268251",
+   "slot": "neck",
+   "setId": null,
+   "name": "Amulet of the Twin Fangs",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "sta": 1689,
+    "mastery": 300,
+    "haste": 53
+   }
+  },
+  {
+   "id": "wow268252",
+   "slot": "ring1",
+   "setId": null,
+   "name": "Apex Brute's Claw Ring",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "sta": 1689,
+    "crit": 295,
+    "haste": 59
+   },
+   "slots": [
+    "ring2"
+   ]
+  },
+  {
+   "id": "wow268253",
+   "slot": "back",
+   "setId": null,
+   "name": "Silken Voodoo Drape",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 86,
+    "sta": 1689,
+    "mastery": 72,
+    "haste": 30
+   }
+  },
+  {
+   "id": "wow268259",
+   "slot": "waist",
+   "setId": null,
+   "name": "Girdle of Toxic Regret",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 114,
+    "sta": 2252,
+    "crit": 96,
+    "mastery": 40
+   }
+  },
+  {
+   "id": "wow268260",
+   "slot": "feet",
+   "setId": null,
+   "name": "Scaled Fiend's Warboots",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 114,
+    "sta": 2252,
+    "mastery": 94,
+    "haste": 43
+   }
+  },
+  {
+   "id": "wow268262",
+   "slot": "offhand",
+   "setId": null,
+   "name": "Bubblefin Splash Guard",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "sta": 1501,
+    "mastery": 61,
+    "haste": 30,
+    "int": 233
+   }
+  },
+  {
+   "id": "wow268265",
+   "slot": "neck",
+   "setId": null,
+   "name": "Aqirbane Reliquary",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "sta": 1689,
+    "crit": 88,
+    "mastery": 88,
+    "haste": 88,
+    "vers": 88
+   }
+  },
+  {
+   "id": "wow268266",
+   "slot": "ring1",
+   "setId": null,
+   "name": "Alluring Bubbleband",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "sta": 1689,
+    "haste": 275,
+    "vers": 78
+   },
+   "slots": [
+    "ring2"
+   ]
+  },
+  {
+   "id": "wow270161",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Fang of Umbral Malignance",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 145
+   },
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow270162",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Soulcoiler Ritual Vessel",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 145
+   },
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow270164",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Gebbo's Bottomless Bag",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 145
+   },
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow270166",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Vashnik's Sanguine Rancor",
+   "rarity": 4,
+   "level": 311,
+   "stats": {},
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow270167",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Wavecaller's Seastone",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "haste": 130
+   },
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow270168",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Font of Venomous Rage",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "mastery": 130
+   },
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow270169",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Hex Lord's Dooming Idol",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "haste": 130
+   },
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow270170",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Vexhul's Everflowing Gland",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 145
+   },
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow270171",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Preternatural Antivenom",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "crit": 130
+   },
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow270174",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Idol of the Howling Nexus",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "mastery": 130
+   },
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow270175",
+   "slot": "trinket1",
+   "setId": null,
+   "name": "Voracious Heart of Ula'tek",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "crit": 130
+   },
+   "slots": [
+    "trinket2"
+   ]
+  },
+  {
+   "id": "wow271878",
+   "slot": "legs",
+   "setId": null,
+   "name": "Chausses of Unbound Rancor",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 152,
+    "sta": 3002,
+    "crit": 182
+   }
+  },
+  {
+   "id": "wow271460",
+   "slot": "back",
+   "setId": null,
+   "name": "Cloak of the Consecrated Flame",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 86,
+    "sta": 1689,
+    "haste": 73,
+    "vers": 30
+   }
+  },
+  {
+   "id": "wow271461",
+   "slot": "wrist",
+   "setId": null,
+   "name": "Bracers of the Consecrated Flame",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 86,
+    "sta": 1689,
+    "vers": 72,
+    "haste": 30
+   }
+  },
+  {
+   "id": "wow271462",
+   "slot": "waist",
+   "setId": null,
+   "name": "Waistguard of the Consecrated Flame",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 114,
+    "sta": 2252,
+    "haste": 96,
+    "mastery": 41
+   }
+  },
+  {
+   "id": "wow271463",
+   "slot": "shoulder",
+   "setId": "consagrada",
+   "name": "Pauldrons of the Consecrated Flame",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 114,
+    "sta": 2252,
+    "crit": 95,
+    "mastery": 41
+   }
+  },
+  {
+   "id": "wow271464",
+   "slot": "legs",
+   "setId": "consagrada",
+   "name": "Greaves of the Consecrated Flame",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 152,
+    "sta": 3002,
+    "haste": 122,
+    "crit": 61
+   }
+  },
+  {
+   "id": "wow271465",
+   "slot": "head",
+   "setId": "consagrada",
+   "name": "Warhelm of the Consecrated Flame",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 152,
+    "sta": 3002,
+    "crit": 128,
+    "mastery": 54
+   }
+  },
+  {
+   "id": "wow271466",
+   "slot": "hands",
+   "setId": "consagrada",
+   "name": "Gauntlets of the Consecrated Flame",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 114,
+    "sta": 2252,
+    "mastery": 92,
+    "crit": 45
+   }
+  },
+  {
+   "id": "wow271467",
+   "slot": "feet",
+   "setId": null,
+   "name": "Greatboots of the Consecrated Flame",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 114,
+    "sta": 2252,
+    "crit": 93,
+    "haste": 44
+   }
+  },
+  {
+   "id": "wow271468",
+   "slot": "chest",
+   "setId": "consagrada",
+   "name": "Bulwark of the Consecrated Flame",
+   "rarity": 4,
+   "level": 311,
+   "stats": {
+    "int": 152,
+    "sta": 3002,
+    "mastery": 124,
+    "haste": 58
+   }
+  }
+ ]
+}

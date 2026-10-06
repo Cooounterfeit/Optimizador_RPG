@@ -17,8 +17,11 @@
  * y avisa.
  */
 
-import { compileFormula, FormulaError } from './formula'
-import { solve, topoSortDerived } from './optimizer'
+import { compileFormula, formulaVariables, FormulaError } from './formula'
+import { findMonotonicViolation, SKILL_SLOT, solve, topoSortDerived } from './optimizer'
+import { checkSelection, checkSkillTrees, skillVariables } from './skills'
+import { checkLeveling, maxReachable } from './leveling'
+import { checkCurves } from './curves'
 import type { GameTemplate, Item, SelfTest } from './types'
 
 export type Severity = 'error' | 'warning' | 'info'
@@ -50,8 +53,6 @@ export interface ValidationReport {
     searchSpace?: number
   }
 }
-
-const IDENT = /[A-Za-z_][A-Za-z0-9_]*/g
 
 export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport {
   const issues: Issue[] = []
@@ -103,6 +104,7 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
   for (const id of derivedIds) {
     if (statIds.has(id)) err('E_COLISION', `"${id}" es a la vez estadistica y valor derivado.`, id)
   }
+  if (t.slots.some((s) => s?.id === SKILL_SLOT)) err('E_RANURA_RESERVADA', `"${SKILL_SLOT}" es un id reservado para las habilidades.`, SKILL_SLOT)
   if (t.slots.length === 0) err('E_SIN_RANURAS', 'La plantilla no declara ninguna ranura.')
   if (t.objectives.length === 0) err('E_SIN_OBJETIVOS', 'La plantilla no declara ningun objetivo.')
   if (t.baseProfiles.length === 0) err('E_SIN_PERFILES', 'La plantilla no declara ningun perfil base.')
@@ -136,7 +138,21 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
   derived.forEach((d, i) => varIndex.set(d.id, 2 * S + i))
   const extraKeys = Object.keys(profile.base ?? {}).filter((k) => !statIds.has(k))
   extraKeys.forEach((k, i) => varIndex.set(`base_${k}`, 2 * S + derived.length + i))
-  const total = 2 * S + derived.length + extraKeys.length
+  // Niveles y curvas de crecimiento.
+  const niveles = checkLeveling(t)
+  for (const m of niveles.errors) err('E_NIVELES', m)
+  for (const m of niveles.warnings) warn('W_NIVELES', m)
+  const curvas = checkCurves(t)
+  for (const m of curvas.errors) err('E_CURVA', m)
+  for (const m of curvas.warnings) warn('W_CURVA', m)
+
+  // Habilidades: `skill_<id>` vale el rango elegido (0 en la validacion).
+  const arboles = checkSkillTrees(t)
+  for (const p of arboles.errors) err('E_HABILIDAD', p.message, p.nodeId ?? p.treeId)
+  for (const p of arboles.warnings) warn('W_HABILIDAD', p.message, p.nodeId ?? p.treeId)
+  const skillVars = arboles.errors.length ? [] : skillVariables(t)
+  skillVars.forEach(([name], j) => varIndex.set(name, 2 * S + derived.length + extraKeys.length + j))
+  const total = 2 * S + derived.length + extraKeys.length + skillVars.length
 
   // Perfiles con claves distintas entre si -> formulas que fallan solo para algunos.
   for (const p of t.baseProfiles.slice(1)) {
@@ -166,16 +182,35 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
   for (const d of derived) tryCompile(d.id, d.formula, 'derivado')
   for (const o of t.objectives) tryCompile(o.id, o.formula, 'objetivo')
 
-  // Identificadores que no son ni variables ni funciones conocidas.
-  const KNOWN_FN = new Set(['min', 'max', 'floor', 'ceil', 'round', 'abs', 'sqrt', 'clamp'])
+  // Identificadores que no son variables conocidas. Las formulas que no se
+  // pudieron analizar ya tienen su E_FORMULA; no se repite el error.
   for (const { id, formula, kind } of [
     ...derived.map((d) => ({ id: d.id, formula: d.formula, kind: 'derivado' })),
     ...t.objectives.map((o) => ({ id: o.id, formula: o.formula, kind: 'objetivo' })),
   ]) {
-    for (const m of formula.matchAll(IDENT)) {
-      if (!varIndex.has(m[0]) && !KNOWN_FN.has(m[0])) {
-        err('E_VAR', `Usa "${m[0]}", que no es una estadistica, ni base_*, ni un derivado, ni una funcion.`, `${kind} "${id}"`)
+    let vars: string[] = []
+    try { vars = formulaVariables(formula) } catch { continue }
+    for (const v of vars) {
+      if (!varIndex.has(v)) {
+        err('E_VAR', v.startsWith('skill_')
+          ? `Usa "${v}", pero no hay ninguna habilidad con id "${v.slice(6)}".`
+          : `Usa "${v}", que no es una estadistica, ni base_*, ni un derivado, ni una habilidad (skill_*), ni una funcion.`, `${kind} "${id}"`)
       }
+    }
+  }
+
+  // Un nodo sin efectos que ninguna formula menciona no hace nada.
+  if (!arboles.errors.length && t.skillTrees?.length) {
+    const usadas = new Set<string>()
+    for (const f of [...derived.map((d) => d.formula), ...t.objectives.map((o) => o.formula)]) {
+      try { for (const v of formulaVariables(f)) usadas.add(v) } catch { /* ya informado */ }
+    }
+    // Es normal en juegos reales (un hechizo de control no cambia estadisticas),
+    // asi que va como informacion agrupada, no como un aviso por nodo.
+    const sinEfecto = t.skillTrees.flatMap((tree) => tree.nodes)
+      .filter((n) => Object.keys(n.effects ?? {}).length === 0 && !usadas.has(`skill_${n.id}`))
+    if (sinEfecto.length > 0) {
+      info('I_HABILIDAD_SIN_EFECTO', `${sinEfecto.length} habilidad(es) no cambian estadisticas ni las usa ninguna formula, asi que no afectan al calculo: ${sinEfecto.slice(0, 5).map((n) => n.name).join(', ')}${sinEfecto.length > 5 ? '…' : ''}.`)
     }
   }
 
@@ -186,6 +221,18 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
     }
   }
   const mulStats = new Set(t.stats.filter((x) => x.aggregate === 'multiply').map((x) => x.id))
+  if (t.requirementsFrom !== undefined && t.requirementsFrom !== 'base' && t.requirementsFrom !== 'final') {
+    err('E_REQUISITOS_MODO', `requirementsFrom debe ser "base" o "final", no "${t.requirementsFrom}".`)
+  }
+  for (const s of sets) {
+    for (const tier of s.tiers ?? []) {
+      for (const [k, v] of Object.entries(tier.effects ?? {})) {
+        if (mulStats.has(k) && v <= -100) {
+          warn('W_MULTIPLICA_NEGATIVO', `Otorga ${v}% a "${k}", que acumula multiplicando: el factor queda en cero o negativo y el motor no puede acotarlo bien.`, s.id)
+        }
+      }
+    }
+  }
   if (mulStats.size > 0) {
     info('I_MULTIPLICA', `Acumulan multiplicando: ${[...mulStats].join(', ')}. En las formulas llegan ya como multiplicador (1,69), no como porcentaje.`)
   }
@@ -238,39 +285,26 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
       return compiled.get(o)!(vars)
     }
 
-    let seed = 1234567
-    const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648
+    // Misma prueba que corre el optimizador, aqui sobre una caja generica
+    // (0..200 por estadistica) porque la plantilla se valida sin inventario.
+    const lo = new Float64Array(S)
+    const hi = new Float64Array(S).fill(200)
 
     for (const o of objectiveFns) {
-      const x = new Float64Array(S)
-      let bad = ''
-      let nan = false
-      for (let iter = 0; iter < 1500 && !bad && !nan; iter++) {
-        for (let i = 0; i < S; i++) x[i] = rnd() * 200
-        const base = evalObj(o.id, x)
-        if (!Number.isFinite(base)) { nan = true; break }
-        for (let i = 0; i < S; i++) {
-          const old = x[i]
-          x[i] = old + 1 + rnd() * 40
-          const up = evalObj(o.id, x)
-          x[i] = old
-          if (!Number.isFinite(up)) { nan = true; break }
-          if (up < base - 1e-9) { bad = t.stats[i].id; break }
-        }
-      }
-
-      if (nan) {
+      const bad = findMonotonicViolation((x) => evalObj(o.id, x), lo, hi, 1500)
+      if (bad === 'nan') {
         err('E_NAN', 'Produce NaN o infinito con valores normales. Suele ser una division por cero.', `objetivo "${o.id}"`)
-      } else if (bad) {
-        if (o.monotonic) {
-          err('E_MONOTONIA', `Esta declarado como monotonic: true pero BAJA cuando sube "${bad}". El optimizador podaria mal y podria perder el optimo. Declaralo monotonic: false.`, `objetivo "${o.id}"`)
+      } else if (bad !== null) {
+        const stat = t.stats[bad].id
+        if (o.monotonic === true) {
+          warn('W_MONOTONIA', `Esta declarado como monotonic: true pero BAJA cuando sube "${stat}". El optimizador no se fia de la declaracion (analiza la formula) y el resultado sigue siendo exacto, pero conviene declararlo monotonic: false.`, `objetivo "${o.id}"`)
         } else {
-          warn('W_NO_MONOTONO', `No es monotono (baja con "${bad}"). Se puede calcular, pero el motor actual no puede DEMOSTRAR el optimo sobre el.`, `objetivo "${o.id}"`)
+          info('I_NO_MONOTONO', `No es monotono (baja con "${stat}"). El optimizador lo tiene en cuenta: si cada estadistica tiene una direccion fija (sube o baja) usa la cota rapida, y si alguna \"depende\" acota por intervalos. En los dos casos el optimo se demuestra.`, `objetivo "${o.id}"`)
         }
       } else {
         monotonicOk++
-        if (!o.monotonic) {
-          info('I_MONOTONO', 'Parece monotono. Si lo declaras monotonic: true, el optimizador podra demostrar el optimo.', `objetivo "${o.id}"`)
+        if (o.monotonic === false) {
+          info('I_MONOTONO', 'Parece monotono. Si lo declaras monotonic: true, el optimizador podra usar la cota rapida.', `objetivo "${o.id}"`)
         }
       }
     }
@@ -280,23 +314,39 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
   let searchSpace: number | undefined
   if (items && items.length > 0) {
     searchSpace = 1
+    const fits = (i: Item, slotId: string) => i.slot === slotId || (i.slots ?? []).includes(slotId)
     for (const slot of t.slots) {
-      const n = items.filter((i) => i.slot === slot.id).length
-      if (n === 0) err('E_RANURA_VACIA', `Ninguna pieza del inventario ocupa la ranura "${slot.name}".`, slot.id)
+      const n = items.filter((i) => fits(i, slot.id)).length + (slot.optional ? 1 : 0)
+      if (n === 0) err('E_RANURA_VACIA', `Ninguna pieza del inventario ocupa la ranura "${slot.name}" y no es opcional.`, slot.id)
       searchSpace *= Math.max(n, 1)
+    }
+    const slotIdSet = new Set(t.slots.map((s) => s.id))
+    const badSlots = new Set<string>()
+    for (const it of items) for (const sl of [it.slot, ...(it.slots ?? [])]) if (!slotIdSet.has(sl)) badSlots.add(sl)
+    if (badSlots.size > 0) {
+      warn('W_RANURA_DESCONOCIDA', `Hay piezas que apuntan a ranuras que la plantilla no declara (se ignoran esas ranuras): ${[...badSlots].slice(0, 6).join(', ')}`)
+    }
+    const negMul = items.filter((it) => Object.entries(it.stats).some(([k, v]) => mulStats.has(k) && v <= -100)).length
+    if (negMul > 0) {
+      warn('W_MULTIPLICA_NEGATIVO', `${negMul} pieza(s) dan -100% o menos a una estadistica que acumula multiplicando: el factor queda en cero o negativo y el motor no puede acotarlo bien.`)
     }
     const unknownStats = new Set<string>()
     const unknownSets = new Set<string>()
     const unknownReqs = new Set<string>()
     const groupSlots = new Map<string, Set<string>>()
     let unmeetable = 0
+    const techos = new Map(t.baseProfiles.map((p) => [p.id, maxReachable(t, p)]))
+    const techo = (p: { id: string }, k: string) => techos.get(p.id)?.[k] ?? -Infinity
     const baseKeys = new Set([...Object.keys(profile.base ?? {}), ...statIds])
     for (const it of items) {
       for (const k of Object.keys(it.stats)) if (!statIds.has(k)) unknownStats.add(k)
       if (it.setId && !sets.some((s) => s.id === it.setId)) unknownSets.add(it.setId)
       for (const [k, need] of Object.entries(it.requires ?? {})) {
         if (!baseKeys.has(k)) unknownReqs.add(k)
-        else if (t.baseProfiles.every((p) => (p.base?.[k] ?? 0) < need)) unmeetable++
+        // Contra la build final, el equipo puede cubrir lo que la base no alcanza.
+        else if (t.requirementsFrom === 'final' && statIds.has(k)) continue
+        // Con niveles cuenta lo que el perfil puede alcanzar subiendo, no solo lo que tiene hoy.
+        else if (t.baseProfiles.every((p) => Math.max(p.base?.[k] ?? 0, techo(p, k)) < need)) unmeetable++
       }
       if (it.exclusiveGroup) {
         const g = groupSlots.get(it.exclusiveGroup) ?? new Set<string>()
@@ -307,7 +357,7 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
       err('E_REQUISITO', `Hay piezas que exigen "${[...unknownReqs].slice(0, 5).join(', ')}", que ningun perfil declara. Esas piezas nunca se podran equipar.`)
     }
     if (unmeetable > 0) {
-      warn('W_REQUISITO_IMPOSIBLE', `${unmeetable} requisito(s) que NINGUN perfil de la plantilla alcanza. Esas piezas son inalcanzables para todos.`)
+      warn('W_REQUISITO_IMPOSIBLE', `${unmeetable} requisito(s) que NINGUN perfil de la plantilla alcanza${t.leveling ? ' ni subiendo al nivel máximo' : ''}. Esas piezas son inalcanzables para todos.`)
     }
     const solitarios = [...groupSlots.entries()].filter(([, sl]) => sl.size < 2).length
     if (solitarios > 0) {
@@ -331,6 +381,10 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
   }
   for (const test of tests) {
     try {
+      if (test.skills) {
+        const malas = checkSelection(t, test.skills)
+        if (malas.length) { selfTests.push({ name: test.name, passed: false, detail: `Habilidades invalidas: ${malas[0].message}` }); continue }
+      }
       const r = solve({
         template: { ...t, derived },
         items: test.items,
@@ -338,6 +392,7 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
         objectiveId: test.objectiveId,
         constraints: [],
         topN: 1,
+        skills: test.skills,
       }, { deadlineMs: 4000 })
       if (r.builds.length === 0) {
         selfTests.push({ name: test.name, passed: false, detail: 'No devolvio ninguna build.' })

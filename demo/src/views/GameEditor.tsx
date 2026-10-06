@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Suspense, lazy, useMemo, useState } from 'react'
 import type {
   GameTemplate, Item, ObjectiveDef, SetDef, SlotDef, StatDef,
 } from '../core/types'
@@ -7,15 +7,21 @@ import ItemImporter from './ItemImporter'
 import { toId } from '../store/infer'
 import { nf } from '../ui/format'
 import CoverPicker, { Cover } from '../ui/CoverPicker'
+import LevelingEditor from './LevelingEditor'
 
-type Tab = 'general' | 'stats' | 'slots' | 'sets' | 'profiles' | 'objectives' | 'items'
+/** El editor de arboles usa React Flow: se carga solo cuando se abre esa pestana. */
+const SkillTreeEditor = lazy(() => import('./SkillTreeEditor'))
+
+type Tab = 'general' | 'stats' | 'slots' | 'sets' | 'skills' | 'profiles' | 'levels' | 'objectives' | 'items'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'general', label: 'General' },
   { id: 'stats', label: 'Estadisticas' },
   { id: 'slots', label: 'Ranuras' },
   { id: 'sets', label: 'Conjuntos' },
+  { id: 'skills', label: 'Habilidades' },
   { id: 'profiles', label: 'Perfiles' },
+  { id: 'levels', label: 'Niveles' },
   { id: 'objectives', label: 'Formulas' },
   { id: 'items', label: 'Objetos' },
 ]
@@ -54,7 +60,7 @@ export default function GameEditor({
     { hecho: t.slots.length > 0, texto: 'Define al menos una ranura de equipo (arma, casco…)', tab: 'slots' },
     { hecho: t.baseProfiles.length > 0 && t.stats.length > 0, texto: 'Ajusta los valores del personaje sin equipo', tab: 'profiles' },
     { hecho: t.objectives.length > 0, texto: 'Define que se quiere maximizar', tab: 'objectives' },
-    { hecho: items.length > 0 && t.slots.every((sl) => items.some((i) => i.slot === sl.id)), texto: 'Anade objetos: cada ranura necesita al menos uno', tab: 'items' },
+    { hecho: items.length > 0 && t.slots.every((sl) => items.some((i) => i.slot === sl.id || (i.slots ?? []).includes(sl.id) || sl.optional === true)), texto: 'Anade objetos: cada ranura necesita al menos uno', tab: 'items' },
   ]
   const siguiente = pasos.find((p) => !p.hecho)
 
@@ -67,6 +73,7 @@ export default function GameEditor({
       for (const d of t.derived ?? []) if (re.test(d.formula)) add(s.id, `derivado ${d.id}`)
       for (const o of t.objectives) if (re.test(o.formula)) add(s.id, `objetivo ${o.name}`)
       for (const st of t.sets ?? []) for (const tier of st.tiers) if (s.id in (tier.effects ?? {})) add(s.id, `conjunto ${st.name}`)
+      for (const tr of t.skillTrees ?? []) for (const n of tr.nodes) if (s.id in (n.effects ?? {})) add(s.id, `habilidad ${n.name}`)
       if (items.some((it) => s.id in it.stats)) add(s.id, 'objetos')
     }
     return m
@@ -92,6 +99,8 @@ export default function GameEditor({
               {x.id === 'stats' && ` (${t.stats.length})`}
               {x.id === 'slots' && ` (${t.slots.length})`}
               {x.id === 'sets' && ` (${(t.sets ?? []).length})`}
+              {x.id === 'skills' && ` (${(t.skillTrees ?? []).reduce((a, tr) => a + tr.nodes.length, 0)})`}
+              {x.id === 'levels' && (t.leveling ? ` (${t.leveling.min}–${t.leveling.max})` : ' (no)')}
             </button>
           ))}
         </div>
@@ -127,7 +136,13 @@ export default function GameEditor({
       {tab === 'stats' && <Stats t={t} upd={upd} usage={statUsage} />}
       {tab === 'slots' && <Slots t={t} upd={upd} items={items} />}
       {tab === 'sets' && <Sets t={t} upd={upd} />}
+      {tab === 'skills' && (
+        <Suspense fallback={<div className="card"><div className="empty">cargando el editor…</div></div>}>
+          <SkillTreeEditor t={t} upd={upd} />
+        </Suspense>
+      )}
       {tab === 'profiles' && <Profiles t={t} upd={upd} />}
+      {tab === 'levels' && <LevelingEditor t={t} upd={upd} />}
       {tab === 'objectives' && <Objectives t={t} upd={upd} />}
       {tab === 'items' && <Items t={t} items={items} setItems={updItems} />}
 
@@ -264,6 +279,9 @@ function Stats({ t, upd, usage }: {
               <option value="sum">se suma</option>
               <option value="multiply">se multiplica</option>
             </select>
+            <input type="text" list="grupos-stats" value={s.group ?? ''} placeholder="grupo (hoja de personaje)"
+              title="En que bloque aparece en la hoja de personaje: Atributos, Ofensiva, Defensa…"
+              onChange={(e) => set(i, { group: e.target.value || undefined })} style={{ width: 170 }} />
             {usos.length > 0
               ? <span style={{ fontSize: 11, color: 'var(--dim)' }} title={usos.join(', ')}>en uso ({usos.length})</span>
               : <Del onClick={() => upd({
@@ -273,6 +291,10 @@ function Stats({ t, upd, usage }: {
           </Row>
         )
       })}
+      <datalist id="grupos-stats">
+        {[...new Set(['Atributos', 'Ofensiva', 'Defensa', 'General', ...t.stats.map((s) => s.group).filter(Boolean) as string[]])]
+          .map((g) => <option key={g} value={g} />)}
+      </datalist>
       <button className="mini" style={{ marginTop: 6 }} onClick={() => {
         let id = 'nueva'; let n = 2
         while (t.stats.some((s) => s.id === id)) id = `nueva_${n++}`
@@ -519,7 +541,9 @@ function Objectives({ t, upd }: { t: GameTemplate; upd: (p: Partial<GameTemplate
             onChange={(e) => upd({ derived: derived.map((x, j) => (j === i ? { ...x, id: toId(e.target.value) } : x)) })} />
           <span style={{ color: 'var(--dim)' }}>=</span>
           <input type="text" value={d.formula} style={{ flex: 1, minWidth: 240, fontFamily: 'var(--mono)', fontSize: 12 }}
+            readOnly={!!d.curve} title={d.curve ? 'Es una curva: edita sus puntos en la pestaña Niveles' : undefined}
             onChange={(e) => upd({ derived: derived.map((x, j) => (j === i ? { ...x, formula: e.target.value } : x)) })} />
+          {d.curve && <span className="chip n" title="Se genera desde los puntos de la curva">curva · pestaña Niveles</span>}
           <Del onClick={() => upd({ derived: derived.filter((_, j) => j !== i) })} />
         </Row>
       ))}
@@ -539,10 +563,10 @@ function Objectives({ t, upd }: { t: GameTemplate; upd: (p: Partial<GameTemplate
           <Row>
             <input type="text" value={o.name} style={{ width: 240 }} placeholder="Nombre visible"
               onChange={(e) => upd({ objectives: t.objectives.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) })} />
-            <select value={o.monotonic ? 'si' : 'no'} style={{ width: 190 }}
+            <select value={o.monotonic !== false ? 'si' : 'no'} style={{ width: 190 }}
               onChange={(e) => upd({ objectives: t.objectives.map((x, j) => (j === i ? { ...x, monotonic: e.target.value === 'si' } : x)) })}>
-              <option value="si">modo exacto</option>
-              <option value="no">modo heuristico</option>
+              <option value="si">monotono (cota rapida)</option>
+              <option value="no">no monotono (intervalos)</option>
             </select>
             <div style={{ flex: 1 }} />
             {t.objectives.length > 1 && (
@@ -570,8 +594,9 @@ function Objectives({ t, upd }: { t: GameTemplate; upd: (p: Partial<GameTemplate
       }}>+ anadir objetivo</button>
       <p className="hint" style={{ marginTop: 12, marginBottom: 0 }}>
         El validador comprueba abajo si el objetivo es monotono <b>de verdad</b>. Si dice que baja
-        con alguna estadistica, cambialo a modo heuristico: el motor seguira calculandolo, pero
-        dejara de prometer que el resultado es el optimo.
+        con alguna estadistica, marcalo como no monotono. El resultado sigue siendo el optimo
+        demostrado en los dos casos: el motor lo comprueba solo y, si hace falta, acota por
+        intervalos, que es mas lento pero igual de exacto.
       </p>
     </div>
   )

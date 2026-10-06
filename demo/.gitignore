@@ -1,16 +1,17 @@
-# Dependencias: se regeneran con "npm ci" desde package-lock.json.
+# dependencias y build
 node_modules
-
-# Resultado de compilar: se regenera con "npm run build".
 dist
+*.tsbuildinfo
 
-# Cache incremental de TypeScript.
-tsconfig.tsbuildinfo
+# variables de entorno (claves de Supabase, etc.) — nunca al repo
+.env
+.env.*
+!.env.example
 
-# Restos de las actualizaciones por zip.
-_s*
-_stage
-_to_delete
-
+# sistema / editores
 .DS_Store
 Thumbs.db
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea

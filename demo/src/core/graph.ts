@@ -16,13 +16,10 @@
  * seria un grafo que miente, y eso es peor que no tenerlo.
  */
 
+import { formulaVariables } from './formula'
 import { explainBuild } from './optimizer'
-import type { GameTemplate, ObjectiveDef } from './types'
-
-const IDENT = /[A-Za-z_][A-Za-z0-9_]*/g
-
-/** Nombres reservados del lenguaje de formulas: no son variables. */
-const FUNCS = new Set(['min', 'max', 'floor', 'ceil', 'round', 'abs', 'sqrt', 'clamp'])
+import { indexSkills } from './skills'
+import type { GameTemplate, ObjectiveDef, SkillSelection } from './types'
 
 export type NodeKind = 'objective' | 'derived' | 'stat' | 'base' | 'unknown'
 
@@ -51,9 +48,9 @@ export interface Graph {
 
 /** Variables que aparecen en una formula, sin funciones ni duplicados. */
 export function varsOf(formula: string): string[] {
-  const out = new Set<string>()
-  for (const m of formula.matchAll(IDENT)) if (!FUNCS.has(m[0])) out.add(m[0])
-  return [...out]
+  // Mismo analizador que la evaluacion. Una formula rota no tiene dependencias
+  // dibujables: el validador ya explica el error.
+  try { return formulaVariables(formula) } catch { return [] }
 }
 
 /**
@@ -78,6 +75,7 @@ export const OBJ = (id: string) => `objetivo:${id}`
 export function buildGraph(template: GameTemplate, objective: ObjectiveDef): Graph {
   const derived = new Map((template.derived ?? []).map((d) => [d.id, d]))
   const stats = new Map(template.stats.map((s) => [s.id, s]))
+  const skillNodes = indexSkills(template).node
 
   const nodes = new Map<string, GraphNode>()
   const edges: { from: string; to: string }[] = []
@@ -91,6 +89,11 @@ export function buildGraph(template: GameTemplate, objective: ObjectiveDef): Gra
     if (id.startsWith('base_')) {
       const b = stats.get(id.slice(5))
       return { kind: 'base', label: b ? `${b.name} base` : id, unit: b?.unit === 'percent' ? '%' : '' }
+    }
+    if (id.startsWith('skill_')) {
+      const n = skillNodes.get(id.slice(6))
+      // Una habilidad es una entrada, como un valor base: va a la izquierda.
+      return { kind: 'base', label: n ? `Habilidad: ${n.name}` : id }
     }
     return { kind: 'unknown', label: id }
   }
@@ -166,9 +169,10 @@ export function evalGraph(
   objective: ObjectiveDef,
   finalStats: Record<string, number>,
   profileId: string,
+  skills?: SkillSelection,
 ): Map<string, number> {
   try {
-    return explainBuild(template, profileId, objective.id, finalStats)
+    return explainBuild(template, profileId, objective.id, finalStats, skills)
   } catch {
     return new Map()
   }
