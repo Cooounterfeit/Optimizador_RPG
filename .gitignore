@@ -1,16 +1,54 @@
-# Dependencias: se regeneran con "npm ci" desde package-lock.json.
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# compiled output
+dist
+tmp
+out-tsc
+
+# dependencies
 node_modules
 
-# Resultado de compilar: se regenera con "npm run build".
-dist
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 
-# Cache incremental de TypeScript.
-tsconfig.tsbuildinfo
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
-# Restos de las actualizaciones por zip.
-_s*
-_stage
-_to_delete
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
 
+# System Files
 .DS_Store
 Thumbs.db
+
+.nx/cache
+.nx/workspace-data
+.nx/migrate-runs
+.claude/worktrees
+.claude/settings.local.json
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
+test-output
+
+# entorno (nunca commitear claves)
+.env
+.env.local
+.env.*.local
