@@ -5,3 +5,4 @@ export * from './lib/item.js';
 export * from './lib/skills.js';
 export * from './lib/leveling.js';
 export * from './lib/solve.js';
+export * from './lib/equipment.js';
