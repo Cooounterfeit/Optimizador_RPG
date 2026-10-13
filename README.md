@@ -8,6 +8,7 @@ Plataforma comunitaria de optimizadores de builds para videojuegos. El motor es 
 
 Requisitos: **Git** y **Node con `nvm`** (la versión está fijada en `.nvmrc`).
 
+
 ```bash
 git clone https://github.com/Cooounterfeit/Optimizador_RPG.git
 cd Optimizador_RPG
