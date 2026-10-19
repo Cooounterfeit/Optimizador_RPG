@@ -28,7 +28,7 @@ end $$;
 
 -- ----------------------------------------------------------------- profiles
 
-create table public.profiles (
+create table if not exists public.profiles (
   id           uuid primary key references auth.users (id) on delete cascade,
   display_name text not null check (char_length(btrim(display_name)) between 1 and 40),
   avatar_url   text check (avatar_url is null or char_length(avatar_url) <= 500),
@@ -49,7 +49,7 @@ $$;
 
 -- ----------------------------------------------------------------- subscriptions
 
-create table public.subscriptions (
+create table if not exists public.subscriptions (
   user_id            uuid primary key references public.profiles (id) on delete cascade,
   plan               text not null default 'free' check (plan in ('free', 'pro')),
   status             text not null default 'active' check (status in ('active', 'canceled', 'expired')),
@@ -62,7 +62,7 @@ create trigger subscriptions_updated_at before update on public.subscriptions
 
 -- Ajustes de la plataforma (una sola fila). Mientras no exista Stripe, la copia
 -- en la nube no exige suscripcion; al integrar pagos se pone en true.
-create table public.app_settings (
+create table if not exists public.app_settings (
   id                          boolean primary key default true check (id),
   cloud_requires_subscription boolean not null default false
 );
@@ -99,7 +99,7 @@ create trigger on_auth_user_created after insert on auth.users
 -- ----------------------------------------------------------------- optimizers
 
 -- Un optimizador comunitario: la plantilla del juego (jsonb) y objetos de muestra.
-create table public.optimizers (
+create table if not exists public.optimizers (
   id           uuid primary key default gen_random_uuid(),
   author_id    uuid not null default auth.uid() references public.profiles (id) on delete cascade,
   game_name    text not null check (char_length(btrim(game_name)) between 1 and 80),
@@ -122,7 +122,7 @@ create index optimizers_ranking_idx on public.optimizers (published, score desc,
 
 -- ----------------------------------------------------------------- votes
 
-create table public.votes (
+create table if not exists public.votes (
   user_id      uuid not null default auth.uid() references public.profiles (id) on delete cascade,
   optimizer_id uuid not null references public.optimizers (id) on delete cascade,
   value        smallint not null check (value in (-1, 1)),
@@ -152,7 +152,7 @@ create trigger votes_score after insert or update or delete on public.votes
 
 -- ----------------------------------------------------------------- favorites
 
-create table public.favorites (
+create table if not exists public.favorites (
   user_id      uuid not null default auth.uid() references public.profiles (id) on delete cascade,
   optimizer_id uuid not null references public.optimizers (id) on delete cascade,
   created_at   timestamptz not null default now(),
@@ -161,7 +161,7 @@ create table public.favorites (
 
 -- ----------------------------------------------------------------- reports
 
-create table public.reports (
+create table if not exists public.reports (
   id           uuid primary key default gen_random_uuid(),
   reporter_id  uuid not null default auth.uid() references public.profiles (id) on delete cascade,
   optimizer_id uuid not null references public.optimizers (id) on delete cascade,
@@ -176,7 +176,7 @@ create table public.reports (
 
 -- "Mis juegos" en la nube (INV-8): el paquete del juego (plantilla + objetos) y
 -- el estado del personaje (equipo, habilidades, historial de niveles), por usuario.
-create table public.cloud_inventory (
+create table if not exists public.cloud_inventory (
   user_id           uuid not null default auth.uid() references public.profiles (id) on delete cascade,
   game_key          text not null check (char_length(game_key) between 1 and 120),
   game_name         text not null check (char_length(btrim(game_name)) between 1 and 80),

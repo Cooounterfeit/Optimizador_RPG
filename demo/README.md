@@ -7,6 +7,10 @@ combinación óptima correcta), después una interfaz mínima para poder probarl
 
 ---
 
+**
+hola que hace, esta es una prueba
+**
+
 ## Las cuatro vistas
 
 | Vista | Qué hay |
