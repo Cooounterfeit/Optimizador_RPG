@@ -299,3 +299,62 @@ describe('3. fuzz contra fuerza bruta', () => {
     expect(malos, `${N - malos} de ${N} instancias coinciden con la fuerza bruta (top N completo) ${primero}`).toBe(0);
   });
 });
+
+describe('4. casos borde TEC-12', () => {
+  it('inventario vacio: no rompe y devuelve una respuesta consistente', () => {
+    const t = tpl({
+      stats: [stat('atk')],
+      slots: [slot('a'), slot('b')],
+      objectives: obj('atk', true),
+    });
+    const req: SolveRequest = {
+      template: t,
+      items: [],
+      profileId: 'p',
+      objectiveId: 'o',
+      constraints: [],
+      topN: 1,
+    };
+    const r = solve(req);
+    expect(Array.isArray(r.builds)).toBe(true);
+    expect(typeof r.stats.provenOptimal).toBe('boolean');
+    expect(r.builds.length).toBeLessThanOrEqual(1);
+  });
+
+  it('restricciones sin combinacion posible: no inventa un build', () => {
+    const t = tpl({
+      stats: [stat('atk')],
+      slots: [slot('a')],
+      objectives: obj('atk', true),
+    });
+    const req: SolveRequest = {
+      template: t,
+      items: [item('a1', 'a', { atk: 10 })],
+      profileId: 'p',
+      objectiveId: 'o',
+      constraints: [{ statId: 'atk', min: 999 }],
+      topN: 1,
+    };
+    const r = solve(req);
+    expect(r.builds).toHaveLength(0);
+  });
+
+  it('objetos identicos con ids distintos: son piezas distintas', () => {
+    const t = tpl({
+      stats: [stat('atk')],
+      slots: [slot('a'), slot('b')],
+      objectives: obj('atk', true),
+    });
+    const req: SolveRequest = {
+      template: t,
+      items: [item('a1', 'a', { atk: 10 }), item('b1', 'b', { atk: 10 })],
+      profileId: 'p',
+      objectiveId: 'o',
+      constraints: [],
+      topN: 1,
+    };
+    const r = solve(req);
+    expect(r.builds[0]?.score).toBe(20);
+    expect([...(r.builds[0]?.itemIds ?? [])].sort()).toEqual(['a1', 'b1']);
+  });
+});
