@@ -6,3 +6,5 @@ export * from './lib/skills.js';
 export * from './lib/leveling.js';
 export * from './lib/solve.js';
 export * from './lib/equipment.js';
+export * from './lib/database.types.js';
+export * from './lib/domain.js';
