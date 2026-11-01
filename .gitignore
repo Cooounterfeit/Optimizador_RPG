@@ -52,3 +52,6 @@ test-output
 .env
 .env.local
 .env.*.local
+
+# Supabase CLI (estado local; las migraciones de F2 sí se versionan)
+supabase/.temp/
