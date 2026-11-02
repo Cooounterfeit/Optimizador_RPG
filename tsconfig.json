@@ -17,6 +17,9 @@
     },
     {
       "path": "./supabase"
+    },
+    {
+      "path": "./libs/data-access"
     }
   ]
 }
