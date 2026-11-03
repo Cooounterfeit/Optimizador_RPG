@@ -11,12 +11,14 @@ export interface GameInput {
   syncedAt?: number;
 }
 
-/** Puerto de juegos. F5 lo implementa contra Supabase. */
+/** Puerto de optimizadores. En F5 lo implementa Supabase; localmente es cache. */
 export interface GameRepository {
   list(): Promise<GameRow[]>;
   get(id: string): Promise<GameRow | undefined>;
   save(game: GameInput): Promise<GameRow>;
   remove(id: string): Promise<void>;
+  /** Borra el inventario, equipo, historial, habilidades e imágenes de un juego. */
+  clearLocalData(gameId: string): Promise<void>;
 }
 
 /** CRUD del inventario local (ZO-55). */

@@ -71,10 +71,18 @@ export function createGameRepository(database: ZenithDatabase = db): GameReposit
 
     async remove(id) {
       try {
+        await table.delete(id);
+        changes.emit(id);
+      } catch (error) {
+        throw toDataError(error, 'borrar el optimizador de la cache');
+      }
+    },
+
+    async clearLocalData(gameId) {
+      try {
         await database.transaction(
           'rw',
           [
-            database.games,
             database.local_inventory,
             database.equipment,
             database.level_history,
@@ -82,17 +90,16 @@ export function createGameRepository(database: ZenithDatabase = db): GameReposit
             database.images,
           ],
           async () => {
-            await database.games.delete(id);
-            await database.local_inventory.where('gameId').equals(id).delete();
-            await database.equipment.where('gameId').equals(id).delete();
-            await database.level_history.where('gameId').equals(id).delete();
-            await database.skills.delete(id);
-            await database.images.where('gameId').equals(id).delete();
+            await database.local_inventory.where('gameId').equals(gameId).delete();
+            await database.equipment.where('gameId').equals(gameId).delete();
+            await database.level_history.where('gameId').equals(gameId).delete();
+            await database.skills.delete(gameId);
+            await database.images.where('gameId').equals(gameId).delete();
           },
         );
-        changes.emit(id);
+        changes.emit(gameId);
       } catch (error) {
-        throw toDataError(error, 'borrar el juego');
+        throw toDataError(error, 'borrar tus datos del juego');
       }
     },
   };
