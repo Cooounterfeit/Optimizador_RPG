@@ -14,7 +14,10 @@ export interface SettingRow {
   value: unknown;
 }
 
-/** Juego guardado en este dispositivo. Los objetos viven en `local_inventory`. */
+/**
+ * Cache local de un optimizador publicado. La fuente de verdad es Supabase
+ * (`optimizers`); aca solo se guarda una copia para leer sin red.
+ */
 export interface GameRow {
   id: string;
   template: GameTemplate;

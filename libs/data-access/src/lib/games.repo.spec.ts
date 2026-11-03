@@ -64,12 +64,31 @@ describe('games repository', () => {
     await expect(repo.get('g1')).resolves.toMatchObject({ cloud: true, syncedAt: 10 });
   });
 
-  it('borra el juego y todo lo que cuelga de el', async () => {
+  it('borra solo la cache del optimizador, sin tocar tus datos', async () => {
+    await repo.save({ id: 'g1', template: emptyTemplate('g1') });
+    await inventory.addItem(
+      { id: 'i1', slot: 'weapon', setId: null, name: 'Espada', stats: {} },
+      'g1',
+    );
+
+    await repo.remove('g1');
+
+    await expect(repo.get('g1')).resolves.toBeUndefined();
+    await expect(inventory.getAll('g1')).resolves.toEqual([
+      { id: 'i1', slot: 'weapon', setId: null, name: 'Espada', stats: {} },
+    ]);
+  });
+
+  it('borra tus datos de un juego sin tocar la cache ni otros juegos', async () => {
     await repo.save({ id: 'g1', template: emptyTemplate('g1') });
     await repo.save({ id: 'g2', template: emptyTemplate('g2') });
     await inventory.addItem(
       { id: 'i1', slot: 'weapon', setId: null, name: 'Espada', stats: {} },
       'g1',
+    );
+    await inventory.addItem(
+      { id: 'i2', slot: 'weapon', setId: null, name: 'Hacha', stats: {} },
+      'g2',
     );
     await database.equipment.put({ gameId: 'g1', profileId: 'base', slots: { weapon: 'i1' }, updatedAt: 1 });
     await database.level_history.put({ gameId: 'g1', profileId: 'base', level: 2, base: {}, at: 'x' });
@@ -77,15 +96,17 @@ describe('games repository', () => {
     await database.images.put({ id: 'g1::espada', gameId: 'g1', key: 'espada', data: 'x', updatedAt: 1 });
     await createSettingsRepository(database).set('lastGameId', 'g1');
 
-    await repo.remove('g1');
+    await repo.clearLocalData('g1');
 
-    await expect(repo.get('g1')).resolves.toBeUndefined();
+    await expect(repo.get('g1')).resolves.toBeDefined();
     await expect(inventory.getAll('g1')).resolves.toEqual([]);
     await expect(database.equipment.count()).resolves.toBe(0);
     await expect(database.level_history.count()).resolves.toBe(0);
     await expect(database.skills.count()).resolves.toBe(0);
     await expect(database.images.count()).resolves.toBe(0);
-    await expect(repo.get('g2')).resolves.toBeDefined();
+    await expect(inventory.getAll('g2')).resolves.toEqual([
+      { id: 'i2', slot: 'weapon', setId: null, name: 'Hacha', stats: {} },
+    ]);
     await expect(createSettingsRepository(database).get('lastGameId')).resolves.toBe('g1');
   });
 });
