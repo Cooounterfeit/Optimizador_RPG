@@ -1,12 +1,9 @@
-import { GAME_SCHEMA_VERSION } from '@zenith/shared-types';
+import { RouterProvider } from 'react-router-dom';
+
+import { routes } from './router';
 
 export function App() {
-  return (
-    <main>
-      <h1>Zenith Optimizer</h1>
-      <p>Monorepo listo. Contrato de juego en version {GAME_SCHEMA_VERSION}.</p>
-    </main>
-  );
+  return <RouterProvider router={routes} />;
 }
 
 export default App;
