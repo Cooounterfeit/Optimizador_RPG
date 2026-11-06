@@ -37,5 +37,5 @@ test('una busqueda sin resultados muestra el estado vacio', async ({ page }) => 
 test('la ruta de login existe', async ({ page }) => {
   await page.goto('/login');
 
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Sign in');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Accounts are not configured');
 });

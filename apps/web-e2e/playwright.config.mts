@@ -29,12 +29,22 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
-  /* Run your local dev server before starting the tests */
+  /* Run your local dev server before starting the tests.
+   * Se vacian las variables de Supabase para que el e2e corra siempre con
+   * fixtures y no dependa de datos reales. `--skip-nx-cache` evita reusar un
+   * build hecho con otra configuracion. */
   webServer: {
-    command: 'npx nx run @zenith/web:preview',
+    command: 'npx nx run @zenith/web:preview --skip-nx-cache',
     url: 'http://localhost:4300',
-    reuseExistingServer: true,
-    cwd: workspaceRoot
+    reuseExistingServer: false,
+    timeout: 180_000,
+    cwd: workspaceRoot,
+    env: {
+      ...process.env,
+      VITE_USE_MOCKS: '1',
+      VITE_SUPABASE_URL: '',
+      VITE_SUPABASE_ANON_KEY: '',
+    },
   },
   projects: [
     {

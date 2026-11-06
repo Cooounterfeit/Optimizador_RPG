@@ -2,6 +2,10 @@ import { createBrowserRouter } from 'react-router-dom';
 
 import { copy } from '../features/catalog/copy';
 import { HomePage } from '../features/catalog/HomePage';
+import { LoginPage } from '../features/auth/LoginPage';
+import { ProfilePage } from '../features/auth/ProfilePage';
+import { RegisterPage } from '../features/auth/RegisterPage';
+import { RedirectIfSignedIn, RequireSession } from '../features/auth/guards';
 import { AppLayout } from './AppLayout';
 import { OptimizerPage } from './OptimizerPage';
 import { SimplePage } from './SimplePage';
@@ -13,15 +17,27 @@ export const routes = createBrowserRouter([
       { index: true, element: <HomePage /> },
       {
         path: 'login',
-        element: <SimplePage title={copy.pages.loginTitle} note={copy.pages.loginNote} />,
+        element: (
+          <RedirectIfSignedIn>
+            <LoginPage />
+          </RedirectIfSignedIn>
+        ),
       },
       {
         path: 'registro',
-        element: <SimplePage title={copy.pages.registerTitle} note={copy.pages.registerNote} />,
+        element: (
+          <RedirectIfSignedIn>
+            <RegisterPage />
+          </RedirectIfSignedIn>
+        ),
       },
       {
         path: 'perfil',
-        element: <SimplePage title={copy.pages.profileTitle} note={copy.pages.profileNote} />,
+        element: (
+          <RequireSession>
+            <ProfilePage />
+          </RequireSession>
+        ),
       },
       { path: 'optimizer/:id', element: <OptimizerPage /> },
       {
