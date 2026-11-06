@@ -96,6 +96,8 @@ export const copy = {
     title: 'Your profile',
     lede: 'This is how the community sees you.',
     displayName: 'Display name',
+    bio: 'Bio',
+    bioHint: 'Up to 280 characters. It is public.',
     email: 'Email',
     emailNote: 'Your email is private: only you see it.',
     avatar: 'Profile photo',

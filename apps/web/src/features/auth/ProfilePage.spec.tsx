@@ -38,8 +38,28 @@ describe('ProfilePage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: copy.profile.save }));
 
-    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ displayName: 'Ana R' }));
+    await waitFor(() =>
+      expect(updateProfile).toHaveBeenCalledWith({ displayName: 'Ana R', bio: '' }),
+    );
     expect(await screen.findByText(copy.profile.saved)).toBeTruthy();
+  });
+
+  it('guarda la descripcion del perfil', async () => {
+    const updateProfile = vi.fn(async () => SAMPLE_USER);
+    const { service } = fakeAuthService({ initialUser: SAMPLE_USER, service: { updateProfile } });
+    renderProfile(service);
+
+    fireEvent.change(await screen.findByLabelText(copy.profile.bio), {
+      target: { value: 'Main Ashe desde 2021' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: copy.profile.save }));
+
+    await waitFor(() =>
+      expect(updateProfile).toHaveBeenCalledWith({
+        displayName: SAMPLE_USER.displayName,
+        bio: 'Main Ashe desde 2021',
+      }),
+    );
   });
 
   it('rechaza avatares que no son imagen', async () => {

@@ -35,6 +35,7 @@ export interface SignUpInput {
 export interface ProfilePatch {
   displayName?: string;
   avatarUrl?: string;
+  bio?: string;
 }
 
 export interface AuthService {

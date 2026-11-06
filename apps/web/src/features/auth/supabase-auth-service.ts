@@ -104,6 +104,7 @@ export function createSupabaseAuthService(client: SupabaseClient): AuthService {
       const update: Record<string, string> = {};
       if (patch.displayName !== undefined) update.display_name = patch.displayName.trim();
       if (patch.avatarUrl !== undefined) update.avatar_url = patch.avatarUrl;
+      if (patch.bio !== undefined) update.bio = patch.bio.trim();
 
       const { error } = await client.from('profiles').update(update).eq('id', current.user.id);
       if (error) throw toAuthError(error);
