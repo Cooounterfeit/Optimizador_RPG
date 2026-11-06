@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '../../components/ui/Button';
@@ -19,11 +19,23 @@ export function ProfilePage() {
 
   const fileInput = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(user?.displayName ?? '');
+  const [bio, setBio] = useState(user?.bio ?? '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [pending, setPending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const loadedFor = useRef<string | null>(null);
+
+  // La sesion puede llegar despues del primer render: recien ahi se llenan los
+  // campos. No se repite en cada cambio del usuario para no pisar lo editado.
+  useEffect(() => {
+    if (!user || loadedFor.current === user.id) return;
+    loadedFor.current = user.id;
+    setName(user.displayName);
+    setBio(user.bio ?? '');
+    setAvatarUrl(user.avatarUrl);
+  }, [user]);
 
   if (!user) return <AuthLoading />;
 
@@ -40,7 +52,7 @@ export function ProfilePage() {
 
     setPending(true);
     try {
-      await updateProfile({ displayName });
+      await updateProfile({ displayName, bio });
       setSaved(true);
     } catch (cause) {
       setError(authErrorMessage(cause));
@@ -142,6 +154,21 @@ export function ProfilePage() {
               setSaved(false);
             }}
           />
+
+          <label className={`${labelClass} mt-4`} htmlFor="profile-bio">
+            {copy.profile.bio}
+          </label>
+          <textarea
+            id="profile-bio"
+            className={`${fieldClass} h-auto min-h-[84px] resize-y py-2`}
+            maxLength={280}
+            value={bio}
+            onChange={(event) => {
+              setBio(event.target.value);
+              setSaved(false);
+            }}
+          />
+          <p className="mt-1.5 text-[11.5px] text-muted-foreground">{copy.profile.bioHint}</p>
 
           <label className={`${labelClass} mt-4`} htmlFor="profile-email">
             {copy.profile.email}
