@@ -1,9 +1,12 @@
+import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+
 import { catalogFixtures } from './fixtures';
+import { createSupabaseCatalogRepository } from './supabase-catalog-repository';
 import type { CatalogOptimizer, CatalogRepository } from './types';
 
 /**
- * Adaptador de F4: devuelve fixtures con la forma de `optimizers`.
- * F5 reemplaza esto por `SupabaseCatalogRepository` y los componentes no cambian.
+ * Sin variables de entorno el hub sigue con fixtures; con ellas, lee los
+ * optimizadores publicados de Supabase. Los componentes no cambian.
  */
 export const mockCatalogRepository: CatalogRepository = {
   async list(): Promise<CatalogOptimizer[]> {
@@ -11,7 +14,12 @@ export const mockCatalogRepository: CatalogRepository = {
   },
 };
 
-let current: CatalogRepository = mockCatalogRepository;
+export const defaultCatalogRepository: CatalogRepository =
+  isSupabaseConfigured && supabase
+    ? createSupabaseCatalogRepository(supabase)
+    : mockCatalogRepository;
+
+let current: CatalogRepository = defaultCatalogRepository;
 
 export function getCatalogRepository(): CatalogRepository {
   return current;

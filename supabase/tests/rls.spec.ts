@@ -67,6 +67,13 @@ beforeAll(async () => {
   const migracion = readdirSync(MIGRATIONS_DIR).find((f) => f.endsWith('_esquema_inicial.sql'));
   if (!migracion) throw new Error('falta la migracion *_esquema_inicial.sql en supabase/migrations');
   await db.exec(readFileSync(join(MIGRATIONS_DIR, migracion), 'utf8'));
+
+  // El resto de las migraciones de esquema tambien corre; las de Storage no,
+  // porque PGlite no trae el esquema `storage` de Supabase.
+  const otras = readdirSync(MIGRATIONS_DIR)
+    .filter((f) => f.endsWith('.sql') && f !== migracion && !f.includes('avatares'))
+    .sort();
+  for (const archivo of otras) await db.exec(readFileSync(join(MIGRATIONS_DIR, archivo), 'utf8'));
 });
 
 afterAll(async () => {
@@ -432,6 +439,88 @@ describe('cloud_inventory: solo el dueno; escribir exige suscripcion si la plata
   it('si el plan vence, vuelve a solo lectura', async () => {
     await admin(`update public.subscriptions set current_period_end = now() - interval '1 day' where user_id = $1`, [A]);
     expect(denegado(await subir(A, 'RPG v3'))).toBe(true);
+  });
+});
+
+describe('optimizer_cards: listado publico y liviano del hub', () => {
+  let CARD = '';
+  const conPortada = JSON.stringify({
+    gameId: 'zzz',
+    name: 'Zenless Zone Zero',
+    category: 'Action RPG',
+    cover: 'https://cdn.ejemplo.cl/zzz.webp',
+  });
+  const conPortadaEmbebida = JSON.stringify({
+    gameId: 'hsr',
+    name: 'Honkai: Star Rail',
+    category: 'Gacha',
+    cover: 'data:image/png;base64,AAAA',
+  });
+
+  beforeAll(async () => {
+    const r = await como(
+      A,
+      `insert into public.optimizers (game_name, name, template, published)
+       values ('Zenless Zone Zero', 'Disorder solver', $1, true) returning id`,
+      [conPortada],
+    );
+    CARD = r.rows[0]?.id as string;
+    await como(
+      A,
+      `insert into public.optimizers (game_name, name, template, published)
+       values ('Honkai: Star Rail', 'Portada embebida', $1, true)`,
+      [conPortadaEmbebida],
+    );
+  });
+
+  it('un visitante la puede leer', async () => {
+    const r = await como(null, `select id from public.optimizer_cards`);
+    expect(r.error).toBeUndefined();
+    expect(r.rows.length).toBeGreaterThan(0);
+  });
+
+  it('expone categoria, portada y autor', async () => {
+    const r = await como(null, `select * from public.optimizer_cards where id = $1`, [CARD]);
+    const fila = r.rows[0] as Row;
+    expect(fila.category).toBe('Action RPG');
+    expect(fila.cover).toBe('https://cdn.ejemplo.cl/zzz.webp');
+    expect(fila.author_name).toBe('Ana R');
+    expect(fila.score).toBe(0);
+  });
+
+  it('descarta una portada embebida', async () => {
+    const r = await como(
+      null,
+      `select cover from public.optimizer_cards where name = 'Portada embebida'`,
+    );
+    expect((r.rows[0] as Row).cover).toBeNull();
+  });
+
+  it('no incluye borradores', async () => {
+    const ids = (await como(null, `select id from public.optimizer_cards`)).rows.map((r) => r.id);
+    expect(ids.includes(BORRADOR)).toBe(false);
+  });
+
+  it('el autor ve su borrador en la tabla pero no en la vista', async () => {
+    const tabla = await como(A, `select id from public.optimizers where id = $1`, [BORRADOR]);
+    const vista = await como(A, `select id from public.optimizer_cards where id = $1`, [BORRADOR]);
+    expect(tabla.rows.length).toBe(1);
+    expect(vista.rows.length).toBe(0);
+  });
+
+  it('no expone columnas pesadas', async () => {
+    const cols = (
+      await admin(
+        `select column_name from information_schema.columns where table_schema = 'public' and table_name = 'optimizer_cards'`,
+      )
+    ).rows.map((c) => c.column_name as string);
+    expect(cols).not.toContain('template');
+    expect(cols).not.toContain('sample_items');
+  });
+
+  it('un borrador no se filtra por la vista aunque el autor tenga sesion', async () => {
+    const r = await como(A, `select count(*)::int n from public.optimizer_cards where id = $1`, [BORRADOR]);
+    expect((r.rows[0] as { n: number }).n).toBe(0);
   });
 });
 

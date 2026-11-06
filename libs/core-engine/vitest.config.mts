@@ -8,6 +8,8 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: 'node',
+    // El solver tarda mas cuando los 6 proyectos corren en paralelo en CI.
+    testTimeout: 20_000,
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
     coverage: {

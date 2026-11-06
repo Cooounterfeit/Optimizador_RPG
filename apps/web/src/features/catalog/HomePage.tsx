@@ -24,10 +24,13 @@ export function HomePage() {
   const query = params.get('q') ?? '';
 
   const [optimizers, setOptimizers] = useState<CatalogOptimizer[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<CatalogFilterState>(initialFilterState);
 
   useEffect(() => {
     let alive = true;
+    setFailed(false);
 
     getCatalogRepository()
       .list()
@@ -35,13 +38,16 @@ export function HomePage() {
         if (alive) setOptimizers(list);
       })
       .catch(() => {
-        if (alive) setOptimizers([]);
+        if (alive) {
+          setOptimizers(null);
+          setFailed(true);
+        }
       });
 
     return () => {
       alive = false;
     };
-  }, []);
+  }, [attempt]);
 
   const all = useMemo(() => optimizers ?? [], [optimizers]);
   const facets = useMemo(() => categoryFacets(all), [all]);
@@ -91,7 +97,13 @@ export function HomePage() {
               : `${visible.length} optimizers shown`}
           </p>
 
-          {optimizers === null ? (
+          {failed ? (
+            <EmptyState title={copy.catalog.errorTitle} body={copy.catalog.errorBody}>
+              <Button variant="outline" onClick={() => setAttempt((value) => value + 1)}>
+                {copy.catalog.retry}
+              </Button>
+            </EmptyState>
+          ) : optimizers === null ? (
             <p className="py-16 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
               {copy.catalog.loading}
             </p>
