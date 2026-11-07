@@ -4,7 +4,7 @@ test('la pagina principal muestra el catalogo', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Proven builds');
-  await expect(page.locator('article')).toHaveCount(12);
+  await expect(page.locator('article')).toHaveCount(13);
   await expect(page.getByText('Work in progress')).toBeVisible();
 });
 

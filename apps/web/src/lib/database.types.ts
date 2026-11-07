@@ -15,6 +15,16 @@ export interface ProfileRow {
   updated_at: string;
 }
 
+/** Fila de `optimizers` (plantilla completa; la vista del hub no la trae). */
+export interface OptimizerRow {
+  id: string;
+  name: string;
+  game_name: string;
+  description: string;
+  template: unknown;
+  sample_items: unknown;
+}
+
 /** Fila de la vista `optimizer_cards` (migracion 20261005000003). */
 export interface OptimizerCardRow {
   id: string;

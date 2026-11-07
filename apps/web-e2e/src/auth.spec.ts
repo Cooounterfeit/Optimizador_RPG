@@ -23,6 +23,6 @@ test('el perfil sin configurar no rompe la app', async ({ page }) => {
 test('el hub sigue mostrando las tarjetas', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.locator('article')).toHaveCount(12);
+  await expect(page.locator('article')).toHaveCount(13);
   await expect(page.getByText('Sign in')).toBeVisible();
 });
