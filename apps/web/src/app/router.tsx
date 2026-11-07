@@ -1,7 +1,8 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter } from 'react-router-dom';
 
 import { copy } from '../features/catalog/copy';
 import { HomePage } from '../features/catalog/HomePage';
+import { InventoryPage } from '../features/inventory/InventoryPage';
 import { LoginPage } from '../features/auth/LoginPage';
 import { ProfilePage } from '../features/auth/ProfilePage';
 import { RegisterPage } from '../features/auth/RegisterPage';
@@ -40,6 +41,8 @@ export const routes = createBrowserRouter([
         ),
       },
       { path: 'optimizer/:id', element: <OptimizerPage /> },
+      { path: 'optimizer/:id/inventario', element: <InventoryPage /> },
+      { path: 'inventario', element: <Navigate to="/optimizer/genshin/inventario" replace /> },
       {
         path: '*',
         element: <SimplePage title={copy.pages.notFoundTitle} note={copy.pages.notFoundBody} />,

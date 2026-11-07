@@ -31,7 +31,7 @@ describe('HomePage', () => {
     renderHome();
 
     expect(await screen.findByText('Disorder anomaly solver')).toBeTruthy();
-    expect(cards()).toHaveLength(12);
+    expect(cards()).toHaveLength(13);
   });
 
   it('filtra por genero y actualiza el contador', async () => {
@@ -75,7 +75,7 @@ describe('HomePage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
 
-    await waitFor(() => expect(cards()).toHaveLength(12));
+    await waitFor(() => expect(cards()).toHaveLength(13));
   });
 
   it('el rail de novedades queda en trabajo en curso', async () => {
