@@ -26,7 +26,7 @@ export const SkillNodeSchema = z.object({
   /**
    * Eleccion excluyente: de todos los nodos con el mismo `choiceGroup` (en
    * cualquier arbol) solo uno puede tener rangos. Es el "elige uno de dos" de
-   * World of Warcraft, o elegir una especializacion o una clase de heroe.
+   * un MMO, o elegir una especializacion o una clase de heroe.
    */
   choiceGroup: z.string().optional(),
   /**
@@ -49,7 +49,7 @@ export const SkillTreeDefSchema = z.object({
   budget: z.number().optional(),
   /**
    * Si es true, un requisito solo cuenta cuando esa habilidad esta COMPLETA
-   * (con todos sus rangos), como en World of Warcraft. Por defecto basta con
+   * (con todos sus rangos), como en un MMO. Por defecto basta con
    * un rango.
    */
   requireFullRanks: z.boolean().optional(),

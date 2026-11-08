@@ -1,20 +1,16 @@
 /**
  * Adaptador GOOD -> Zenith
  * ------------------------
- * GOOD (Genshin Open Object Description) es el formato que exportan Genshin
- * Optimizer y otras herramientas de la comunidad.
+ * GOOD es el formato abierto que exportan varias herramientas de la comunidad
+ * gacha. El motor solo ve `Item[]`: otro formato es otro adaptador.
  *
- * Este es el unico lugar del proyecto que sabe de Genshin. El motor solo ve
- * `Item[]`: soportar otro juego u otro formato es escribir otro adaptador.
+ * Este modulo no conoce ningun juego: recibe el catalogo como parametro.
  */
 
 import type { Item } from '@zenith/shared-types';
 
+import type { GachaCatalog, GoodFile } from './types';
 import { weaponStats } from './weapons';
-import data from './genshin.data.json';
-import type { GiData, GoodFile } from './types';
-
-const GI = data as unknown as GiData;
 
 /**
  * Valor de la estadistica principal segun rareza y nivel.
@@ -83,7 +79,11 @@ export interface ImportResult {
   weapons: number;
 }
 
-export function importGood(raw: unknown, options: ImportOptions = {}): ImportResult {
+export function importGood(
+  raw: unknown,
+  catalog: GachaCatalog,
+  options: ImportOptions = {},
+): ImportResult {
   if (typeof raw !== 'object' || raw === null) {
     throw new Error('The GOOD file is not a JSON object.');
   }
@@ -133,13 +133,13 @@ export function importGood(raw: unknown, options: ImportOptions = {}): ImportRes
     });
   });
 
-  const weaponSlot = options.weaponSlot ?? 'weapon';
+  const weaponSlot = options.weaponSlot ?? catalog.weaponSlot ?? 'weapon';
   const weapons =
     options.includeWeapons === false ? [] : Array.isArray(file.weapons) ? file.weapons : [];
   let importedWeapons = 0;
 
   weapons.forEach((entry, index) => {
-    const weapon = GI.weapons[entry.key];
+    const weapon = catalog.weapons.find((candidate) => candidate.key === entry.key);
     if (!weapon) {
       skipped++;
       return;
@@ -150,7 +150,7 @@ export function importGood(raw: unknown, options: ImportOptions = {}): ImportRes
     }
 
     const level = entry.level ?? 1;
-    const stats = weaponStats(weapon, level, entry.ascension);
+    const stats = weaponStats(weapon, catalog.curves, level, entry.ascension);
     if (!stats.weaponAtk) {
       skipped++;
       return;

@@ -9,7 +9,7 @@ import { SkillSelectionSchema } from './skills.js';
  *
  *  min → tiene que llegar al menos a este valor (HU04).
  *  max → no puede pasarse de este valor. Es lo que modela un PRESUPUESTO:
- *        carga de equipo en Elden Ring, capacidad de gemas, peso, coste.
+ *        carga de equipo, capacidad de gemas, peso, coste.
  *
  * Se pueden usar las dos a la vez para exigir una ventana.
  */

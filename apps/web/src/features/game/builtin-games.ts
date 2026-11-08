@@ -3,9 +3,8 @@ import { parsePackage, type GamePackage } from '@zenith/data-access';
 import type { CatalogOptimizer } from '../catalog/types';
 
 /**
- * Juegos integrados. Solo se usan como respaldo: cuando Supabase esta
- * configurado la plantilla viene de `optimizers`; esto cubre el modo mock, el
- * e2e y las rutas antiguas que aun apuntan al id del juego.
+ * Juegos integrados SOLO para mocks y e2e. Con Supabase configurado la
+ * plantilla viene de `optimizers`; en produccion esta lista queda vacia.
  */
 export interface BuiltinGame {
   id: string;
@@ -13,32 +12,32 @@ export interface BuiltinGame {
   load(): Promise<GamePackage>;
 }
 
-const SEED_URL = '/seeds/genshin.zenith.json';
+const SEED_URL = '/seeds/gacha-demo.zenith.json';
 
-let genshinPackage: Promise<GamePackage> | undefined;
+let demoPackage: Promise<GamePackage> | undefined;
 
-const loadGenshin = (): Promise<GamePackage> => {
-  genshinPackage ??= fetch(SEED_URL)
+const loadDemo = (): Promise<GamePackage> => {
+  demoPackage ??= fetch(SEED_URL)
     .then(async (response) => {
       if (!response.ok) {
-        throw new Error(`The Genshin seed is not available (${response.status}).`);
+        throw new Error(`The demo seed is not available (${response.status}).`);
       }
       return parsePackage(await response.json());
     })
     .catch((cause) => {
-      genshinPackage = undefined;
+      demoPackage = undefined;
       throw cause;
     });
 
-  return genshinPackage;
+  return demoPackage;
 };
 
-const genshinCard: CatalogOptimizer = {
-  id: 'genshin',
-  name: 'Genshin Impact optimizer',
-  gameName: 'Genshin Impact',
+const demoCard: CatalogOptimizer = {
+  id: 'gacha-demo',
+  name: 'Astral Forge optimizer',
+  gameName: 'Astral Forge',
   description:
-    'Arm, five artifacts, 44 sets and 121 characters. Bring your inventory and let the solver prove the build.',
+    'A synthetic gacha game for demos: weapons, artifacts and a non-linear damage formula. Its data is public and forkable.',
   author: { id: 'zenith', displayName: 'ZenithOptimizer' },
   score: 160,
   votesCount: 0,
@@ -47,11 +46,15 @@ const genshinCard: CatalogOptimizer = {
   published: true,
 };
 
+/**
+ * Solo lo consume el repositorio mock (sin Supabase). Con Supabase configurado
+ * el hub lee los optimizadores publicados y esta tarjeta no aparece.
+ */
 export const builtinGames: BuiltinGame[] = [
   {
-    id: 'genshin',
-    card: genshinCard,
-    load: loadGenshin,
+    id: 'gacha-demo',
+    card: demoCard,
+    load: loadDemo,
   },
 ];
 

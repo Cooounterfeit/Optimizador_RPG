@@ -5,15 +5,16 @@ const DAY = 24 * 60 * 60 * 1000;
 const daysAgo = (days: number): string => new Date(Date.now() - days * DAY).toISOString();
 
 /**
- * Catalogo de ejemplo para F4. La forma es la que devolvera Supabase en F5:
- * una fila de `optimizers` mas el autor resuelto desde `profiles`.
+ * Catalogo de ejemplo para el hub. Los juegos son ficticios: el producto
+ * trabaja generos, no titulos concretos. La forma es la que devuelve Supabase
+ * en F5: una fila de `optimizers` mas el autor resuelto desde `profiles`.
  */
 export const catalogFixtures: CatalogOptimizer[] = [
   {
-    id: 'zzz-disorder',
-    name: 'Disorder anomaly solver',
-    gameName: 'Zenless Zone Zero',
-    description: 'Maximiza el dano por desorden con el equipo y el motor actuales.',
+    id: 'neon-drift',
+    name: 'Overdrive anomaly solver',
+    gameName: 'Neon Drift',
+    description: 'Maximiza el dano por sobrecarga con el equipo y el motor actuales.',
     author: { id: 'kalibr', displayName: 'kalibr' },
     score: 312,
     votesCount: 68,
@@ -22,10 +23,10 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'zzz-shiyu',
-    name: 'Shiyu defense budget',
-    gameName: 'Zenless Zone Zero',
-    description: 'Reparte el presupuesto de Shiyu Defence entre dos equipos.',
+    id: 'neon-defense',
+    name: 'District defense budget',
+    gameName: 'Neon Drift',
+    description: 'Reparte el presupuesto de defensa entre dos equipos.',
     author: { id: 'hollowline', displayName: 'hollowline' },
     score: 288,
     votesCount: 54,
@@ -34,10 +35,10 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'hsr-dpa',
-    name: 'Damage per AV solver',
-    gameName: 'Honkai: Star Rail',
-    description: 'Ordena reliquias y conos de luz por dano por accion.',
+    id: 'ember-turn',
+    name: 'Damage per turn solver',
+    gameName: 'Emberfall',
+    description: 'Ordena reliquias y focos por dano por turno.',
     author: { id: 'hollowline', displayName: 'hollowline' },
     score: 244,
     votesCount: 49,
@@ -46,10 +47,10 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'poe2-tree',
-    name: 'Passive tree solver',
-    gameName: 'Path of Exile 2',
-    description: 'Recorre el arbol pasivo completo bajo tus restricciones.',
+    id: 'ironveil-grid',
+    name: 'Passive grid solver',
+    gameName: 'Ironveil',
+    description: 'Recorre la grilla pasiva completa bajo tus restricciones.',
     author: { id: 'brutus', displayName: 'brutus' },
     score: 196,
     votesCount: 41,
@@ -58,9 +59,9 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'wf-mods',
+    id: 'starhold-mods',
     name: 'Mod capacity solver',
-    gameName: 'Warframe',
+    gameName: 'Starhold',
     description: 'Ajusta capacidad y mods al maximo dano sostenido.',
     author: { id: 'forma', displayName: 'forma' },
     score: 168,
@@ -70,9 +71,9 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'mhw-deco',
+    id: 'wildreach-deco',
     name: 'Decoration and skill solver',
-    gameName: 'Monster Hunter Wilds',
+    gameName: 'Wildreach',
     description: 'Busca la combinacion de decoraciones que cierra tus habilidades.',
     author: { id: 'wyvern', displayName: 'wyvern' },
     score: 142,
@@ -82,9 +83,9 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'hsr-relic',
+    id: 'ember-relic',
     name: 'Relic mainstat allocator',
-    gameName: 'Honkai: Star Rail',
+    gameName: 'Emberfall',
     description: 'Elige mainstats de reliquia con el resto del equipo fijo.',
     author: { id: 'tacet', displayName: 'tacet' },
     score: 121,
@@ -94,9 +95,9 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'wuwa-echo',
+    id: 'hollow-echo',
     name: 'Echo substat optimizer',
-    gameName: 'Wuthering Waves',
+    gameName: 'Hollow Song',
     description: 'Prioriza substats de eco segun la curva de dano.',
     author: { id: 'tacet', displayName: 'tacet' },
     score: 98,
@@ -106,9 +107,9 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'poe2-support',
+    id: 'ironveil-support',
     name: 'Support gem pairing',
-    gameName: 'Path of Exile 2',
+    gameName: 'Ironveil',
     description: 'Empareja gemas de soporte sin pasar el costo de mana.',
     author: { id: 'brutus', displayName: 'brutus' },
     score: 64,
@@ -118,9 +119,9 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'le-idol',
+    id: 'runebound-idol',
     name: 'Idol and affix solver',
-    gameName: 'Last Epoch',
+    gameName: 'Runebound',
     description: 'Combina idolos y afijos para el objetivo que elijas.',
     author: { id: 'epoch', displayName: 'epoch' },
     score: 45,
@@ -130,9 +131,9 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'd2-armor',
+    id: 'starhold-armor',
     name: 'Armor stat solver',
-    gameName: 'Destiny 2',
+    gameName: 'Starhold',
     description: 'Reparte stats de armadura entre movilidad, resistencia y recuperacion.',
     author: { id: 'ghost', displayName: 'ghost' },
     score: 23,
@@ -142,10 +143,10 @@ export const catalogFixtures: CatalogOptimizer[] = [
     published: true,
   },
   {
-    id: 'mhw-artian',
-    name: 'Artian weapon roll budget',
-    gameName: 'Monster Hunter Wilds',
-    description: 'Decide que tiradas de Artian vale la pena conservar.',
+    id: 'wildreach-roll',
+    name: 'Weapon roll budget',
+    gameName: 'Wildreach',
+    description: 'Decide que tiradas de arma vale la pena conservar.',
     author: { id: 'wyvern', displayName: 'wyvern' },
     score: 8,
     votesCount: 4,

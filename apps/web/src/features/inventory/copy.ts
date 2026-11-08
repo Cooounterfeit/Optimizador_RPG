@@ -42,6 +42,10 @@ export const inventoryCopy = {
     empty: 'No weapons match those filters.',
     emptySet: 'No sets match that search.',
     weaponError: 'Could not add that weapon.',
+    loading: 'Loading catalog…',
+    noCatalogTitle: 'This game has no catalog',
+    noCatalog: 'The optimizer does not publish a gacha catalog, so there is nothing to browse.',
+    errorTitle: 'Could not load the catalog',
   },
   filters: {
     slot: 'Slot filter',
@@ -73,7 +77,7 @@ export const inventoryCopy = {
   import: {
     eyebrow: 'Import',
     title: 'Bring your inventory',
-    body: 'Drop a GOOD export from Genshin Optimizer to load artifacts and weapons with their stats, or a Zenith package to restore a full inventory. Nothing is written until you confirm.',
+    body: 'Drop a GOOD export to load artifacts and weapons with their stats, or a Zenith package to restore a full inventory. Nothing is written until you confirm.',
     formats: 'GOOD export or Zenith package · .json',
     action: 'Choose a file',
     fileLabel: 'Inventory file',

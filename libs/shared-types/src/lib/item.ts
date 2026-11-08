@@ -17,7 +17,7 @@ export const ItemSchema = z.object({
   stats: z.record(z.string(), z.number()),
   /**
    * Requisitos para poder equiparla, contra las estadisticas del perfil base.
-   * Es el patron de Elden Ring, Dark Souls o cualquier RPG con requisitos:
+   * Es el patron de cualquier RPG con requisitos:
    * "necesitas 40 de Fuerza". Las piezas que el perfil no cumple se descartan
    * antes de empezar a buscar.
    */

@@ -10,7 +10,7 @@ const row = (overrides: Partial<OptimizerCardRow> = {}): OptimizerCardRow => ({
   id: 'opt-1',
   name: 'Disorder anomaly solver',
   description: 'Maximiza anomalia',
-  game_name: 'Zenless Zone Zero',
+  game_name: 'Neon Drift',
   category: 'Action RPG',
   cover: 'https://cdn.ejemplo.cl/zzz.webp',
   score: 42,
@@ -39,7 +39,7 @@ describe('mapCard', () => {
       id: 'opt-1',
       name: 'Disorder anomaly solver',
       description: 'Maximiza anomalia',
-      gameName: 'Zenless Zone Zero',
+      gameName: 'Neon Drift',
       author: {
         id: 'author-1',
         displayName: 'kalibr',
@@ -68,7 +68,7 @@ describe('createSupabaseCatalogRepository', () => {
     const list = await repository.list();
 
     expect(list).toHaveLength(1);
-    expect(list[0].gameName).toBe('Zenless Zone Zero');
+    expect(list[0].gameName).toBe('Neon Drift');
   });
 
   it('propaga el error de Supabase', async () => {

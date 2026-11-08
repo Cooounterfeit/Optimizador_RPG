@@ -2,7 +2,7 @@
  * El grafo de la plantilla
  * ========================
  * Un bloque de quince formulas encadenadas es correcto y es ilegible. Para
- * entender de donde sale el DPS de Genshin hay que leer `dps`, encontrar
+ * entender de donde sale el dano hay que leer `dps`, encontrar
  * `totalAtk`, subir a buscarlo, encontrar `critMult`, volver a subir… La
  * informacion esta toda ahi, pero la RELACION entre las piezas —que es lo que
  * de verdad se quiere entender— hay que reconstruirla en la cabeza.
@@ -64,7 +64,7 @@ export function varsOf(formula: string): string[] {
  * Id del nodo objetivo.
  *
  * Lleva prefijo a proposito. Nada impide que un objetivo se llame `maxLife` y
- * que exista ademas una estadistica `maxLife` —Terraria lo hace—, y en ese caso
+ * que exista ademas una estadistica `maxLife` —algunos juegos lo hacen—, y en ese caso
  * el nodo del objetivo y el de la estadistica se fundian en uno, produciendo un
  * ciclo falso y una flecha que iba hacia atras. Para el motor no hay conflicto
  * (el objetivo es una expresion, no una variable), asi que el grafo tampoco

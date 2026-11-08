@@ -1,0 +1,78 @@
+{
+  "zenith": "0.1",
+  "exportedAt": "2026-11-08T00:00:00.000Z",
+  "template": {
+    "schemaVersion": "0.1",
+    "gameId": "gacha-demo",
+    "name": "Astral Forge",
+    "description": "Synthetic gacha game for demos and tests. Its data is public and forkable.",
+    "stats": [
+      { "id": "atk", "name": "ATK", "unit": "flat" },
+      { "id": "hp", "name": "HP", "unit": "flat" },
+      { "id": "critRate", "name": "CRIT Rate", "unit": "percent" },
+      { "id": "critDMG", "name": "CRIT DMG", "unit": "percent" },
+      { "id": "energy", "name": "Energy Recharge", "unit": "percent" }
+    ],
+    "slots": [
+      { "id": "weapon", "name": "Weapon" },
+      { "id": "flower", "name": "Flower" },
+      { "id": "plume", "name": "Plume" },
+      { "id": "sands", "name": "Sands" },
+      { "id": "goblet", "name": "Goblet" },
+      { "id": "circlet", "name": "Circlet" }
+    ],
+    "sets": [
+      {
+        "id": "astral-core",
+        "name": "Astral Core",
+        "tiers": [
+          { "pieces": 2, "label": "2pc", "effects": { "atk": 18 } },
+          { "pieces": 4, "label": "4pc", "effects": { "critRate": 12 } }
+        ]
+      },
+      {
+        "id": "void-song",
+        "name": "Void Song",
+        "tiers": [
+          { "pieces": 2, "label": "2pc", "effects": { "hp": 1200 } },
+          { "pieces": 4, "label": "4pc", "effects": { "critDMG": 20 } }
+        ]
+      }
+    ],
+    "derived": [],
+    "objectives": [
+      {
+        "id": "damage",
+        "name": "Damage",
+        "description": "Synthetic score for demos.",
+        "kind": "linear",
+        "monotonic": true,
+        "formula": "atk * (1 + critRate / 100 * critDMG / 100)"
+      }
+    ],
+    "baseProfiles": [
+      {
+        "id": "nova",
+        "name": "Nova",
+        "assetKey": "nova",
+        "base": { "hp": 5000, "atk": 300, "critRate": 5, "critDMG": 50, "energy": 100 }
+      },
+      {
+        "id": "orion",
+        "name": "Orion",
+        "assetKey": "orion",
+        "base": { "hp": 6000, "atk": 280, "critRate": 5, "critDMG": 50, "energy": 100 }
+      }
+    ],
+    "constrainableStats": ["atk", "critRate"],
+    "extensions": {
+      "gacha": {
+        "kind": "gacha",
+        "weaponSlot": "weapon",
+        "catalogUrl": "/seeds/gacha-demo.catalog.json",
+        "catalogVersion": "demo-1"
+      }
+    }
+  },
+  "items": []
+}

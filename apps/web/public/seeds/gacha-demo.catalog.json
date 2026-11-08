@@ -1,0 +1,33 @@
+{
+  "kind": "gacha",
+  "weaponSlot": "weapon",
+  "weapons": [
+    {
+      "key": "starlight-blade",
+      "name": "Starlight Blade",
+      "rarity": 5,
+      "type": "sword",
+      "maxLevel": 90,
+      "init": { "v": 46, "c": "growth" },
+      "subInit": { "stat": "critRate", "v": 0.072, "c": "growth", "pct": true },
+      "ascAtk": [0, 12, 24, 36, 48, 60, 72]
+    },
+    {
+      "key": "iron-wand",
+      "name": "Iron Wand",
+      "rarity": 4,
+      "type": "catalyst",
+      "maxLevel": 90,
+      "atk": 400,
+      "sub": { "stat": "atk", "value": 20 }
+    }
+  ],
+  "curves": {
+    "1": { "growth": 1 },
+    "20": { "growth": 1.3 },
+    "40": { "growth": 1.6 },
+    "60": { "growth": 1.9 },
+    "80": { "growth": 2.2 },
+    "90": { "growth": 2.5 }
+  }
+}

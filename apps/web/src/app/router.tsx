@@ -42,7 +42,7 @@ export const routes = createBrowserRouter([
       },
       { path: 'optimizer/:id', element: <OptimizerPage /> },
       { path: 'optimizer/:id/inventario', element: <InventoryPage /> },
-      { path: 'inventario', element: <Navigate to="/optimizer/genshin/inventario" replace /> },
+      { path: 'inventario', element: <Navigate to="/" replace /> },
       {
         path: '*',
         element: <SimplePage title={copy.pages.notFoundTitle} note={copy.pages.notFoundBody} />,

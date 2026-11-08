@@ -4,18 +4,18 @@
   "source": "e2e",
   "artifacts": [
     {
-      "setKey": "GladiatorsFinale",
+      "setKey": "astral-core",
       "rarity": 5,
       "level": 20,
       "slotKey": "flower",
       "mainStatKey": "hp",
       "substats": [
-        { "key": "critRate_", "value": 7.8 },
-        { "key": "atk_", "value": 5.8 }
+        { "key": "critRate", "value": 7.8 },
+        { "key": "atk", "value": 5.8 }
       ]
     }
   ],
   "weapons": [
-    { "key": "WolfsGravestone", "level": 90, "ascension": 6, "refinement": 1 }
+    { "key": "starlight-blade", "level": 90, "ascension": 6, "refinement": 1 }
   ]
 }

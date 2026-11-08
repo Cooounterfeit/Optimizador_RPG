@@ -9,7 +9,7 @@ import { setInventoryRepository } from '../game/repositories';
 import { useInventory } from './useInventory';
 
 function Probe({ tag }: { tag: string }) {
-  const inventory = useInventory('genshin');
+  const inventory = useInventory('gacha-demo');
 
   return (
     <div>

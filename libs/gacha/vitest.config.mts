@@ -2,9 +2,9 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig(() => ({
   root: import.meta.dirname,
-  cacheDir: '../../node_modules/.vite/libs/adapters',
+  cacheDir: '../../node_modules/.vite/libs/gacha',
   test: {
-    name: '@zenith/adapters',
+    name: '@zenith/gacha',
     watch: false,
     globals: true,
     environment: 'node',

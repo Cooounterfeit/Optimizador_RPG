@@ -4,11 +4,11 @@ import { accentHue } from './accent';
 
 describe('accentHue', () => {
   it('es estable para el mismo nombre', () => {
-    expect(accentHue('Genshin')).toBe(accentHue('Genshin'));
+    expect(accentHue('Astral')).toBe(accentHue('Astral'));
   });
 
   it('devuelve un hue valido', () => {
-    for (const name of ['Genshin', 'Terraria', 'Zenless Zone Zero', '']) {
+    for (const name of ['Astral', 'Emberfall', 'Neon Drift', '']) {
       const hue = accentHue(name);
       expect(hue).toBeGreaterThanOrEqual(0);
       expect(hue).toBeLessThan(360);
@@ -16,6 +16,6 @@ describe('accentHue', () => {
   });
 
   it('separa nombres distintos', () => {
-    expect(accentHue('Genshin')).not.toBe(accentHue('Terraria'));
+    expect(accentHue('Astral')).not.toBe(accentHue('Emberfall'));
   });
 });

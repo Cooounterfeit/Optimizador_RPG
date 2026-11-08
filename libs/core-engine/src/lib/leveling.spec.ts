@@ -117,7 +117,9 @@ describe('4. validacion', () => {
 });
 
 describe('5. ejemplo publicado (RPG clasico)', () => {
-  const pkg = JSON.parse(readFileSync(new URL('../../fixtures/rpg.zenith.json', import.meta.url), 'utf8'));
+  const pkg = JSON.parse(
+    readFileSync(new URL('../../../../demo/public/examples/rpg.zenith.json', import.meta.url), 'utf8'),
+  );
   const tpl = pkg.template as GameTemplate;
   const items = pkg.items as Item[];
   const v = validateTemplate(tpl);
@@ -245,11 +247,13 @@ describe('8. reparto automatico', () => {
   });
 });
 
-describe('9. ejemplo Souls (niveles por puntos y curvas)', () => {
+describe('9. ejemplo ARPG (niveles por puntos y curvas)', () => {
   it('valida sin avisos de curvas ni niveles, cumple el requisito y sube el dano', () => {
-    const souls = JSON.parse(readFileSync(new URL('../../fixtures/souls.zenith.json', import.meta.url), 'utf8'));
-    const ts9 = souls.template as GameTemplate;
-    const it9 = souls.items as Item[];
+    const arpg = JSON.parse(
+      readFileSync(new URL('../../../../demo/public/examples/arpg.zenith.json', import.meta.url), 'utf8'),
+    );
+    const ts9 = arpg.template as GameTemplate;
+    const it9 = arpg.items as Item[];
     const v9 = validateTemplate(ts9, it9);
     expect(v9.ok && !v9.issues.some((i) => i.code === 'W_CURVA' || i.code === 'W_NIVELES')).toBe(true);
     const g9 = ts9.baseProfiles.find((p) => p.id === 'guerrero')!;

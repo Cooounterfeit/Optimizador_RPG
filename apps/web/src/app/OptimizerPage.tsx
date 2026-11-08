@@ -11,7 +11,7 @@ import { gameCopy } from '../features/game/copy';
 import { useGame } from '../features/game/useGame';
 import { useInventory } from '../features/inventory/useInventory';
 import { ItemGlyph } from '../features/inventory/ItemGlyph';
-import { itemIconUrl } from '../lib/images';
+import { itemIconUrls } from '../lib/images';
 
 export function OptimizerPage() {
   const { id = '' } = useParams();
@@ -279,7 +279,7 @@ export function OptimizerPage() {
                     <ItemGlyph
                       name={item.name}
                       rarity={item.rarity}
-                      src={itemIconUrl(item)}
+                      sources={itemIconUrls(template.assets, item)}
                       className="h-9 w-9 text-[10px]"
                     />
                     <div className="min-w-0 flex-1">

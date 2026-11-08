@@ -4,22 +4,23 @@ import { describe, expect, it } from 'vitest';
 
 import { validateTemplate } from './validate.js';
 
-const load = (file: string) => JSON.parse(readFileSync(new URL(`../../fixtures/${file}`, import.meta.url), 'utf8'));
+const load = (file: string) =>
+  JSON.parse(readFileSync(new URL(`../../../../demo/public/examples/${file}`, import.meta.url), 'utf8'));
 const errores = (r: ReturnType<typeof validateTemplate>) =>
   r.issues.filter((i) => i.severity === 'error').map((i) => i.message).join(' | ');
 
 describe('validateTemplate sobre los fixtures', () => {
-  it('Genshin Impact valida (selfTests inline, sin inventario externo)', () => {
-    const r = validateTemplate(load('genshin.zenith.json').template);
+  it('la plantilla gacha valida (selfTests inline, sin inventario externo)', () => {
+    const r = validateTemplate(load('gacha.zenith.json').template);
     expect(r.ok, errores(r)).toBe(true);
   });
-  it('Souls (simplificado) valida', () => {
-    const souls = load('souls.zenith.json');
-    const r = validateTemplate(souls.template, souls.items);
+  it('la plantilla ARPG (simplificada) valida', () => {
+    const arpg = load('arpg.zenith.json');
+    const r = validateTemplate(arpg.template, arpg.items);
     expect(r.ok, errores(r)).toBe(true);
   });
-  it('Terraria (simplificado) valida', () => {
-    const t = load('terraria.zenith.json');
+  it('la plantilla sandbox (simplificada) valida', () => {
+    const t = load('sandbox.zenith.json');
     const r = validateTemplate(t.template, t.items);
     expect(r.ok, errores(r)).toBe(true);
   });
@@ -55,9 +56,9 @@ describe('plantilla rota a proposito', () => {
 
 describe('objetivo no monotono declarado como monotono', () => {
   it('lo detecta y avisa', () => {
-    const terraria = load('terraria.zenith.json');
+    const sandbox = load('sandbox.zenith.json');
     const noMonotona = {
-      ...terraria.template,
+      ...sandbox.template,
       selfTests: [],
       objectives: [{
         id: 'exacto', name: 'Defensa exactamente 100', description: '',
@@ -65,7 +66,7 @@ describe('objetivo no monotono declarado como monotono', () => {
         formula: '1000 - abs(defense - 100)',
       }],
     };
-    const r = validateTemplate(noMonotona, terraria.items);
+    const r = validateTemplate(noMonotona, sandbox.items);
     expect(r.issues.some((i) => i.code === 'W_MONOTONIA'), errores(r)).toBe(true);
   });
 });

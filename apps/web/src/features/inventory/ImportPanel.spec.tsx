@@ -1,13 +1,13 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
+import { clearGachaCatalogCache, type GachaCatalog } from '@zenith/gacha';
 import type {
   GameRepository,
-  ImagesRepository,
   ImageMap,
+  ImagesRepository,
   InventoryRepository,
 } from '@zenith/data-access';
 import type { GameTemplate, Item } from '@zenith/shared-types';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setGameRepository, setImagesRepository, setInventoryRepository } from '../game/repositories';
 import { ImportPanel } from './ImportPanel';
@@ -24,10 +24,28 @@ if (typeof File !== 'undefined' && typeof File.prototype.text !== 'function') {
   };
 }
 
+const catalog: GachaCatalog = {
+  kind: 'gacha',
+  weaponSlot: 'weapon',
+  weapons: [
+    {
+      key: 'starlight-blade',
+      name: 'Starlight Blade',
+      rarity: 5,
+      type: 'sword',
+      maxLevel: 90,
+      init: { v: 46, c: 'growth' },
+      subInit: { stat: 'critRate_', v: 0.072, c: 'growth', pct: true },
+      ascAtk: [0, 12, 24, 36, 48, 60, 72],
+    },
+  ],
+  curves: { '1': { growth: 1 }, '90': { growth: 2.5 } },
+};
+
 const template: GameTemplate = {
   schemaVersion: '0.1',
-  gameId: 'genshin',
-  name: 'Genshin Impact',
+  gameId: 'gacha-demo',
+  name: 'Astral Forge',
   description: '',
   stats: [
     { id: 'atk', name: 'Attack', unit: 'flat' },
@@ -38,18 +56,19 @@ const template: GameTemplate = {
     { id: 'weapon', name: 'Weapon' },
     { id: 'flower', name: 'Flower' },
   ],
-  sets: [{ id: 'GladiatorsFinale', name: 'Gladiator', tiers: [] }],
+  sets: [{ id: 'astral-core', name: 'Astral Core', tiers: [] }],
   derived: [],
   objectives: [{ id: 'score', name: 'Score', description: '', kind: 'linear', formula: 'atk' }],
   baseProfiles: [{ id: 'base', name: 'Base', base: { atk: 100 } }],
   constrainableStats: [],
+  extensions: { gacha: { kind: 'gacha', catalogUrl: '/test-catalog.json' } },
 };
 
 const good = {
   format: 'GOOD',
   artifacts: [
     {
-      setKey: 'GladiatorsFinale',
+      setKey: 'astral-core',
       rarity: 5,
       level: 20,
       slotKey: 'flower',
@@ -57,13 +76,13 @@ const good = {
       substats: [{ key: 'critRate_', value: 7.8 }],
     },
   ],
-  weapons: [{ key: 'WolfsGravestone', level: 90 }],
+  weapons: [{ key: 'starlight-blade', level: 90 }],
 };
 
 const item: Item = {
   id: 'i1',
   slot: 'flower',
-  setId: 'GladiatorsFinale',
+  setId: 'astral-core',
   name: 'Flower',
   rarity: 5,
   level: 20,
@@ -145,10 +164,16 @@ describe('ImportPanel', () => {
     setInventoryRepository(inventory.repository);
     setGameRepository(noopGames);
     setImagesRepository(memoryImages().repository);
+    clearGachaCatalogCache();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, status: 200, json: async () => catalog })),
+    );
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('previsualiza e importa un GOOD', async () => {

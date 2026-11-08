@@ -27,7 +27,7 @@ const list: CatalogOptimizer[] = [
   make({
     id: 'a',
     name: 'Zeta solver',
-    gameName: 'Zenless Zone Zero',
+    gameName: 'Neon Drift',
     category: 'Action RPG',
     author: { id: 'kalibr', displayName: 'kalibr' },
     score: 300,
@@ -36,7 +36,7 @@ const list: CatalogOptimizer[] = [
   make({
     id: 'b',
     name: 'Alpha solver',
-    gameName: 'Path of Exile 2',
+    gameName: 'Emberfall',
     category: 'ARPG',
     author: { id: 'brutus', displayName: 'brutus' },
     score: 120,
@@ -45,7 +45,7 @@ const list: CatalogOptimizer[] = [
   make({
     id: 'c',
     name: 'Mid solver',
-    gameName: 'Path of Exile 2',
+    gameName: 'Emberfall',
     author: { id: 'tacet', displayName: 'tacet' },
     score: 40,
     createdAt: '2026-10-10T00:00:00.000Z',
@@ -70,7 +70,7 @@ describe('filterOptimizers', () => {
 
   it('busca por titulo, juego o autor', () => {
     expect(filterOptimizers(list, state({ query: 'brutus' })).map((o) => o.id)).toEqual(['b']);
-    expect(filterOptimizers(list, state({ query: 'exile' })).map((o) => o.id)).toEqual(['b', 'c']);
+    expect(filterOptimizers(list, state({ query: 'ember' })).map((o) => o.id)).toEqual(['b', 'c']);
   });
 
   it('ordena por puntaje, por fecha y alfabeticamente', () => {
