@@ -1,20 +1,28 @@
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 
+import { downloadJson, exportGame } from '@zenith/data-access';
 import type { GameTemplate, Item } from '@zenith/shared-types';
 
 import { Button, buttonVariants } from '../../components/ui/Button';
 import { cn } from '../../lib/cn';
+import { characterIconUrl, characterRarityOf, itemIconUrl } from '../../lib/images';
 import { EmptyState } from '../catalog/components/EmptyState';
-import { monogram } from '../catalog/monogram';
 import { gameCopy } from '../game/copy';
+import {
+  getGameRepository,
+  getImagesRepository,
+  getInventoryRepository,
+} from '../game/repositories';
 import { useGame } from '../game/useGame';
+import { CatalogPanel } from './CatalogPanel';
 import { inventoryCopy } from './copy';
+import { ImportPanel } from './ImportPanel';
 import { ItemForm } from './ItemForm';
 import { ItemGlyph } from './ItemGlyph';
 import { useInventory } from './useInventory';
 
-type Tab = 'items' | 'characters' | 'import';
+type Tab = 'items' | 'catalog' | 'characters' | 'import';
 
 const controlClass =
   'h-9 rounded-[2px] border border-line bg-surface px-3 text-[12.5px] text-foreground outline-none transition-colors focus:border-line-strong';
@@ -50,7 +58,13 @@ export function InventoryPage() {
 
   const inventory = useInventory(template?.gameId);
 
-  const [tab, setTab] = useState<Tab>('items');
+  const [searchParams] = useSearchParams();
+  const requested = searchParams.get('tab');
+  const [tab, setTab] = useState<Tab>(
+    requested === 'catalog' || requested === 'characters' || requested === 'import'
+      ? requested
+      : 'items',
+  );
   const [query, setQuery] = useState('');
   const [slotFilter, setSlotFilter] = useState('');
   const [setFilter, setSetFilter] = useState('');
@@ -139,10 +153,26 @@ export function InventoryPage() {
     setSetFilter('');
   };
 
+  const exportInventory = async () => {
+    setActionError(null);
+    try {
+      const pkg = await exportGame(template.gameId, {
+        games: getGameRepository(),
+        inventory: getInventoryRepository(),
+        images: getImagesRepository(),
+      });
+      const date = new Date().toISOString().slice(0, 10);
+      downloadJson(`${template.gameId}-inventory-${date}.json`, pkg);
+    } catch (cause) {
+      setActionError(messageOf(cause));
+    }
+  };
+
   const tabCount = inventory.items === null ? '' : ` (${items.length})`;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'items', label: `${inventoryCopy.tabs.items}${tabCount}` },
+    { id: 'catalog', label: inventoryCopy.tabs.catalog },
     { id: 'characters', label: `${inventoryCopy.tabs.characters} (${template.baseProfiles.length})` },
     { id: 'import', label: inventoryCopy.tabs.import },
   ];
@@ -166,8 +196,11 @@ export function InventoryPage() {
           <Button onClick={openAdd} disabled={adding || Boolean(editing)}>
             {inventoryCopy.addItem}
           </Button>
-          <Button variant="outline" disabled title={inventoryCopy.importSoon}>
-            {inventoryCopy.importGood}
+          <Button variant="outline" onClick={() => setTab('import')}>
+            {inventoryCopy.importInventory}
+          </Button>
+          <Button variant="outline" onClick={() => void exportInventory()}>
+            {inventoryCopy.exportInventory}
           </Button>
         </div>
       </header>
@@ -320,7 +353,7 @@ export function InventoryPage() {
                       key={item.id}
                       className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-b border-line px-3 py-2.5 last:border-b-0 md:grid-cols-[44px_minmax(0,1.3fr)_100px_minmax(0,150px)_70px_minmax(0,1fr)_auto]"
                     >
-                      <ItemGlyph name={item.name} rarity={item.rarity} />
+                      <ItemGlyph name={item.name} rarity={item.rarity} src={itemIconUrl(item)} />
 
                       <div className="min-w-0">
                         <p className="truncate text-[13px] font-semibold">{item.name}</p>
@@ -423,12 +456,12 @@ export function InventoryPage() {
                   key={profile.id}
                   className="flex items-center gap-3 rounded-[4px] border border-line bg-surface px-3 py-2.5"
                 >
-                  <span
-                    aria-hidden="true"
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line-strong bg-raised font-mono text-[10px] font-semibold uppercase text-muted-foreground"
-                  >
-                    {monogram(profile.name)}
-                  </span>
+                  <ItemGlyph
+                    name={profile.name}
+                    rarity={characterRarityOf(profile)}
+                    src={characterIconUrl(profile)}
+                    className="h-9 w-9 rounded-full text-[10px]"
+                  />
                   <div className="min-w-0">
                     <p className="truncate text-[12.5px] font-semibold">{profile.name}</p>
                     <p className="truncate font-mono text-[9.5px] text-muted-foreground tabular-nums">
@@ -444,25 +477,18 @@ export function InventoryPage() {
         </section>
       ) : null}
 
+      {tab === 'catalog' ? (
+        <CatalogPanel
+          template={template}
+          onAdd={async (item) => {
+            await inventory.add(item);
+          }}
+        />
+      ) : null}
+
       {tab === 'import' ? (
         <section className="mt-6" role="tabpanel" aria-label={inventoryCopy.tabs.import}>
-          <div className="rounded-[6px] border border-dashed border-line-strong px-6 py-16 text-center">
-            <p className="label-caps">Import</p>
-            <h2 className="mt-2 text-md font-bold">{inventoryCopy.import.title}</h2>
-            <p className="mx-auto mt-2 max-w-[56ch] text-[13px] leading-relaxed text-muted-foreground">
-              {inventoryCopy.import.body}
-            </p>
-            <button
-              type="button"
-              disabled
-              className="mt-5 inline-flex h-[38px] items-center rounded-[2px] border border-line-strong px-4 text-[13px] font-semibold text-muted-foreground disabled:pointer-events-none"
-            >
-              {inventoryCopy.import.action}
-            </button>
-            <p className="mt-3 font-mono text-[9.5px] uppercase tracking-[0.13em] text-muted-foreground">
-              {inventoryCopy.importSoon}
-            </p>
-          </div>
+          <ImportPanel template={template} onImported={() => void inventory.reload()} />
         </section>
       ) : null}
     </div>

@@ -11,6 +11,7 @@ import { gameCopy } from '../features/game/copy';
 import { useGame } from '../features/game/useGame';
 import { useInventory } from '../features/inventory/useInventory';
 import { ItemGlyph } from '../features/inventory/ItemGlyph';
+import { itemIconUrl } from '../lib/images';
 
 export function OptimizerPage() {
   const { id = '' } = useParams();
@@ -275,7 +276,12 @@ export function OptimizerPage() {
               <ul className="mt-3 divide-y divide-line">
                 {items.slice(0, 4).map((item) => (
                   <li key={item.id} className="flex items-center gap-3 py-2 first:pt-0">
-                    <ItemGlyph name={item.name} rarity={item.rarity} className="h-9 w-9 text-[10px]" />
+                    <ItemGlyph
+                      name={item.name}
+                      rarity={item.rarity}
+                      src={itemIconUrl(item)}
+                      className="h-9 w-9 text-[10px]"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[12.5px] font-semibold">{item.name}</p>
                       <p className="truncate font-mono text-[9.5px] text-muted-foreground">
@@ -288,12 +294,20 @@ export function OptimizerPage() {
               </ul>
             )}
 
-            <Link
-              to={`/optimizer/${id}/inventario`}
-              className="mt-3 inline-block text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {gameCopy.viewAllItems} →
-            </Link>
+            <div className="mt-3 flex flex-wrap items-center gap-4">
+              <Link
+                to={`/optimizer/${id}/inventario`}
+                className="text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {gameCopy.viewAllItems} →
+              </Link>
+              <Link
+                to={`/optimizer/${id}/inventario?tab=catalog`}
+                className="text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {gameCopy.browseCatalog} →
+              </Link>
+            </div>
           </section>
 
           {template.notes ? (

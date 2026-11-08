@@ -1,12 +1,15 @@
 import {
   gameRepository,
+  imagesRepository,
   inventoryRepository,
   type GameRepository,
+  type ImagesRepository,
   type InventoryRepository,
 } from '@zenith/data-access';
 
 let games: GameRepository = gameRepository;
 let inventory: InventoryRepository = inventoryRepository;
+let images: ImagesRepository = imagesRepository;
 
 export function getGameRepository(): GameRepository {
   return games;
@@ -22,4 +25,12 @@ export function getInventoryRepository(): InventoryRepository {
 
 export function setInventoryRepository(next: InventoryRepository): void {
   inventory = next;
+}
+
+export function getImagesRepository(): ImagesRepository {
+  return images;
+}
+
+export function setImagesRepository(next: ImagesRepository): void {
+  images = next;
 }
