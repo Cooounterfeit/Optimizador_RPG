@@ -23,7 +23,7 @@ const split = (name: string): string[] =>
 
 /**
  * Iniciales de la portada por defecto.
- * "Age of Empires 2" -> "A2", "Zenless Zone Zero" -> "ZZ", "Genshin" -> "G".
+ * "Age of Empires 2" -> "A2", "Neon Drift" -> "ND", "Astral" -> "A".
  */
 export function monogram(name: string): string {
   const words = split(name).filter((word) => !STOPWORDS.has(word.toLowerCase()));

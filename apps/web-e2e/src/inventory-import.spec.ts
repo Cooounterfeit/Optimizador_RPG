@@ -4,13 +4,13 @@ import { expect, test } from '@playwright/test';
 
 const goodFile = path.join(__dirname, '..', 'fixtures', 'good.json');
 
-/** Abre el inventario del Genshin integrado desde el hub. */
+/** Abre el inventario del juego sintetico integrado desde el hub. */
 async function openInventory(page: import('@playwright/test').Page) {
   await page.goto('/');
-  await page.getByRole('link', { name: 'Open Genshin Impact optimizer' }).click();
-  await expect(page.getByRole('heading', { name: 'Genshin Impact', level: 1 })).toBeVisible();
+  await page.getByRole('link', { name: 'Open Astral Forge optimizer' }).click();
+  await expect(page.getByRole('heading', { name: 'Astral Forge', level: 1 })).toBeVisible();
   await page.getByRole('link', { name: 'Open inventory' }).click();
-  await expect(page.getByRole('heading', { name: 'Genshin Impact', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Astral Forge', level: 1 })).toBeVisible();
 }
 
 test('importa un GOOD, exporta el inventario y lo restaura', async ({ page }) => {
@@ -26,18 +26,18 @@ test('importa un GOOD, exporta el inventario y lo restaura', async ({ page }) =>
   await expect(page.getByText('Imported 2 items.')).toBeVisible();
 
   await page.getByRole('tab', { name: /Items/ }).click();
-  await expect(page.getByText("Wolf's Gravestone · Lv. 90")).toBeVisible();
+  await expect(page.getByText('Starlight Blade · Lv. 90')).toBeVisible();
   await expect(page.getByText('Flower +20 · hp')).toBeVisible();
 
   await page.reload();
-  await expect(page.getByText("Wolf's Gravestone · Lv. 90")).toBeVisible();
+  await expect(page.getByText('Starlight Blade · Lv. 90')).toBeVisible();
 
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export' }).click();
   const download = await downloadPromise;
   const packageFile = test.info().outputPath('inventory.json');
   await download.saveAs(packageFile);
-  expect(download.suggestedFilename()).toMatch(/^genshin-inventory-\d{4}-\d{2}-\d{2}\.json$/);
+  expect(download.suggestedFilename()).toMatch(/^gacha-demo-inventory-\d{4}-\d{2}-\d{2}\.json$/);
 
   for (let index = 0; index < 2; index++) {
     await page.getByRole('button', { name: 'Delete' }).first().click();
@@ -55,6 +55,6 @@ test('importa un GOOD, exporta el inventario y lo restaura', async ({ page }) =>
 
   await expect(page.getByText('Restored 2 items.')).toBeVisible();
   await page.getByRole('tab', { name: /Items/ }).click();
-  await expect(page.getByText("Wolf's Gravestone · Lv. 90")).toBeVisible();
+  await expect(page.getByText('Starlight Blade · Lv. 90')).toBeVisible();
   await expect(page.getByText('Flower +20 · hp')).toBeVisible();
 });

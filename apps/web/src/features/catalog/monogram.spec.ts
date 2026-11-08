@@ -4,25 +4,25 @@ import { monogram } from './monogram';
 
 describe('monogram', () => {
   it('toma las iniciales de las dos primeras palabras', () => {
-    expect(monogram('Zenless Zone Zero')).toBe('ZZ');
-    expect(monogram('Honkai: Star Rail')).toBe('HS');
-    expect(monogram('Monster Hunter Wilds')).toBe('MH');
-    expect(monogram('Wuthering Waves')).toBe('WW');
+    expect(monogram('Neon Drift')).toBe('ND');
+    expect(monogram('Hollow: Song')).toBe('HS');
+    expect(monogram('Wild Reach')).toBe('WR');
+    expect(monogram('Ember Fall')).toBe('EF');
   });
 
   it('prefiere el numero cuando el nombre lo tiene', () => {
-    expect(monogram('Age of Empires 2')).toBe('A2');
-    expect(monogram('Path of Exile 2')).toBe('P2');
-    expect(monogram('Destiny 2')).toBe('D2');
+    expect(monogram('Frontier 2')).toBe('F2');
+    expect(monogram('Runebound 2')).toBe('R2');
+    expect(monogram('Starhold 2')).toBe('S2');
   });
 
   it('ignora las palabras vacias', () => {
-    expect(monogram('The Last of Us')).toBe('LU');
+    expect(monogram('The Last of Frontier')).toBe('LF');
   });
 
   it('con una sola palabra devuelve su inicial', () => {
-    expect(monogram('Genshin')).toBe('G');
-    expect(monogram('Souls (simplificado)')).toBe('S');
+    expect(monogram('Astral')).toBe('A');
+    expect(monogram('Knights (simplified)')).toBe('K');
   });
 
   it('quita acentos', () => {

@@ -30,27 +30,27 @@ describe('HomePage', () => {
   it('muestra las tarjetas del catalogo', async () => {
     renderHome();
 
-    expect(await screen.findByText('Disorder anomaly solver')).toBeTruthy();
+    expect(await screen.findByText('Overdrive anomaly solver')).toBeTruthy();
     expect(cards()).toHaveLength(13);
   });
 
   it('filtra por genero y actualiza el contador', async () => {
     renderHome();
-    await screen.findByText('Disorder anomaly solver');
+    await screen.findByText('Overdrive anomaly solver');
 
     fireEvent.click(screen.getByRole('button', { name: /Action RPG/ }));
 
     await waitFor(() => expect(cards()).toHaveLength(4));
-    expect(screen.getByText('Shiyu defense budget')).toBeTruthy();
+    expect(screen.getByText('District defense budget')).toBeTruthy();
   });
 
   it('ordena por los mejor valorados', async () => {
     renderHome();
-    await screen.findByText('Disorder anomaly solver');
+    await screen.findByText('Overdrive anomaly solver');
 
     const titles = cards().map((card) => card.querySelector('h3')?.textContent);
-    expect(titles[0]).toBe('Disorder anomaly solver');
-    expect(titles[1]).toBe('Shiyu defense budget');
+    expect(titles[0]).toBe('Overdrive anomaly solver');
+    expect(titles[1]).toBe('District defense budget');
   });
 
   it('distingue un catalogo vacio de una busqueda sin resultados', async () => {

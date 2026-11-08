@@ -2,16 +2,16 @@ import { expect, test } from '@playwright/test';
 
 /**
  * Recorrido completo del juego integrado: hub → detalle → inventario. El e2e
- * corre en modo mock, asi que el Genshin de la tarjeta es la semilla local.
+ * corre en modo mock, asi que la tarjeta es la semilla sintetica local.
  */
 test('agrega, recarga, edita y borra un objeto del inventario', async ({ page }) => {
   await page.goto('/');
 
-  await page.getByRole('link', { name: 'Open Genshin Impact optimizer' }).click();
-  await expect(page.getByRole('heading', { name: 'Genshin Impact', level: 1 })).toBeVisible();
+  await page.getByRole('link', { name: 'Open Astral Forge optimizer' }).click();
+  await expect(page.getByRole('heading', { name: 'Astral Forge', level: 1 })).toBeVisible();
 
   await page.getByRole('link', { name: 'Open inventory' }).click();
-  await expect(page.getByRole('heading', { name: 'Genshin Impact', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Astral Forge', level: 1 })).toBeVisible();
   await expect(page.getByText('Your inventory is empty')).toBeVisible();
 
   await page.getByRole('button', { name: 'Add item' }).click();

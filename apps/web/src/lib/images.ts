@@ -1,38 +1,47 @@
-import {
-  artifactIconUrl,
-  characterIconUrl as assetCharacterIcon,
-  characterRarity,
-  goodKey,
-  weaponIconUrl as assetWeaponIcon,
-} from '@zenith/adapters';
-import type { BaseProfile, Item } from '@zenith/shared-types';
+import { goodKey } from '@zenith/gacha';
+import type { BaseProfile, GameAssets, Item } from '@zenith/shared-types';
 
 /**
  * Unico punto de resolucion de iconos. Ningun componente arma URLs por su
- * cuenta: si el CDN cambia (F11.1, jsDelivr), se toca solo este archivo.
+ * cuenta: las fuentes y las rutas viven en la plantilla del juego.
  */
-export function weaponIconUrl(nameOrKey: string): string | null {
+const trimEnd = (value: string): string => value.replace(/\/+$/, '');
+const trimStart = (value: string): string => value.replace(/^\/+/, '');
+
+/** Combina cada fuente con la ruta relativa, en orden de intento. */
+export function assetUrls(assets: GameAssets | undefined, path: string | null | undefined): string[] {
+  if (!path) return [];
+  return (assets?.sources ?? []).map((source) => `${trimEnd(source)}/${trimStart(path)}`);
+}
+
+export function weaponIconUrls(assets: GameAssets | undefined, nameOrKey: string): string[] {
   const base = nameOrKey.split('·')[0].trim();
-  return assetWeaponIcon(goodKey(base)) ?? assetWeaponIcon(base);
+  const path = assets?.weapons?.[goodKey(base)] ?? assets?.weapons?.[base];
+  return assetUrls(assets, path);
 }
 
-export function characterIconUrl(profile: BaseProfile): string | null {
-  return assetCharacterIcon(profile.assetKey ?? profile.id);
+export function characterIconUrls(assets: GameAssets | undefined, profile: BaseProfile): string[] {
+  const key = profile.assetKey ?? profile.id;
+  return assetUrls(assets, assets?.characters?.[key]);
 }
 
-export function setIconUrl(setId: string, slot = 'flower'): string | null {
-  return artifactIconUrl(setId, slot);
+export function setIconUrls(assets: GameAssets | undefined, setId: string, slot = 'flower'): string[] {
+  return assetUrls(assets, assets?.artifacts?.[setId]?.[slot]);
 }
 
 /** Icono de una pieza: primero por conjunto y ranura; si no, por nombre de arma. */
-export function itemIconUrl(item: Item): string | null {
+export function itemIconUrls(assets: GameAssets | undefined, item: Item): string[] {
   if (item.setId) {
-    const artifact = artifactIconUrl(item.setId, item.slot);
-    if (artifact) return artifact;
+    const artifact = setIconUrls(assets, item.setId, item.slot);
+    if (artifact.length > 0) return artifact;
   }
-  return weaponIconUrl(item.name);
+  return weaponIconUrls(assets, item.name);
 }
 
-export function characterRarityOf(profile: BaseProfile): number {
-  return characterRarity(profile.assetKey ?? profile.id);
+export function characterRarityOf(assets: GameAssets | undefined, profile: BaseProfile): number {
+  return assets?.rarity?.characters?.[profile.assetKey ?? profile.id] ?? 4;
+}
+
+export function weaponRarityOf(assets: GameAssets | undefined, key: string): number {
+  return assets?.rarity?.weapons?.[key] ?? 3;
 }

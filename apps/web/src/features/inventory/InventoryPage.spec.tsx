@@ -14,8 +14,8 @@ import { InventoryPage } from './InventoryPage';
 
 const template: GameTemplate = {
   schemaVersion: '0.1',
-  gameId: 'genshin',
-  name: 'Genshin Impact',
+  gameId: 'gacha-demo',
+  name: 'Astral Forge',
   description: '',
   stats: [
     { id: 'atk', name: 'Attack', unit: 'flat' },
@@ -109,8 +109,8 @@ const setup = (seed: Item[] = []) => {
   setOptimizerRepository({
     getOptimizer: async () => ({
       id: OPTIMIZER_ID,
-      name: 'Genshin Impact optimizer',
-      gameName: 'Genshin Impact',
+      name: 'Astral Forge optimizer',
+      gameName: 'Astral Forge',
       description: '',
       template,
       sampleItems: [],

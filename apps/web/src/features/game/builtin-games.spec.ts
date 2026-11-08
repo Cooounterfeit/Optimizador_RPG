@@ -16,7 +16,7 @@ const workspaceRoot = (() => {
   const cwd = process.cwd();
   const candidates = [cwd, resolve(cwd, '..'), resolve(cwd, '../..'), resolve(cwd, '../../..')];
   const found = candidates.find((candidate) =>
-    existsSync(resolve(candidate, 'apps/web/public/seeds/genshin.zenith.json')),
+    existsSync(resolve(candidate, 'apps/web/public/seeds/gacha-demo.zenith.json')),
   );
   if (!found) throw new Error('Workspace root not found');
   return found;
@@ -25,14 +25,9 @@ const workspaceRoot = (() => {
 const read = (relative: string): unknown =>
   JSON.parse(readFileSync(resolve(workspaceRoot, relative), 'utf8'));
 
-const seed = read('apps/web/public/seeds/genshin.zenith.json');
-const fixture = read('libs/core-engine/fixtures/genshin.zenith.json');
+const seed = read('apps/web/public/seeds/gacha-demo.zenith.json');
 
-describe('semilla local de Genshin', () => {
-  it('es una copia exacta del fixture del motor', () => {
-    expect(seed).toEqual(fixture);
-  });
-
+describe('semilla local sintetica', () => {
   it('valida con el validador completo del motor', () => {
     const pkg = seed as { template: unknown; items: Item[] };
     const report = validateTemplate(pkg.template, pkg.items);
@@ -42,7 +37,7 @@ describe('semilla local de Genshin', () => {
   });
 
   it('se ofrece como tarjeta integrada en el catalogo mock', () => {
-    expect(builtinCards.some((card) => card.id === 'genshin')).toBe(true);
-    expect(findBuiltinGame('genshin')?.card.gameName).toBe('Genshin Impact');
+    expect(builtinCards.some((card) => card.id === 'gacha-demo')).toBe(true);
+    expect(findBuiltinGame('gacha-demo')?.card.gameName).toBe('Astral Forge');
   });
 });

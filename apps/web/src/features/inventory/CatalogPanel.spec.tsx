@@ -1,14 +1,32 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-
+import { clearGachaCatalogCache, type GachaCatalog } from '@zenith/gacha';
 import type { GameTemplate } from '@zenith/shared-types';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CatalogPanel } from './CatalogPanel';
 
+const catalog: GachaCatalog = {
+  kind: 'gacha',
+  weaponSlot: 'weapon',
+  weapons: [
+    {
+      key: 'starlight-blade',
+      name: 'Starlight Blade',
+      rarity: 5,
+      type: 'sword',
+      maxLevel: 90,
+      init: { v: 46, c: 'growth' },
+      subInit: { stat: 'critRate_', v: 0.072, c: 'growth', pct: true },
+      ascAtk: [0, 12, 24, 36, 48, 60, 72],
+    },
+  ],
+  curves: { '1': { growth: 1 }, '90': { growth: 2.5 } },
+};
+
 const template: GameTemplate = {
   schemaVersion: '0.1',
-  gameId: 'genshin',
-  name: 'Genshin Impact',
+  gameId: 'gacha-demo',
+  name: 'Astral Forge',
   description: '',
   stats: [
     { id: 'atk', name: 'Attack', unit: 'flat' },
@@ -20,8 +38,8 @@ const template: GameTemplate = {
   ],
   sets: [
     {
-      id: 'GladiatorsFinale',
-      name: 'Gladiator',
+      id: 'astral-core',
+      name: 'Astral Core',
       tiers: [{ pieces: 2, label: '2 pieces', effects: { atk_: 20 } }],
     },
   ],
@@ -29,13 +47,24 @@ const template: GameTemplate = {
   objectives: [],
   baseProfiles: [],
   constrainableStats: [],
+  extensions: { gacha: { kind: 'gacha', catalogUrl: '/test-catalog.json' } },
 };
+
+beforeEach(() => {
+  clearGachaCatalogCache();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => ({ ok: true, status: 200, json: async () => catalog })),
+  );
+});
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe('CatalogPanel', () => {
   it('busca armas por nombre', async () => {
     render(<CatalogPanel template={template} onAdd={vi.fn()} />);
 
-    expect(await screen.findByText("Wolf's Gravestone")).toBeTruthy();
+    expect(await screen.findByText('Starlight Blade')).toBeTruthy();
 
     fireEvent.change(screen.getByPlaceholderText('Search catalog'), {
       target: { value: 'zzz-no-existe' },
@@ -48,7 +77,7 @@ describe('CatalogPanel', () => {
     const onAdd = vi.fn().mockResolvedValue(undefined);
     render(<CatalogPanel template={template} onAdd={onAdd} />);
 
-    const row = (await screen.findByText("Wolf's Gravestone")).closest('li');
+    const row = (await screen.findByText('Starlight Blade')).closest('li');
     expect(row).not.toBeNull();
 
     fireEvent.click(within(row as HTMLElement).getByRole('button', { name: 'Add' }));
@@ -58,18 +87,27 @@ describe('CatalogPanel', () => {
 
     await waitFor(() => expect(onAdd).toHaveBeenCalledTimes(1));
     const added = onAdd.mock.calls[0][0];
-    expect(added.name).toBe("Wolf's Gravestone · Lv. 90");
+    expect(added.name).toBe('Starlight Blade · Lv. 90');
     expect(added.slot).toBe('weapon');
-    expect(added.requires).toEqual({ wt_claymore: 1 });
+    expect(added.requires).toEqual({ wt_sword: 1 });
   });
 
   it('muestra los conjuntos con sus bonos', async () => {
     render(<CatalogPanel template={template} onAdd={vi.fn()} />);
 
+    await screen.findByText('Starlight Blade');
     fireEvent.click(screen.getByRole('button', { name: /Sets/ }));
 
-    expect(await screen.findByText('Gladiator')).toBeTruthy();
+    expect(await screen.findByText('Astral Core')).toBeTruthy();
     expect(screen.getByText(/2pc/)).toBeTruthy();
     expect(screen.getByText(/ATK \+20%/)).toBeTruthy();
+  });
+
+  it('avisa cuando el juego no publica catalogo', async () => {
+    render(
+      <CatalogPanel template={{ ...template, extensions: {} }} onAdd={vi.fn()} />,
+    );
+
+    expect(await screen.findByText('This game has no catalog')).toBeTruthy();
   });
 });

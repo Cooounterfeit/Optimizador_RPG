@@ -21,8 +21,8 @@ const OPTIMIZER_ID = 'a8af21aa-cfef-4975-87f8-d1f43d411a70';
 
 const template: GameTemplate = {
   schemaVersion: '0.1',
-  gameId: 'genshin',
-  name: 'Genshin Impact',
+  gameId: 'gacha-demo',
+  name: 'Astral Forge',
   description: '',
   stats: [],
   slots: [{ id: 'weapon', name: 'Weapon' }],
@@ -35,8 +35,8 @@ const template: GameTemplate = {
 
 const record = (overrides: Partial<OptimizerRecord> = {}): OptimizerRecord => ({
   id: OPTIMIZER_ID,
-  name: 'Genshin Impact optimizer',
-  gameName: 'Genshin Impact',
+  name: 'Astral Forge optimizer',
+  gameName: 'Astral Forge',
   description: '',
   template,
   sampleItems: [],
@@ -61,11 +61,11 @@ const games = () => {
 };
 
 const builtin = () => ({
-  id: 'genshin',
+  id: 'gacha-demo',
   card: {
-    id: 'genshin',
-    name: 'Genshin Impact optimizer',
-    gameName: 'Genshin Impact',
+    id: 'gacha-demo',
+    name: 'Astral Forge optimizer',
+    gameName: 'Astral Forge',
     description: '',
     author: { id: 'zenith', displayName: 'ZenithOptimizer' },
     score: 0,
@@ -99,7 +99,7 @@ describe('useGame', () => {
     await waitFor(() => expect(result.current.state.status).toBe('ready'));
     expect(result.current.state.status === 'ready' && result.current.state.template).toEqual(template);
     expect(getOptimizer).toHaveBeenCalledWith(OPTIMIZER_ID);
-    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'genshin', template });
+    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template });
   });
 
   it('va directo al juego integrado cuando el id no es un uuid', async () => {
@@ -109,11 +109,11 @@ describe('useGame', () => {
     setGameRepository(gameRepo.repository);
     vi.mocked(findBuiltinGame).mockReturnValue(builtin());
 
-    const { result } = renderHook(() => useGame('genshin'));
+    const { result } = renderHook(() => useGame('gacha-demo'));
 
     await waitFor(() => expect(result.current.state.status).toBe('ready'));
     expect(getOptimizer).not.toHaveBeenCalled();
-    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'genshin', template });
+    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template });
   });
 
   it('da error cuando no existe ni en Supabase ni como juego integrado', async () => {

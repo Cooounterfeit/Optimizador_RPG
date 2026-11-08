@@ -6,7 +6,7 @@ import type { GameTemplate, Item } from '@zenith/shared-types';
 
 import { Button, buttonVariants } from '../../components/ui/Button';
 import { cn } from '../../lib/cn';
-import { characterIconUrl, characterRarityOf, itemIconUrl } from '../../lib/images';
+import { characterIconUrls, characterRarityOf, itemIconUrls } from '../../lib/images';
 import { EmptyState } from '../catalog/components/EmptyState';
 import { gameCopy } from '../game/copy';
 import {
@@ -353,7 +353,11 @@ export function InventoryPage() {
                       key={item.id}
                       className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-b border-line px-3 py-2.5 last:border-b-0 md:grid-cols-[44px_minmax(0,1.3fr)_100px_minmax(0,150px)_70px_minmax(0,1fr)_auto]"
                     >
-                      <ItemGlyph name={item.name} rarity={item.rarity} src={itemIconUrl(item)} />
+                      <ItemGlyph
+                        name={item.name}
+                        rarity={item.rarity}
+                        sources={itemIconUrls(template.assets, item)}
+                      />
 
                       <div className="min-w-0">
                         <p className="truncate text-[13px] font-semibold">{item.name}</p>
@@ -458,8 +462,8 @@ export function InventoryPage() {
                 >
                   <ItemGlyph
                     name={profile.name}
-                    rarity={characterRarityOf(profile)}
-                    src={characterIconUrl(profile)}
+                    rarity={characterRarityOf(template.assets, profile)}
+                    sources={characterIconUrls(template.assets, profile)}
                     className="h-9 w-9 rounded-full text-[10px]"
                   />
                   <div className="min-w-0">

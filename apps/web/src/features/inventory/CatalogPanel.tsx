@@ -1,14 +1,15 @@
 import { useMemo, useState } from 'react';
 
-import { listWeapons, weaponItem } from '@zenith/adapters';
+import { listWeapons, weaponItem } from '@zenith/gacha';
 import type { GameTemplate, Item } from '@zenith/shared-types';
 
 import { Button } from '../../components/ui/Button';
 import { cn } from '../../lib/cn';
-import { setIconUrl, weaponIconUrl } from '../../lib/images';
+import { setIconUrls, weaponIconUrls } from '../../lib/images';
 import { EmptyState } from '../catalog/components/EmptyState';
 import { inventoryCopy } from './copy';
 import { ItemGlyph } from './ItemGlyph';
+import { useGachaCatalog } from './useGachaCatalog';
 
 interface CatalogPanelProps {
   template: GameTemplate;
@@ -19,6 +20,7 @@ const controlClass =
   'h-[32px] rounded-[2px] border border-line-strong bg-transparent px-2 text-[12px] text-foreground';
 
 export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
+  const gacha = useGachaCatalog(template);
   const [view, setView] = useState<'weapons' | 'sets'>('weapons');
   const [query, setQuery] = useState('');
   const [type, setType] = useState('');
@@ -28,14 +30,19 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const weapons = useMemo(() => listWeapons(), []);
+  const weapons = useMemo(
+    () => (gacha.status === 'ready' ? listWeapons(gacha.catalog) : []),
+    [gacha.status, gacha.catalog],
+  );
   const types = useMemo(
     () => [...new Set(weapons.map((weapon) => weapon.type).filter(Boolean))].sort() as string[],
     [weapons],
   );
   const weaponSlot = useMemo(
-    () => template.slots.find((slot) => /weapon|arma/i.test(`${slot.id} ${slot.name}`))?.id,
-    [template],
+    () =>
+      template.slots.find((slot) => /weapon|arma/i.test(`${slot.id} ${slot.name}`))?.id ??
+      gacha.catalog?.weaponSlot,
+    [template, gacha.catalog],
   );
 
   const needle = query.trim().toLowerCase();
@@ -59,10 +66,11 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
   };
 
   const addWeapon = async (key: string) => {
+    if (gacha.status !== 'ready') return;
     setError(null);
     setBusy(true);
     try {
-      const item = weaponItem(key, level, weaponSlot);
+      const item = weaponItem(gacha.catalog, key, level, weaponSlot);
       if (!item) throw new Error(inventoryCopy.catalog.weaponError);
       await onAdd({ ...item, id: `${item.id}-${crypto.randomUUID().slice(0, 8)}` });
       setAdding(null);
@@ -72,6 +80,30 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
       setBusy(false);
     }
   };
+
+  if (gacha.status === 'idle') {
+    return (
+      <EmptyState title={inventoryCopy.catalog.noCatalogTitle} body={inventoryCopy.catalog.noCatalog} />
+    );
+  }
+
+  if (gacha.status === 'loading') {
+    return (
+      <p className="py-16 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+        {inventoryCopy.catalog.loading}
+      </p>
+    );
+  }
+
+  if (gacha.status === 'error') {
+    return (
+      <EmptyState title={inventoryCopy.catalog.errorTitle} body={gacha.error}>
+        <Button variant="outline" onClick={gacha.retry}>
+          {inventoryCopy.retry}
+        </Button>
+      </EmptyState>
+    );
+  }
 
   return (
     <section className="mt-4" role="tabpanel" aria-label={inventoryCopy.tabs.catalog}>
@@ -158,7 +190,7 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
                 <ItemGlyph
                   name={weapon.name}
                   rarity={weapon.rarity}
-                  src={weaponIconUrl(weapon.key)}
+                  sources={weaponIconUrls(template.assets, weapon.key)}
                   className="h-9 w-9 text-[10px]"
                 />
                 <div className="min-w-0">
@@ -221,7 +253,7 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
             >
               <ItemGlyph
                 name={set.name}
-                src={setIconUrl(set.id, 'flower')}
+                sources={setIconUrls(template.assets, set.id, 'flower')}
                 className="h-10 w-10 text-[10px]"
               />
               <div className="min-w-0">

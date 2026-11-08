@@ -2,7 +2,9 @@
   "name": "@zenith/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "check:genres": "node tools/check-genres.mjs"
+  },
   "private": true,
   "engines": {
     "node": ">=22.0.0"

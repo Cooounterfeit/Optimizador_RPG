@@ -18,9 +18,9 @@ export interface UseGameResult {
 }
 
 /**
- * La tabla `optimizers` usa uuid como clave. Un id como `genshin` (el de los
- * juegos integrados y el redirect antiguo) no debe llegar a Postgres: la
- * consulta fallaria con "invalid input syntax for type uuid".
+ * La tabla `optimizers` usa uuid como clave. Un id de juego integrado no debe
+ * llegar a Postgres: la consulta fallaria con "invalid input syntax for type
+ * uuid".
  */
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

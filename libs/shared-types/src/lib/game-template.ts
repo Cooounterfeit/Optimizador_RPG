@@ -17,8 +17,8 @@ export const StatDefSchema = z.object({
    *  'multiply' se multiplican como factores: 30 y 30 dan 1,30 x 1,30 = 1,69.
    *
    * El segundo modo existe porque muchos juegos distinguen dos familias de
-   * modificadores. En Path of Exile, "increased" suma e "increased" y "more"
-   * multiplica; tratar los "more" como sumas da resultados equivocados.
+   * modificadores. En ciertos ARPG, "increased" suma y "more" multiplica;
+   * tratar los "more" como sumas da resultados equivocados.
    *
    * Ojo: una estadistica 'multiply' llega a las formulas ya como MULTIPLICADOR
    * (1,69), no como porcentaje. Se escribe `dano * more`, no `dano * (1 + more/100)`.
@@ -132,7 +132,7 @@ export const BaseProfileSchema = z.object({
   /**
    * PRESENTACION: claves de `base` que el jugador sube de nivel (Vigor,
    * Fuerza...). La hoja de personaje deja simularlas con + y −, como el menu
-   * de subir de nivel de Dark Souls. Si no se indica, se ofrecen las claves que
+   * de subir de nivel de un ARPG. Si no se indica, se ofrecen las claves que
    * coinciden con una estadistica declarada.
    */
   levelable: z.array(z.string()).optional(),
@@ -164,6 +164,28 @@ export const SelfTestSchema = z.object({
 });
 
 export type SelfTest = z.infer<typeof SelfTestSchema>;
+
+/**
+ * PRESENTACION: de donde salen los iconos. Es generico para cualquier genero.
+ *
+ * `sources` se prueba en orden: primero el almacen propio del optimizador y
+ * despues un CDN de respaldo. Las rutas son relativas a cada base, asi el mismo
+ * mapa sirve para ambas.
+ */
+export const GameAssetsSchema = z.object({
+  sources: z.array(z.string()).optional(),
+  characters: z.record(z.string(), z.string()).optional(),
+  weapons: z.record(z.string(), z.string()).optional(),
+  artifacts: z.record(z.string(), z.record(z.string(), z.string())).optional(),
+  rarity: z
+    .object({
+      characters: z.record(z.string(), z.number()).optional(),
+      weapons: z.record(z.string(), z.number()).optional(),
+    })
+    .optional(),
+});
+
+export type GameAssets = z.infer<typeof GameAssetsSchema>;
 
 /** Plantilla completa de un juego. Es el unico input especifico del juego. */
 export const GameTemplateSchema = z.object({
@@ -222,6 +244,13 @@ export const GameTemplateSchema = z.object({
   category: z.string().optional(),
   /** Color de respaldo cuando no hay portada. */
   accent: z.string().optional(),
+  /** PRESENTACION: iconos del juego (opcional). */
+  assets: GameAssetsSchema.optional(),
+  /**
+   * Datos propios de un genero. El core NO los interpreta: cada genero los
+   * valida con su propio esquema (por ejemplo `gacha`).
+   */
+  extensions: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type GameTemplate = z.infer<typeof GameTemplateSchema>;

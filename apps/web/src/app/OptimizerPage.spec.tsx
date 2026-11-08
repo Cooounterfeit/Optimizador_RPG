@@ -38,9 +38,9 @@ describe('OptimizerPage', () => {
     setOptimizerRepository(defaultOptimizerRepository);
     setGameRepository(noopGames);
 
-    renderPage('zzz-disorder');
+    renderPage('neon-drift');
 
-    expect(await screen.findByText('Disorder anomaly solver')).toBeTruthy();
+    expect(await screen.findByText('Overdrive anomaly solver')).toBeTruthy();
     expect(screen.getByText('Demo optimizer')).toBeTruthy();
     expect(screen.queryByText('Could not load this optimizer')).toBeNull();
   });

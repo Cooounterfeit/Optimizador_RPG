@@ -5,26 +5,29 @@ import tailwindcss from '@tailwindcss/vite';
 
 /**
  * CSP solo en el build: en desarrollo bloquearia el WebSocket del HMR.
- * `script-src 'self'` es lo que mas aporta contra XSS; los estilos inline son
- * necesarios por los degradados de las portadas.
+ *
+ * Las imagenes pueden venir de cualquier HTTPS: el creador pega la base de su
+ * CDN en `template.assets.sources` y no sube archivos a Supabase. Los scripts
+ * siguen limitados a `'self'`; `connect-src` sigue cerrado a Supabase porque
+ * el catalogo (JSON) si vive en Storage.
  */
-const CSP = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.supabase.co https://gi.yatta.moe",
-  "connect-src 'self' https://*.supabase.co",
-  "font-src 'self' data:",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-].join('; ');
-
 const cspPlugin: Plugin = {
   name: 'zenith-csp',
   apply: 'build',
   transformIndexHtml() {
+    const CSP = [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https:",
+      "connect-src 'self' https://*.supabase.co",
+      "font-src 'self' data:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+    ].join('; ');
+
     return [
       {
         tag: 'meta',

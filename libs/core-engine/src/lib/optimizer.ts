@@ -12,7 +12,7 @@
  *  Expresividad — las formulas vienen de la plantilla (con condicionales,
  *  comparaciones, log/exp...). Cada estadistica declara ademas COMO se combinan
  *  los aportes de varias piezas: sumandose (lo habitual) o multiplicandose como
- *  factores. Sin ese segundo modo, los modificadores "more" de Path of Exile
+ *  factores. Sin ese segundo modo, los modificadores "more" de ciertos ARPG
  *  darian resultados equivocados.
  *
  *  Restricciones — minimos (llegar a X), maximos (no pasarse de X, que es como

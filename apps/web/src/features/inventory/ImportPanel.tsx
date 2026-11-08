@@ -6,7 +6,7 @@ import {
   parsePackage,
   type GamePackage,
 } from '@zenith/data-access';
-import { importGood, type ImportResult } from '@zenith/adapters';
+import { importGood, type ImportResult } from '@zenith/gacha';
 import type { GameTemplate } from '@zenith/shared-types';
 
 import { Button } from '../../components/ui/Button';
@@ -16,6 +16,7 @@ import {
   getInventoryRepository,
 } from '../game/repositories';
 import { inventoryCopy } from './copy';
+import { useGachaCatalog } from './useGachaCatalog';
 
 type Kind = 'good' | 'package' | 'unknown';
 
@@ -36,6 +37,7 @@ function detect(raw: unknown): Kind {
 }
 
 export function ImportPanel({ template, onImported }: ImportPanelProps) {
+  const gacha = useGachaCatalog(template);
   const input = useRef<HTMLInputElement>(null);
   const [raw, setRaw] = useState<unknown>(null);
   const [fileName, setFileName] = useState('');
@@ -54,9 +56,9 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
   );
 
   const goodResult = useMemo<ImportResult | null>(() => {
-    if (kind !== 'good') return null;
+    if (kind !== 'good' || gacha.status !== 'ready') return null;
     try {
-      return importGood(raw, {
+      return importGood(raw, gacha.catalog, {
         minLevel,
         minRarity,
         includeWeapons: includeWeapons && Boolean(weaponSlot),
@@ -65,7 +67,7 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
     } catch {
       return null;
     }
-  }, [kind, raw, minLevel, minRarity, includeWeapons, weaponSlot]);
+  }, [kind, gacha.status, gacha.catalog, raw, minLevel, minRarity, includeWeapons, weaponSlot]);
 
   const packagePreview = useMemo<{ pkg: GamePackage | null; error: string | null }>(() => {
     if (kind !== 'package') return { pkg: null, error: null };
@@ -119,7 +121,7 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
     setBusy(true);
     setError(null);
     try {
-      if (kind === 'good' && goodResult) {
+      if (kind === 'good' && goodResult && gacha.status === 'ready') {
         await addItems(
           goodResult.items,
           template.gameId,
@@ -207,6 +209,24 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
         {done ? (
           <p className="border-t border-line px-6 py-3 text-[12.5px] font-semibold text-[oklch(0.78_0.13_150)]">
             {done}
+          </p>
+        ) : null}
+        {kind === 'good' && gacha.status === 'loading' ? (
+          <p className="border-t border-line px-6 py-3 text-[12.5px] text-muted-foreground">
+            {inventoryCopy.catalog.loading}
+          </p>
+        ) : null}
+        {kind === 'good' && gacha.status === 'error' ? (
+          <p role="alert" className="border-t border-line px-6 py-3 text-[12.5px] text-[oklch(0.78_0.16_25)]">
+            {gacha.error}{' '}
+            <button type="button" className="underline" onClick={gacha.retry}>
+              {inventoryCopy.retry}
+            </button>
+          </p>
+        ) : null}
+        {kind === 'good' && gacha.status === 'idle' ? (
+          <p role="alert" className="border-t border-line px-6 py-3 text-[12.5px] text-[oklch(0.78_0.16_25)]">
+            {inventoryCopy.catalog.noCatalog}
           </p>
         ) : null}
         {packagePreview.error ? (

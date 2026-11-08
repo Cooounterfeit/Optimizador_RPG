@@ -2,7 +2,7 @@ export const gameCopy = {
   eyebrow: 'Optimizer',
   demoEyebrow: 'Demo optimizer',
   demoNote:
-    'This is a demo card from the mock catalog. Its game template is not available in this build, so the optimizer cannot be opened. The Genshin Impact card does have a playable template.',
+    'This is a demo card from the mock catalog. Its game template is not available in this build, so the optimizer cannot be opened. The built-in demo card does have a playable template.',
   loading: 'Loading optimizer…',
   errorTitle: 'Could not load this optimizer',
   retry: 'Try again',

@@ -1,23 +1,12 @@
 import type { Item } from '@zenith/shared-types';
 
-import data from './genshin.data.json';
-import type { GiData, GiWeapon } from './types';
-
-const GI = data as unknown as GiData;
-
-export interface WeaponSummary {
-  key: string;
-  name: string;
-  rarity: number;
-  type: string | null;
-  maxLevel: number;
-}
+import type { GachaCatalog, GachaWeapon, WeaponSummary } from './types';
 
 /** Catalogo completo, ordenado por nombre, para la pantalla de catalogo. */
-export function listWeapons(): WeaponSummary[] {
-  return Object.entries(GI.weapons)
-    .map(([key, weapon]) => ({
-      key,
+export function listWeapons(catalog: GachaCatalog): WeaponSummary[] {
+  return catalog.weapons
+    .map((weapon) => ({
+      key: weapon.key,
       name: weapon.name,
       rarity: weapon.rarity,
       type: weapon.type,
@@ -44,17 +33,18 @@ export function ascensionForLevel(level: number): number {
 /**
  * ATQ base y subestadistica de un arma a su nivel y ascension reales.
  *
- * Usa las mismas curvas de crecimiento que el juego: un arma a nivel 1 y la
- * misma a nivel 90 no se parecen en nada.
+ * Usa las curvas de crecimiento del catalogo: un arma a nivel 1 y la misma a
+ * nivel 90 no se parecen en nada.
  */
 export function weaponStats(
-  weapon: GiWeapon,
+  weapon: GachaWeapon,
+  curves: GachaCatalog['curves'],
   level: number,
   ascension?: number,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   const lvl = Math.max(1, Math.min(level || 1, weapon.maxLevel));
-  const curve = (name: string) => GI.weaponCurves[String(lvl)]?.[name] ?? 1;
+  const curve = (name: string) => curves[String(lvl)]?.[name] ?? 1;
 
   if (weapon.init) {
     const step = Math.max(
@@ -78,24 +68,30 @@ export function weaponStats(
 }
 
 export function weaponStatsByKey(
+  catalog: GachaCatalog,
   key: string,
   level: number,
   ascension?: number,
 ): Record<string, number> {
-  const weapon = GI.weapons[key];
-  return weapon ? weaponStats(weapon, level, ascension) : {};
+  const weapon = catalog.weapons.find((entry) => entry.key === key);
+  return weapon ? weaponStats(weapon, catalog.curves, level, ascension) : {};
 }
 
 /**
  * Convierte un arma del catalogo en una pieza del inventario.
- * Devuelve `null` si la clave no existe en los datos del juego.
+ * Devuelve `null` si la clave no existe en el catalogo.
  */
-export function weaponItem(key: string, level: number, slot = 'weapon'): Item | null {
-  const weapon = GI.weapons[key];
+export function weaponItem(
+  catalog: GachaCatalog,
+  key: string,
+  level: number,
+  slot = 'weapon',
+): Item | null {
+  const weapon = catalog.weapons.find((entry) => entry.key === key);
   if (!weapon) return null;
 
   const lvl = Math.max(1, Math.min(level || 1, weapon.maxLevel));
-  const stats = weaponStats(weapon, lvl);
+  const stats = weaponStats(weapon, catalog.curves, lvl);
   if (stats.weaponAtk === undefined) return null;
 
   return {

@@ -69,6 +69,31 @@ describe('GameTemplateSchema', () => {
     expect(parsed.leveling).toBeUndefined();
     expect(parsed.budgets).toBeUndefined();
   });
+
+  it('acepta assets y extensions sin interpretar el genero', () => {
+    const parsed = GameTemplateSchema.parse({
+      ...minimalTemplate(),
+      assets: {
+        sources: ['https://example.test/icons/', 'https://cdn.test/icons/'],
+        characters: { base: 'base.png' },
+        rarity: { characters: { base: 5 } },
+      },
+      extensions: { gacha: { kind: 'gacha', catalogUrl: '/catalog.json' } },
+    });
+
+    expect(parsed.assets?.sources).toHaveLength(2);
+    expect(parsed.assets?.characters?.base).toBe('base.png');
+    expect(parsed.extensions?.gacha).toEqual({ kind: 'gacha', catalogUrl: '/catalog.json' });
+  });
+
+  it('rechaza assets con rutas que no son texto', () => {
+    const result = GameTemplateSchema.safeParse({
+      ...minimalTemplate(),
+      assets: { characters: { base: 5 } },
+    });
+
+    expect(result.success).toBe(false);
+  });
 });
 
 describe('ItemSchema', () => {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { cn } from '../../lib/cn';
 import { monogram } from '../catalog/monogram';
@@ -6,17 +6,25 @@ import { monogram } from '../catalog/monogram';
 interface ItemGlyphProps {
   name: string;
   rarity?: number;
-  src?: string | null;
+  sources?: string[];
   className?: string;
 }
 
 /**
- * Icono de un objeto con respaldo tipografico. Si no hay URL o la imagen falla,
- * muestra las iniciales y una barra de rareza de cinco segmentos.
+ * Icono de un objeto con respaldo tipografico. Prueba las fuentes en orden
+ * (almacen propio y CDN) y, si todas fallan, muestra las iniciales.
  */
-export function ItemGlyph({ name, rarity, src, className }: ItemGlyphProps) {
-  const [broken, setBroken] = useState(false);
-  const showImage = Boolean(src) && !broken;
+export function ItemGlyph({ name, rarity, sources, className }: ItemGlyphProps) {
+  const list = useMemo(() => sources?.filter(Boolean) ?? [], [sources]);
+  const key = list.join('|');
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    setIndex(0);
+  }, [key]);
+
+  const current = list[index];
+  const showImage = Boolean(current);
 
   return (
     <span
@@ -28,11 +36,11 @@ export function ItemGlyph({ name, rarity, src, className }: ItemGlyphProps) {
     >
       {showImage ? (
         <img
-          src={src ?? undefined}
+          src={current}
           alt=""
           loading="lazy"
           className="h-full w-full object-contain p-1"
-          onError={() => setBroken(true)}
+          onError={() => setIndex((value) => value + 1)}
         />
       ) : (
         monogram(name)
