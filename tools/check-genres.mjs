@@ -16,7 +16,7 @@ const targets = [
   'apps/web/public',
   'apps/web-e2e/src',
   'apps/web-e2e/fixtures',
-  'libs/gacha/src',
+  'libs/inventory/src',
   'libs/shared-types/src',
   'libs/data-access/src',
   'libs/core-engine/src',
@@ -43,6 +43,31 @@ const deny = [
   [/\bworld of warcraft\b/i, 'juego concreto'],
   [/\bleague of legends\b/i, 'juego concreto'],
   [/gi\.yatta\.moe/i, 'CDN hardcodeado'],
+];
+
+/**
+ * Reglas que no pueden vivir en la libreria generica. Los tests usan datos
+ * sinteticos, asi que tambien se revisan.
+ */
+const ruleDeny = [
+  [/\bpyro\b/i, 'elemento de un juego concreto'],
+  [/\bhydro\b/i, 'elemento de un juego concreto'],
+  [/\belectro\b/i, 'elemento de un juego concreto'],
+  [/\bcryo\b/i, 'elemento de un juego concreto'],
+  [/\banemo\b/i, 'elemento de un juego concreto'],
+  [/\bgeo\b/i, 'elemento de un juego concreto'],
+  [/\bdendro\b/i, 'elemento de un juego concreto'],
+  [/\bflower\b/i, 'ranura de un juego concreto'],
+  [/\bplume\b/i, 'ranura de un juego concreto'],
+  [/\bsands\b/i, 'ranura de un juego concreto'],
+  [/\bgoblet\b/i, 'ranura de un juego concreto'],
+  [/\bcirclet\b/i, 'ranura de un juego concreto'],
+  [/\bwt_/i, 'convencion de requisito de un juego concreto'],
+  [/\b4780\b/, 'valor de un juego concreto'],
+  [/\b717\b/, 'valor de un juego concreto'],
+  [/\bMAIN_STAT\b/, 'tabla de un juego concreto'],
+  [/\bELEMENTAL_DMG\b/, 'tabla de un juego concreto'],
+  [/\bSLOT_NAMES\b/, 'tabla de un juego concreto'],
 ];
 
 const files = [];
@@ -81,20 +106,24 @@ for (const target of targets) {
 const hits = [];
 
 for (const file of files) {
+  const relativePath = relative(root, file);
+  const patterns = relativePath.startsWith('libs/inventory/src')
+    ? [...deny, ...ruleDeny]
+    : deny;
   const lines = readFileSync(file, 'utf8').split('\n');
   lines.forEach((line, index) => {
-    for (const [pattern, reason] of deny) {
+    for (const [pattern, reason] of patterns) {
       if (pattern.test(line)) {
-        hits.push(`${relative(root, file)}:${index + 1}: ${reason} -> ${line.trim()}`);
+        hits.push(`${relativePath}:${index + 1}: ${reason} -> ${line.trim()}`);
       }
     }
   });
 }
 
 if (hits.length > 0) {
-  console.error('check:genres encontro nombres de juegos o CDNs de juegos en el producto:\n');
+  console.error('check:genres encontro nombres, reglas o CDNs de juegos en el producto:\n');
   for (const hit of hits) console.error(`  ${hit}`);
-  console.error('\nMueve ese dato a Supabase o a demo/. Ver F6.3.');
+  console.error('\nMueve ese dato a la plantilla, al catalogo o a demo/. Ver F6.4.');
   process.exit(1);
 }
 

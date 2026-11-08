@@ -1,26 +1,30 @@
-import { gachaPointer, loadGachaCatalog, type GachaCatalog } from '@zenith/gacha';
+import {
+  inventoryPointer,
+  loadInventoryCatalog,
+  type InventoryCatalog,
+} from '@zenith/inventory';
 import type { GameTemplate } from '@zenith/shared-types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-export type GachaCatalogState =
+export type InventoryCatalogState =
   | { status: 'idle'; catalog: null; error: null }
   | { status: 'loading'; catalog: null; error: null }
-  | { status: 'ready'; catalog: GachaCatalog; error: null }
+  | { status: 'ready'; catalog: InventoryCatalog; error: null }
   | { status: 'error'; catalog: null; error: string };
 
 const messageOf = (cause: unknown): string =>
   cause instanceof Error && cause.message
     ? cause.message
-    : 'Could not load the gacha catalog.';
+    : 'Could not load the inventory catalog.';
 
 /**
  * Carga bajo demanda el catalogo apuntado por la plantilla. Solo las pantallas
  * que lo necesitan montan este hook; el resto del optimizador no lo descarga.
  */
-export function useGachaCatalog(template: GameTemplate) {
-  const pointer = useMemo(() => gachaPointer(template), [template]);
+export function useInventoryCatalog(template: GameTemplate) {
+  const pointer = useMemo(() => inventoryPointer(template), [template]);
   const [attempt, setAttempt] = useState(0);
-  const [state, setState] = useState<GachaCatalogState>({
+  const [state, setState] = useState<InventoryCatalogState>({
     status: pointer ? 'loading' : 'idle',
     catalog: null,
     error: null,
@@ -35,7 +39,7 @@ export function useGachaCatalog(template: GameTemplate) {
     let alive = true;
     setState({ status: 'loading', catalog: null, error: null });
 
-    loadGachaCatalog(pointer)
+    loadInventoryCatalog(pointer)
       .then((catalog) => {
         if (alive) setState({ status: 'ready', catalog, error: null });
       })

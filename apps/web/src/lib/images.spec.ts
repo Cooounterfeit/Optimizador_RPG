@@ -5,9 +5,9 @@ import {
   assetUrls,
   characterIconUrls,
   characterRarityOf,
+  entryIconUrls,
   itemIconUrls,
   setIconUrls,
-  weaponIconUrls,
 } from './images';
 
 const assets: GameAssets = {
@@ -34,7 +34,7 @@ describe('assetUrls', () => {
 
 describe('iconos', () => {
   it('busca el arma por clave GOOD', () => {
-    expect(weaponIconUrls(assets, 'Starlight Blade')[0]).toBe(
+    expect(entryIconUrls(assets, 'Starlight Blade')[0]).toBe(
       'https://storage.test/icons/weapons/blade.png',
     );
   });

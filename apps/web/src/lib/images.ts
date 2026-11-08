@@ -1,4 +1,4 @@
-import { goodKey } from '@zenith/gacha';
+import { goodKey } from '@zenith/inventory';
 import type { BaseProfile, GameAssets, Item } from '@zenith/shared-types';
 
 /**
@@ -14,7 +14,7 @@ export function assetUrls(assets: GameAssets | undefined, path: string | null | 
   return (assets?.sources ?? []).map((source) => `${trimEnd(source)}/${trimStart(path)}`);
 }
 
-export function weaponIconUrls(assets: GameAssets | undefined, nameOrKey: string): string[] {
+export function entryIconUrls(assets: GameAssets | undefined, nameOrKey: string): string[] {
   const base = nameOrKey.split('·')[0].trim();
   const path = assets?.weapons?.[goodKey(base)] ?? assets?.weapons?.[base];
   return assetUrls(assets, path);
@@ -25,7 +25,12 @@ export function characterIconUrls(assets: GameAssets | undefined, profile: BaseP
   return assetUrls(assets, assets?.characters?.[key]);
 }
 
-export function setIconUrls(assets: GameAssets | undefined, setId: string, slot = 'flower'): string[] {
+export function setIconUrls(
+  assets: GameAssets | undefined,
+  setId: string,
+  slot: string | undefined,
+): string[] {
+  if (!slot) return [];
   return assetUrls(assets, assets?.artifacts?.[setId]?.[slot]);
 }
 
@@ -35,13 +40,13 @@ export function itemIconUrls(assets: GameAssets | undefined, item: Item): string
     const artifact = setIconUrls(assets, item.setId, item.slot);
     if (artifact.length > 0) return artifact;
   }
-  return weaponIconUrls(assets, item.name);
+  return entryIconUrls(assets, item.name);
 }
 
 export function characterRarityOf(assets: GameAssets | undefined, profile: BaseProfile): number {
   return assets?.rarity?.characters?.[profile.assetKey ?? profile.id] ?? 4;
 }
 
-export function weaponRarityOf(assets: GameAssets | undefined, key: string): number {
+export function entryRarityOf(assets: GameAssets | undefined, key: string): number {
   return assets?.rarity?.weapons?.[key] ?? 3;
 }
