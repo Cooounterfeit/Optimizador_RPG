@@ -1,0 +1,21 @@
+{
+  "format": "GOOD",
+  "version": 1,
+  "source": "e2e",
+  "artifacts": [
+    {
+      "setKey": "GladiatorsFinale",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "flower",
+      "mainStatKey": "hp",
+      "substats": [
+        { "key": "critRate_", "value": 7.8 },
+        { "key": "atk_", "value": 5.8 }
+      ]
+    }
+  ],
+  "weapons": [
+    { "key": "WolfsGravestone", "level": 90, "ascension": 6, "refinement": 1 }
+  ]
+}

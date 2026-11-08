@@ -10,6 +10,7 @@ export const gameCopy = {
   backToOptimizer: 'Back to optimizer',
   openInventory: 'Open inventory',
   viewAllItems: 'View all items',
+  browseCatalog: 'Browse catalog',
   counts: {
     stats: 'Stats',
     slots: 'Slots',

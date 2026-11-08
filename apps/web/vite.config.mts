@@ -12,7 +12,7 @@ const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.supabase.co",
+  "img-src 'self' data: blob: https://*.supabase.co https://gi.yatta.moe",
   "connect-src 'self' https://*.supabase.co",
   "font-src 'self' data:",
   "object-src 'none'",
