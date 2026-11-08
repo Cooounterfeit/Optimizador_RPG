@@ -1,15 +1,15 @@
 import { useMemo, useState } from 'react';
 
-import { listWeapons, weaponItem } from '@zenith/gacha';
+import { entryItem, inventoryRules, listEntries } from '@zenith/inventory';
 import type { GameTemplate, Item } from '@zenith/shared-types';
 
 import { Button } from '../../components/ui/Button';
 import { cn } from '../../lib/cn';
-import { setIconUrls, weaponIconUrls } from '../../lib/images';
+import { entryIconUrls, setIconUrls } from '../../lib/images';
 import { EmptyState } from '../catalog/components/EmptyState';
 import { inventoryCopy } from './copy';
 import { ItemGlyph } from './ItemGlyph';
-import { useGachaCatalog } from './useGachaCatalog';
+import { useInventoryCatalog } from './useInventoryCatalog';
 
 interface CatalogPanelProps {
   template: GameTemplate;
@@ -20,37 +20,42 @@ const controlClass =
   'h-[32px] rounded-[2px] border border-line-strong bg-transparent px-2 text-[12px] text-foreground';
 
 export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
-  const gacha = useGachaCatalog(template);
-  const [view, setView] = useState<'weapons' | 'sets'>('weapons');
+  const inventory = useInventoryCatalog(template);
+  const rules = inventoryRules(template);
+  const [view, setView] = useState<'entries' | 'sets'>('entries');
   const [query, setQuery] = useState('');
   const [type, setType] = useState('');
   const [rarity, setRarity] = useState('');
   const [adding, setAdding] = useState<string | null>(null);
-  const [level, setLevel] = useState(90);
+  const [level, setLevel] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const weapons = useMemo(
-    () => (gacha.status === 'ready' ? listWeapons(gacha.catalog) : []),
-    [gacha.status, gacha.catalog],
+  const labels = rules?.labels ?? {};
+  const entriesLabel = labels.entries ?? inventoryCopy.catalog.entries;
+  const setsLabel = labels.sets ?? inventoryCopy.catalog.sets;
+
+  const entries = useMemo(
+    () => (inventory.status === 'ready' ? listEntries(inventory.catalog) : []),
+    [inventory.status, inventory.catalog],
   );
   const types = useMemo(
-    () => [...new Set(weapons.map((weapon) => weapon.type).filter(Boolean))].sort() as string[],
-    [weapons],
+    () => [...new Set(entries.map((entry) => entry.type).filter(Boolean))].sort() as string[],
+    [entries],
   );
-  const weaponSlot = useMemo(
-    () =>
-      template.slots.find((slot) => /weapon|arma/i.test(`${slot.id} ${slot.name}`))?.id ??
-      gacha.catalog?.weaponSlot,
-    [template, gacha.catalog],
+  const weaponSlot = rules?.weaponSlot;
+  const setIconSlot = rules?.setIconSlot ?? template.slots[0]?.id;
+  const rarities = useMemo(
+    () => [...(rules?.rarities ?? [1, 2, 3, 4, 5])].sort((a, b) => b - a),
+    [rules],
   );
 
   const needle = query.trim().toLowerCase();
-  const filteredWeapons = weapons.filter((weapon) => {
-    if (type && weapon.type !== type) return false;
-    if (rarity && weapon.rarity !== Number(rarity)) return false;
+  const filteredEntries = entries.filter((entry) => {
+    if (type && entry.type !== type) return false;
+    if (rarity && entry.rarity !== Number(rarity)) return false;
     if (!needle) return true;
-    return weapon.name.toLowerCase().includes(needle);
+    return entry.name.toLowerCase().includes(needle);
   });
 
   const sets = template.sets.filter((set) => {
@@ -65,13 +70,13 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
     return '%';
   };
 
-  const addWeapon = async (key: string) => {
-    if (gacha.status !== 'ready') return;
+  const addEntry = async (key: string) => {
+    if (inventory.status !== 'ready' || !rules) return;
     setError(null);
     setBusy(true);
     try {
-      const item = weaponItem(gacha.catalog, key, level, weaponSlot);
-      if (!item) throw new Error(inventoryCopy.catalog.weaponError);
+      const item = entryItem(inventory.catalog, rules, key, level, weaponSlot);
+      if (!item) throw new Error(inventoryCopy.catalog.entryError);
       await onAdd({ ...item, id: `${item.id}-${crypto.randomUUID().slice(0, 8)}` });
       setAdding(null);
     } catch (cause) {
@@ -81,13 +86,13 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
     }
   };
 
-  if (gacha.status === 'idle') {
+  if (inventory.status === 'idle') {
     return (
       <EmptyState title={inventoryCopy.catalog.noCatalogTitle} body={inventoryCopy.catalog.noCatalog} />
     );
   }
 
-  if (gacha.status === 'loading') {
+  if (inventory.status === 'loading') {
     return (
       <p className="py-16 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
         {inventoryCopy.catalog.loading}
@@ -95,10 +100,10 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
     );
   }
 
-  if (gacha.status === 'error') {
+  if (inventory.status === 'error') {
     return (
-      <EmptyState title={inventoryCopy.catalog.errorTitle} body={gacha.error}>
-        <Button variant="outline" onClick={gacha.retry}>
+      <EmptyState title={inventoryCopy.catalog.errorTitle} body={inventory.error}>
+        <Button variant="outline" onClick={inventory.retry}>
           {inventoryCopy.retry}
         </Button>
       </EmptyState>
@@ -108,7 +113,7 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
   return (
     <section className="mt-4" role="tabpanel" aria-label={inventoryCopy.tabs.catalog}>
       <div className="flex flex-wrap items-center gap-2 border-b border-line pb-2">
-        {(['weapons', 'sets'] as const).map((id) => (
+        {(['entries', 'sets'] as const).map((id) => (
           <button
             key={id}
             type="button"
@@ -121,9 +126,9 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            {id === 'weapons'
-              ? `${inventoryCopy.catalog.weapons} (${weapons.length})`
-              : `${inventoryCopy.catalog.sets} (${template.sets.length})`}
+            {id === 'entries'
+              ? `${entriesLabel} (${entries.length})`
+              : `${setsLabel} (${template.sets.length})`}
           </button>
         ))}
 
@@ -139,10 +144,10 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
           onChange={(event) => setQuery(event.target.value)}
         />
 
-        {view === 'weapons' ? (
+        {view === 'entries' ? (
           <>
             <select
-              aria-label={inventoryCopy.catalog.type}
+              aria-label={inventoryCopy.catalog.entryType}
               className={controlClass}
               value={type}
               onChange={(event) => setType(event.target.value)}
@@ -161,7 +166,7 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
               onChange={(event) => setRarity(event.target.value)}
             >
               <option value="">{inventoryCopy.catalog.allRarities}</option>
-              {[5, 4, 3, 2, 1].map((value) => (
+              {rarities.map((value) => (
                 <option key={value} value={value}>
                   {value}★
                 </option>
@@ -177,40 +182,40 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
         </p>
       ) : null}
 
-      {view === 'weapons' ? (
-        filteredWeapons.length === 0 ? (
+      {view === 'entries' ? (
+        filteredEntries.length === 0 ? (
           <EmptyState title={inventoryCopy.emptyFiltered} body={inventoryCopy.catalog.empty} />
         ) : (
-          <ul aria-label={inventoryCopy.catalog.weapons} className="mt-2 divide-y divide-line">
-            {filteredWeapons.map((weapon) => (
+          <ul aria-label={entriesLabel} className="mt-2 divide-y divide-line">
+            {filteredEntries.map((entry) => (
               <li
-                key={weapon.key}
+                key={entry.key}
                 className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-b border-line px-2 py-2 last:border-b-0"
               >
                 <ItemGlyph
-                  name={weapon.name}
-                  rarity={weapon.rarity}
-                  sources={weaponIconUrls(template.assets, weapon.key)}
+                  name={entry.name}
+                  rarity={entry.rarity}
+                  sources={entryIconUrls(template.assets, entry.name)}
                   className="h-9 w-9 text-[10px]"
                 />
                 <div className="min-w-0">
-                  <p className="truncate text-[13px] font-semibold">{weapon.name}</p>
+                  <p className="truncate text-[13px] font-semibold">{entry.name}</p>
                   <p className="font-mono text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">
-                    {weapon.type ?? inventoryCopy.catalog.unknownType} · {weapon.rarity}★ ·{' '}
-                    {inventoryCopy.catalog.maxLevel(weapon.maxLevel)}
+                    {entry.type ?? inventoryCopy.catalog.unknownType} · {entry.rarity}★ ·{' '}
+                    {inventoryCopy.catalog.maxLevel(entry.maxLevel)}
                   </p>
                 </div>
 
-                {adding === weapon.key ? (
+                {adding === entry.key ? (
                   <div className="flex items-center gap-2">
-                    <label className="sr-only" htmlFor={`level-${weapon.key}`}>
+                    <label className="sr-only" htmlFor={`level-${entry.key}`}>
                       {inventoryCopy.catalog.level}
                     </label>
                     <input
-                      id={`level-${weapon.key}`}
+                      id={`level-${entry.key}`}
                       type="number"
                       min={1}
-                      max={weapon.maxLevel}
+                      max={entry.maxLevel}
                       value={level}
                       onChange={(event) => setLevel(Number(event.target.value))}
                       className={cn(controlClass, 'w-[72px] font-mono tabular-nums')}
@@ -218,7 +223,7 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
                     <Button
                       size="sm"
                       disabled={busy}
-                      onClick={() => void addWeapon(weapon.key)}
+                      onClick={() => void addEntry(entry.key)}
                     >
                       {inventoryCopy.catalog.add}
                     </Button>
@@ -231,8 +236,8 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      setLevel(Math.min(90, weapon.maxLevel));
-                      setAdding(weapon.key);
+                      setLevel(entry.maxLevel);
+                      setAdding(entry.key);
                     }}
                   >
                     {inventoryCopy.catalog.add}
@@ -253,7 +258,7 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
             >
               <ItemGlyph
                 name={set.name}
-                sources={setIconUrls(template.assets, set.id, 'flower')}
+                sources={setIconUrls(template.assets, set.id, setIconSlot)}
                 className="h-10 w-10 text-[10px]"
               />
               <div className="min-w-0">

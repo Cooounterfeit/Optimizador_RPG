@@ -6,7 +6,7 @@ import {
   parsePackage,
   type GamePackage,
 } from '@zenith/data-access';
-import { importGood, type ImportResult } from '@zenith/gacha';
+import { importGood, inventoryRules, type ImportResult } from '@zenith/inventory';
 import type { GameTemplate } from '@zenith/shared-types';
 
 import { Button } from '../../components/ui/Button';
@@ -16,7 +16,7 @@ import {
   getInventoryRepository,
 } from '../game/repositories';
 import { inventoryCopy } from './copy';
-import { useGachaCatalog } from './useGachaCatalog';
+import { useInventoryCatalog } from './useInventoryCatalog';
 
 type Kind = 'good' | 'package' | 'unknown';
 
@@ -37,7 +37,8 @@ function detect(raw: unknown): Kind {
 }
 
 export function ImportPanel({ template, onImported }: ImportPanelProps) {
-  const gacha = useGachaCatalog(template);
+  const inventory = useInventoryCatalog(template);
+  const rules = useMemo(() => inventoryRules(template), [template]);
   const input = useRef<HTMLInputElement>(null);
   const [raw, setRaw] = useState<unknown>(null);
   const [fileName, setFileName] = useState('');
@@ -46,28 +47,40 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
   const [busy, setBusy] = useState(false);
   const [minLevel, setMinLevel] = useState(0);
   const [minRarity, setMinRarity] = useState(0);
-  const [includeWeapons, setIncludeWeapons] = useState(true);
+  const [includeEntries, setIncludeEntries] = useState(true);
   const [mode, setMode] = useState<'merge' | 'replace'>('merge');
 
   const kind = useMemo(() => detect(raw), [raw]);
-  const weaponSlot = useMemo(
-    () => template.slots.find((slot) => /weapon|arma/i.test(`${slot.id} ${slot.name}`))?.id,
-    [template],
-  );
+  const entrySlot = rules?.weaponSlot;
+  const artifactLevelMax = rules?.artifactLevelRange.max ?? 20;
+  const rarityMax = rules ? Math.max(...rules.rarities) : 5;
+  const entriesLabel = rules?.labels.entries ?? inventoryCopy.import.entries;
+  const includeEntriesLabel =
+    rules?.labels.includeEntries ?? inventoryCopy.import.includeEntries;
 
   const goodResult = useMemo<ImportResult | null>(() => {
-    if (kind !== 'good' || gacha.status !== 'ready') return null;
+    if (kind !== 'good' || inventory.status !== 'ready') return null;
     try {
-      return importGood(raw, gacha.catalog, {
+      return importGood(raw, template, inventory.catalog, {
         minLevel,
         minRarity,
-        includeWeapons: includeWeapons && Boolean(weaponSlot),
-        weaponSlot,
+        includeEntries: includeEntries && Boolean(entrySlot),
+        entrySlot,
       });
     } catch {
       return null;
     }
-  }, [kind, gacha.status, gacha.catalog, raw, minLevel, minRarity, includeWeapons, weaponSlot]);
+  }, [
+    kind,
+    inventory.status,
+    inventory.catalog,
+    raw,
+    template,
+    minLevel,
+    minRarity,
+    includeEntries,
+    entrySlot,
+  ]);
 
   const packagePreview = useMemo<{ pkg: GamePackage | null; error: string | null }>(() => {
     if (kind !== 'package') return { pkg: null, error: null };
@@ -121,7 +134,7 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
     setBusy(true);
     setError(null);
     try {
-      if (kind === 'good' && goodResult && gacha.status === 'ready') {
+      if (kind === 'good' && goodResult && inventory.status === 'ready') {
         await addItems(
           goodResult.items,
           template.gameId,
@@ -211,20 +224,20 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
             {done}
           </p>
         ) : null}
-        {kind === 'good' && gacha.status === 'loading' ? (
+        {kind === 'good' && inventory.status === 'loading' ? (
           <p className="border-t border-line px-6 py-3 text-[12.5px] text-muted-foreground">
             {inventoryCopy.catalog.loading}
           </p>
         ) : null}
-        {kind === 'good' && gacha.status === 'error' ? (
+        {kind === 'good' && inventory.status === 'error' ? (
           <p role="alert" className="border-t border-line px-6 py-3 text-[12.5px] text-[oklch(0.78_0.16_25)]">
-            {gacha.error}{' '}
-            <button type="button" className="underline" onClick={gacha.retry}>
+            {inventory.error}{' '}
+            <button type="button" className="underline" onClick={inventory.retry}>
               {inventoryCopy.retry}
             </button>
           </p>
         ) : null}
-        {kind === 'good' && gacha.status === 'idle' ? (
+        {kind === 'good' && inventory.status === 'idle' ? (
           <p role="alert" className="border-t border-line px-6 py-3 text-[12.5px] text-[oklch(0.78_0.16_25)]">
             {inventoryCopy.catalog.noCatalog}
           </p>
@@ -251,8 +264,8 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
                   <dd className="font-mono tabular-nums">{goodResult.artifacts}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">{inventoryCopy.import.weapons}</dt>
-                  <dd className="font-mono tabular-nums">{goodResult.weapons}</dd>
+                  <dt className="text-muted-foreground">{entriesLabel}</dt>
+                  <dd className="font-mono tabular-nums">{goodResult.entries}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt className="text-muted-foreground">{inventoryCopy.import.skipped}</dt>
@@ -279,7 +292,7 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
                 <input
                   type="number"
                   min={0}
-                  max={20}
+                  max={artifactLevelMax}
                   value={minLevel}
                   onChange={(event) => setMinLevel(Number(event.target.value))}
                   className="h-[32px] rounded-[2px] border border-line-strong bg-transparent px-2 font-mono text-[12px]"
@@ -290,20 +303,20 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
                 <input
                   type="number"
                   min={1}
-                  max={5}
+                  max={rarityMax}
                   value={minRarity}
                   onChange={(event) => setMinRarity(Number(event.target.value))}
                   className="h-[32px] rounded-[2px] border border-line-strong bg-transparent px-2 font-mono text-[12px]"
                 />
               </label>
-              {weaponSlot ? (
+              {entrySlot ? (
                 <label className="flex items-center gap-2 text-[12px]">
                   <input
                     type="checkbox"
-                    checked={includeWeapons}
-                    onChange={(event) => setIncludeWeapons(event.target.checked)}
+                    checked={includeEntries}
+                    onChange={(event) => setIncludeEntries(event.target.checked)}
                   />
-                  {inventoryCopy.import.includeWeapons}
+                  {includeEntriesLabel}
                 </label>
               ) : null}
             </div>

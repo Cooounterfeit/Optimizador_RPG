@@ -22,7 +22,7 @@
       "path": "./libs/data-access"
     },
     {
-      "path": "./libs/gacha"
+      "path": "./libs/inventory"
     }
   ]
 }

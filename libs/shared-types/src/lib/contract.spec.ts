@@ -78,12 +78,15 @@ describe('GameTemplateSchema', () => {
         characters: { base: 'base.png' },
         rarity: { characters: { base: 5 } },
       },
-      extensions: { gacha: { kind: 'gacha', catalogUrl: '/catalog.json' } },
+      extensions: { inventory: { kind: 'inventory', catalogUrl: '/catalog.json' } },
     });
 
     expect(parsed.assets?.sources).toHaveLength(2);
     expect(parsed.assets?.characters?.base).toBe('base.png');
-    expect(parsed.extensions?.gacha).toEqual({ kind: 'gacha', catalogUrl: '/catalog.json' });
+    expect(parsed.extensions?.inventory).toEqual({
+      kind: 'inventory',
+      catalogUrl: '/catalog.json',
+    });
   });
 
   it('rechaza assets con rutas que no son texto', () => {

@@ -248,7 +248,7 @@ export const GameTemplateSchema = z.object({
   assets: GameAssetsSchema.optional(),
   /**
    * Datos propios de un genero. El core NO los interpreta: cada genero los
-   * valida con su propio esquema (por ejemplo `gacha`).
+   * valida con su propio esquema (por ejemplo `inventory`).
    */
   extensions: z.record(z.string(), z.unknown()).optional(),
 });

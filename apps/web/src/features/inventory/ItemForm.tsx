@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 
+import { inventoryRules } from '@zenith/inventory';
 import type { GameTemplate, Item } from '@zenith/shared-types';
 
 import { inventoryCopy } from './copy';
@@ -43,11 +44,15 @@ const messageOf = (cause: unknown): string =>
   cause instanceof Error && cause.message ? cause.message : inventoryCopy.form.errors.submit;
 
 export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProps) {
+  const rules = inventoryRules(template);
+  const rarities = rules?.rarities ?? [1, 2, 3, 4, 5];
+  const levelRange = rules?.itemLevelRange ?? { min: 0, max: 99 };
+
   const [name, setName] = useState(initial?.name ?? '');
   const [slot, setSlot] = useState(initial?.slot ?? '');
   const [setId, setSetId] = useState(initial?.setId ?? '');
-  const [rarity, setRarity] = useState(String(initial?.rarity ?? 1));
-  const [level, setLevel] = useState(String(initial?.level ?? 0));
+  const [rarity, setRarity] = useState(String(initial?.rarity ?? rarities[0] ?? 1));
+  const [level, setLevel] = useState(String(initial?.level ?? levelRange.min));
   const [rows, setRows] = useState<StatRow[]>(() => rowsFrom(initial));
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -71,12 +76,16 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
     if (!slot) return { error: inventoryCopy.form.errors.slot };
 
     const rarityValue = Number(rarity);
-    if (!Number.isInteger(rarityValue) || rarityValue < 1 || rarityValue > 5) {
+    if (!Number.isInteger(rarityValue) || !rarities.includes(rarityValue)) {
       return { error: inventoryCopy.form.errors.rarity };
     }
 
     const levelValue = Number(level);
-    if (!Number.isInteger(levelValue) || levelValue < 0 || levelValue > 99) {
+    if (
+      !Number.isInteger(levelValue) ||
+      levelValue < levelRange.min ||
+      levelValue > levelRange.max
+    ) {
       return { error: inventoryCopy.form.errors.level };
     }
 
@@ -205,7 +214,7 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
             value={rarity}
             onChange={(event) => setRarity(event.target.value)}
           >
-            {[1, 2, 3, 4, 5].map((value) => (
+            {rarities.map((value) => (
               <option key={value} value={value}>
                 {value}
               </option>
@@ -221,8 +230,8 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
             id="item-level"
             className={fieldClass}
             type="number"
-            min={0}
-            max={99}
+            min={levelRange.min}
+            max={levelRange.max}
             value={level}
             onChange={(event) => setLevel(event.target.value)}
           />

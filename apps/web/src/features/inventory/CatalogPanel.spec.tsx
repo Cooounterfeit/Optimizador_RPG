@@ -1,23 +1,29 @@
-import { clearGachaCatalogCache, type GachaCatalog } from '@zenith/gacha';
+import { clearInventoryCatalogCache, type InventoryCatalog } from '@zenith/inventory';
 import type { GameTemplate } from '@zenith/shared-types';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CatalogPanel } from './CatalogPanel';
 
-const catalog: GachaCatalog = {
-  kind: 'gacha',
-  weaponSlot: 'weapon',
-  weapons: [
+const catalog: InventoryCatalog = {
+  kind: 'inventory',
+  entries: [
     {
       key: 'starlight-blade',
       name: 'Starlight Blade',
       rarity: 5,
       type: 'sword',
+      slot: 'weapon',
       maxLevel: 90,
-      init: { v: 46, c: 'growth' },
-      subInit: { stat: 'critRate_', v: 0.072, c: 'growth', pct: true },
-      ascAtk: [0, 12, 24, 36, 48, 60, 72],
+      stats: {
+        weaponAtk: {
+          base: 46,
+          curve: 'growth',
+          ascension: [0, 12, 24, 36, 48, 60, 72],
+        },
+        critRate: { base: 0.072, curve: 'growth', percent: true },
+      },
+      requires: { blade: 1 },
     },
   ],
   curves: { '1': { growth: 1 }, '90': { growth: 2.5 } },
@@ -31,6 +37,8 @@ const template: GameTemplate = {
   stats: [
     { id: 'atk', name: 'Attack', unit: 'flat' },
     { id: 'atk_', name: 'ATK', unit: 'percent' },
+    { id: 'critRate', name: 'CRIT Rate', unit: 'percent' },
+    { id: 'weaponAtk', name: 'Weapon ATK', unit: 'flat' },
   ],
   slots: [
     { id: 'weapon', name: 'Weapon' },
@@ -47,11 +55,24 @@ const template: GameTemplate = {
   objectives: [],
   baseProfiles: [],
   constrainableStats: [],
-  extensions: { gacha: { kind: 'gacha', catalogUrl: '/test-catalog.json' } },
+  extensions: {
+    inventory: {
+      kind: 'inventory',
+      catalogUrl: '/test-catalog.json',
+      rules: {
+        format: 'good',
+        weaponSlot: 'weapon',
+        setIconSlot: 'flower',
+        slots: { flower: 'flower' },
+        stats: { critRate: 'critRate' },
+        labels: { entries: 'Weapons', sets: 'Sets', entry: 'Weapon' },
+      },
+    },
+  },
 };
 
 beforeEach(() => {
-  clearGachaCatalogCache();
+  clearInventoryCatalogCache();
   vi.stubGlobal(
     'fetch',
     vi.fn(async () => ({ ok: true, status: 200, json: async () => catalog })),
@@ -61,7 +82,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('CatalogPanel', () => {
-  it('busca armas por nombre', async () => {
+  it('busca entradas por nombre', async () => {
     render(<CatalogPanel template={template} onAdd={vi.fn()} />);
 
     expect(await screen.findByText('Starlight Blade')).toBeTruthy();
@@ -70,10 +91,10 @@ describe('CatalogPanel', () => {
       target: { value: 'zzz-no-existe' },
     });
 
-    expect(await screen.findByText('No weapons match those filters.')).toBeTruthy();
+    expect(await screen.findByText('No items match those filters.')).toBeTruthy();
   });
 
-  it('agrega un arma con el nivel elegido', async () => {
+  it('agrega una entrada con el nivel elegido', async () => {
     const onAdd = vi.fn().mockResolvedValue(undefined);
     render(<CatalogPanel template={template} onAdd={onAdd} />);
 
@@ -89,7 +110,7 @@ describe('CatalogPanel', () => {
     const added = onAdd.mock.calls[0][0];
     expect(added.name).toBe('Starlight Blade · Lv. 90');
     expect(added.slot).toBe('weapon');
-    expect(added.requires).toEqual({ wt_sword: 1 });
+    expect(added.requires).toEqual({ blade: 1 });
   });
 
   it('muestra los conjuntos con sus bonos', async () => {
@@ -104,9 +125,7 @@ describe('CatalogPanel', () => {
   });
 
   it('avisa cuando el juego no publica catalogo', async () => {
-    render(
-      <CatalogPanel template={{ ...template, extensions: {} }} onAdd={vi.fn()} />,
-    );
+    render(<CatalogPanel template={{ ...template, extensions: {} }} onAdd={vi.fn()} />);
 
     expect(await screen.findByText('This game has no catalog')).toBeTruthy();
   });

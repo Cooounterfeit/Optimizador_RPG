@@ -27,7 +27,7 @@ test('importa un GOOD, exporta el inventario y lo restaura', async ({ page }) =>
 
   await page.getByRole('tab', { name: /Items/ }).click();
   await expect(page.getByText('Starlight Blade · Lv. 90')).toBeVisible();
-  await expect(page.getByText('Flower +20 · hp')).toBeVisible();
+  await expect(page.getByText('Flower +20 · HP')).toBeVisible();
 
   await page.reload();
   await expect(page.getByText('Starlight Blade · Lv. 90')).toBeVisible();
@@ -56,5 +56,5 @@ test('importa un GOOD, exporta el inventario y lo restaura', async ({ page }) =>
   await expect(page.getByText('Restored 2 items.')).toBeVisible();
   await page.getByRole('tab', { name: /Items/ }).click();
   await expect(page.getByText('Starlight Blade · Lv. 90')).toBeVisible();
-  await expect(page.getByText('Flower +20 · hp')).toBeVisible();
+  await expect(page.getByText('Flower +20 · HP')).toBeVisible();
 });

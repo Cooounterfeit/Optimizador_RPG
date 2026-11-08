@@ -1,4 +1,4 @@
-import { clearGachaCatalogCache, type GachaCatalog } from '@zenith/gacha';
+import { clearInventoryCatalogCache, type InventoryCatalog } from '@zenith/inventory';
 import type {
   GameRepository,
   ImageMap,
@@ -24,19 +24,24 @@ if (typeof File !== 'undefined' && typeof File.prototype.text !== 'function') {
   };
 }
 
-const catalog: GachaCatalog = {
-  kind: 'gacha',
-  weaponSlot: 'weapon',
-  weapons: [
+const catalog: InventoryCatalog = {
+  kind: 'inventory',
+  entries: [
     {
       key: 'starlight-blade',
       name: 'Starlight Blade',
       rarity: 5,
       type: 'sword',
+      slot: 'weapon',
       maxLevel: 90,
-      init: { v: 46, c: 'growth' },
-      subInit: { stat: 'critRate_', v: 0.072, c: 'growth', pct: true },
-      ascAtk: [0, 12, 24, 36, 48, 60, 72],
+      stats: {
+        weaponAtk: {
+          base: 46,
+          curve: 'growth',
+          ascension: [0, 12, 24, 36, 48, 60, 72],
+        },
+        critRate_: { base: 0.072, curve: 'growth', percent: true },
+      },
     },
   ],
   curves: { '1': { growth: 1 }, '90': { growth: 2.5 } },
@@ -61,7 +66,20 @@ const template: GameTemplate = {
   objectives: [{ id: 'score', name: 'Score', description: '', kind: 'linear', formula: 'atk' }],
   baseProfiles: [{ id: 'base', name: 'Base', base: { atk: 100 } }],
   constrainableStats: [],
-  extensions: { gacha: { kind: 'gacha', catalogUrl: '/test-catalog.json' } },
+  extensions: {
+    inventory: {
+      kind: 'inventory',
+      catalogUrl: '/test-catalog.json',
+      rules: {
+        format: 'good',
+        weaponSlot: 'weapon',
+        slots: { flower: 'flower' },
+        stats: { hp: 'hp', critRate_: 'critRate_' },
+        mainStats: { hp: { '5': [[0, 500], [20, 4780]] } },
+        labels: { entries: 'Weapons' },
+      },
+    },
+  },
 };
 
 const good = {
@@ -164,7 +182,7 @@ describe('ImportPanel', () => {
     setInventoryRepository(inventory.repository);
     setGameRepository(noopGames);
     setImagesRepository(memoryImages().repository);
-    clearGachaCatalogCache();
+    clearInventoryCatalogCache();
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => ({ ok: true, status: 200, json: async () => catalog })),

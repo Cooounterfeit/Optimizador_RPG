@@ -66,11 +66,66 @@
     ],
     "constrainableStats": ["atk", "critRate"],
     "extensions": {
-      "gacha": {
-        "kind": "gacha",
-        "weaponSlot": "weapon",
+      "inventory": {
+        "kind": "inventory",
         "catalogUrl": "/seeds/gacha-demo.catalog.json",
-        "catalogVersion": "demo-1"
+        "catalogVersion": "demo-2",
+        "rules": {
+          "format": "good",
+          "weaponSlot": "weapon",
+          "setIconSlot": "flower",
+          "slots": {
+            "flower": "flower",
+            "plume": "plume",
+            "sands": "sands",
+            "goblet": "goblet",
+            "circlet": "circlet"
+          },
+          "stats": {
+            "hp": "hp",
+            "atk": "atk",
+            "critRate": "critRate",
+            "critDMG": "critDMG",
+            "energy": "energy"
+          },
+          "rarities": [1, 2, 3, 4, 5],
+          "artifactLevelRange": { "min": 0, "max": 20 },
+          "itemLevelRange": { "min": 0, "max": 99 },
+          "ascensionLevels": [20, 40, 50, 60, 70, 80],
+          "mainStats": {
+            "hp": {
+              "5": [[0, 500], [20, 4780]],
+              "4": [[0, 400], [16, 3000]],
+              "3": [[0, 300], [12, 2200]]
+            },
+            "atk": {
+              "5": [[0, 30], [20, 311]],
+              "4": [[0, 25], [16, 232]],
+              "3": [[0, 20], [12, 174]]
+            },
+            "critRate": {
+              "5": [[0, 3], [20, 31.1]],
+              "4": [[0, 2.7], [16, 23.2]],
+              "3": [[0, 2], [12, 17.4]]
+            },
+            "critDMG": {
+              "5": [[0, 6], [20, 62.2]],
+              "4": [[0, 5.4], [16, 46.4]],
+              "3": [[0, 4], [12, 34.8]]
+            },
+            "energy": {
+              "5": [[0, 5], [20, 51.8]],
+              "4": [[0, 4.5], [16, 38.7]],
+              "3": [[0, 3.4], [12, 29]]
+            }
+          },
+          "labels": {
+            "entry": "Weapon",
+            "entries": "Weapons",
+            "sets": "Sets",
+            "includeEntries": "Include weapons"
+          }
+        }
       }
     }
   },
