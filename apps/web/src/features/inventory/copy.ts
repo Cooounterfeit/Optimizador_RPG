@@ -12,6 +12,8 @@ export const inventoryCopy = {
   emptyFilteredBody: 'Clear the slot, set or search filters to see the whole inventory.',
   clearFilters: 'Clear filters',
   addFirst: 'Add your first item',
+  loadSamples: 'Load sample items',
+  loadingSamples: 'Loading sample items…',
   itemCount: (count: number) => `${count} item${count === 1 ? '' : 's'}`,
   noSet: 'No set',
   level: (value: number) => `Lv. ${value}`,
@@ -69,9 +71,7 @@ export const inventoryCopy = {
     title: 'Characters',
     note: (count: number) =>
       `${count} base profiles from the template. The solver will use the one you pick on the optimizer screen.`,
-    hp: 'HP',
-    atk: 'ATK',
-    def: 'DEF',
+    noStats: 'This profile has no declared stats.',
     search: 'Search characters',
     empty: 'No characters match that search.',
   },
@@ -124,6 +124,7 @@ export const inventoryCopy = {
     save: 'Save item',
     saving: 'Saving…',
     errors: {
+      rules: 'This game does not declare inventory rules, so items cannot be created.',
       name: 'Enter a name.',
       nameLength: 'Use 80 characters or fewer.',
       slot: 'Choose a slot.',

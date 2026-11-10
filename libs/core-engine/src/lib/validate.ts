@@ -182,6 +182,29 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
   for (const d of derived) tryCompile(d.id, d.formula, 'derivado')
   for (const o of t.objectives) tryCompile(o.id, o.formula, 'objetivo')
 
+  // La calculadora tiene su propio espacio de variables: campos y salidas
+  // anteriores. Comprobar el orden evita que una salida lea un valor que aun
+  // no existe.
+  if (t.damageCalculator) {
+    const calculatorIndex = new Map<string, number>()
+    for (const field of t.damageCalculator.fields) {
+      if (calculatorIndex.has(field.id)) err('E_CALC_ID', `El id "${field.id}" esta repetido en la calculadora.`, field.id)
+      calculatorIndex.set(field.id, calculatorIndex.size)
+    }
+    t.damageCalculator.outputs.forEach((output, index) => {
+      if (calculatorIndex.has(output.id)) {
+        err('E_CALC_ID', `El id "${output.id}" esta repetido en la calculadora.`, output.id)
+        return
+      }
+      try {
+        compileFormula(output.formula, calculatorIndex)
+      } catch (e) {
+        err('E_CALC_FORMULA', e instanceof FormulaError ? e.message : String(e), `salida "${output.id}"`)
+      }
+      calculatorIndex.set(output.id, t.damageCalculator!.fields.length + index)
+    })
+  }
+
   // Identificadores que no son variables conocidas. Las formulas que no se
   // pudieron analizar ya tienen su E_FORMULA; no se repite el error.
   for (const { id, formula, kind } of [

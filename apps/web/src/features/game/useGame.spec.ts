@@ -98,6 +98,7 @@ describe('useGame', () => {
 
     await waitFor(() => expect(result.current.state.status).toBe('ready'));
     expect(result.current.state.status === 'ready' && result.current.state.template).toEqual(template);
+    expect(result.current.state.status === 'ready' && result.current.state.sampleItems).toEqual([]);
     expect(getOptimizer).toHaveBeenCalledWith(OPTIMIZER_ID);
     expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template });
   });

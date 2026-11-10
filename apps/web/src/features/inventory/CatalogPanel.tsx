@@ -45,10 +45,7 @@ export function CatalogPanel({ template, onAdd }: CatalogPanelProps) {
   );
   const weaponSlot = rules?.weaponSlot;
   const setIconSlot = rules?.setIconSlot ?? template.slots[0]?.id;
-  const rarities = useMemo(
-    () => [...(rules?.rarities ?? [1, 2, 3, 4, 5])].sort((a, b) => b - a),
-    [rules],
-  );
+  const rarities = useMemo(() => [...(rules?.rarities ?? [])].sort((a, b) => b - a), [rules]);
 
   const needle = query.trim().toLowerCase();
   const filteredEntries = entries.filter((entry) => {

@@ -91,6 +91,7 @@ describe('games repository', () => {
       'g2',
     );
     await database.equipment.put({ gameId: 'g1', profileId: 'base', slots: { weapon: 'i1' }, updatedAt: 1 });
+    await database.profile_base.put({ gameId: 'g1', profileId: 'base', base: { atk: 10 }, updatedAt: 1 });
     await database.level_history.put({ gameId: 'g1', profileId: 'base', level: 2, base: {}, at: 'x' });
     await createSkillsRepository(database).save('g1', { golpe: 1 });
     await database.images.put({ id: 'g1::espada', gameId: 'g1', key: 'espada', data: 'x', updatedAt: 1 });
@@ -101,6 +102,7 @@ describe('games repository', () => {
     await expect(repo.get('g1')).resolves.toBeDefined();
     await expect(inventory.getAll('g1')).resolves.toEqual([]);
     await expect(database.equipment.count()).resolves.toBe(0);
+    await expect(database.profile_base.count()).resolves.toBe(0);
     await expect(database.level_history.count()).resolves.toBe(0);
     await expect(database.skills.count()).resolves.toBe(0);
     await expect(database.images.count()).resolves.toBe(0);

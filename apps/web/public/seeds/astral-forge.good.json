@@ -1,0 +1,121 @@
+{
+  "format": "GOOD",
+  "version": 1,
+  "source": "Astral Forge sample inventory",
+  "artifacts": [
+    {
+      "setKey": "astral-core",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "flower",
+      "mainStatKey": "hp",
+      "substats": [
+        { "key": "critRate", "value": 7.8 },
+        { "key": "atk", "value": 5.8 }
+      ]
+    },
+    {
+      "setKey": "void-song",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "flower",
+      "mainStatKey": "hp",
+      "substats": [
+        { "key": "critDMG", "value": 14.0 },
+        { "key": "energy", "value": 5.2 }
+      ]
+    },
+    {
+      "setKey": "astral-core",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "plume",
+      "mainStatKey": "atk",
+      "substats": [
+        { "key": "critRate", "value": 6.2 },
+        { "key": "critDMG", "value": 12.4 }
+      ]
+    },
+    {
+      "setKey": "void-song",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "plume",
+      "mainStatKey": "atk",
+      "substats": [
+        { "key": "hp", "value": 478 },
+        { "key": "energy", "value": 8.1 }
+      ]
+    },
+    {
+      "setKey": "astral-core",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "sands",
+      "mainStatKey": "energy",
+      "substats": [
+        { "key": "critRate", "value": 5.4 },
+        { "key": "atk", "value": 9.3 }
+      ]
+    },
+    {
+      "setKey": "void-song",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "sands",
+      "mainStatKey": "atk",
+      "substats": [
+        { "key": "critDMG", "value": 13.2 },
+        { "key": "hp", "value": 538 }
+      ]
+    },
+    {
+      "setKey": "astral-core",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "goblet",
+      "mainStatKey": "critRate",
+      "substats": [
+        { "key": "atk", "value": 10.5 },
+        { "key": "critDMG", "value": 11.7 }
+      ]
+    },
+    {
+      "setKey": "void-song",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "goblet",
+      "mainStatKey": "critDMG",
+      "substats": [
+        { "key": "atk", "value": 8.7 },
+        { "key": "critRate", "value": 4.9 }
+      ]
+    },
+    {
+      "setKey": "astral-core",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "circlet",
+      "mainStatKey": "critDMG",
+      "substats": [
+        { "key": "critRate", "value": 6.6 },
+        { "key": "atk", "value": 7.2 }
+      ]
+    },
+    {
+      "setKey": "void-song",
+      "rarity": 5,
+      "level": 20,
+      "slotKey": "circlet",
+      "mainStatKey": "critRate",
+      "substats": [
+        { "key": "critDMG", "value": 15.5 },
+        { "key": "hp", "value": 448 }
+      ]
+    }
+  ],
+  "weapons": [
+    { "key": "astral-edge", "level": 20, "ascension": 2, "refinement": 1 },
+    { "key": "void-fang", "level": 20, "ascension": 2, "refinement": 1 }
+  ]
+}

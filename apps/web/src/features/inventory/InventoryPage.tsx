@@ -38,6 +38,20 @@ const slotName = (template: GameTemplate, slotId: string): string =>
 const setName = (template: GameTemplate, setId: string | null): string =>
   setId ? (template.sets.find((set) => set.id === setId)?.name ?? setId) : inventoryCopy.noSet;
 
+const profileStatsLine = (
+  template: GameTemplate,
+  profile: GameTemplate['baseProfiles'][number],
+): string => {
+  const entries = template.stats.slice(0, 3);
+  if (entries.length === 0) return inventoryCopy.characters.noStats;
+  return entries
+    .map((stat) => {
+      const unit = stat.unit === 'percent' ? '%' : '';
+      return `${stat.name} ${numberFormat.format(profile.base[stat.id] ?? 0)}${unit}`;
+    })
+    .join(' · ');
+};
+
 const statsLine = (template: GameTemplate, item: Item): string => {
   const entries = Object.entries(item.stats).slice(0, 3);
   if (entries.length === 0) return inventoryCopy.statsSummary(0);
@@ -55,6 +69,7 @@ export function InventoryPage() {
   const { id = '' } = useParams();
   const game = useGame(id);
   const template = game.state.status === 'ready' ? game.state.template : undefined;
+  const sampleItems = game.state.status === 'ready' ? game.state.sampleItems : [];
 
   const inventory = useInventory(template?.gameId);
 
@@ -70,6 +85,7 @@ export function InventoryPage() {
   const [setFilter, setSetFilter] = useState('');
   const [charQuery, setCharQuery] = useState('');
   const [adding, setAdding] = useState(false);
+  const [loadingSamples, setLoadingSamples] = useState(false);
   const [editing, setEditing] = useState<Item | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -135,6 +151,22 @@ export function InventoryPage() {
     if (editing) await inventory.update(item);
     else await inventory.add(item);
     closeForm();
+  };
+
+  const loadSamples = async () => {
+    if (!template || sampleItems.length === 0) return;
+    setActionError(null);
+    setLoadingSamples(true);
+    try {
+      for (const item of sampleItems) {
+        await getInventoryRepository().addItem(item, template.gameId);
+      }
+      await inventory.reload();
+    } catch (cause) {
+      setActionError(messageOf(cause));
+    } finally {
+      setLoadingSamples(false);
+    }
   };
 
   const remove = async (itemId: string) => {
@@ -322,9 +354,20 @@ export function InventoryPage() {
               </p>
             ) : items.length === 0 ? (
               <EmptyState title={inventoryCopy.emptyTitle} body={inventoryCopy.emptyBody}>
-                <button type="button" className={buttonVariants()} onClick={openAdd}>
-                  {inventoryCopy.addFirst}
-                </button>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <button type="button" className={buttonVariants()} onClick={openAdd}>
+                    {inventoryCopy.addFirst}
+                  </button>
+                  {sampleItems.length > 0 ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => void loadSamples()}
+                      disabled={loadingSamples}
+                    >
+                      {loadingSamples ? inventoryCopy.loadingSamples : inventoryCopy.loadSamples}
+                    </Button>
+                  ) : null}
+                </div>
               </EmptyState>
             ) : filtered.length === 0 ? (
               <EmptyState
@@ -469,9 +512,7 @@ export function InventoryPage() {
                   <div className="min-w-0">
                     <p className="truncate text-[12.5px] font-semibold">{profile.name}</p>
                     <p className="truncate font-mono text-[9.5px] text-muted-foreground tabular-nums">
-                      {inventoryCopy.characters.hp} {numberFormat.format(profile.base.hp ?? 0)} ·{' '}
-                      {inventoryCopy.characters.atk} {numberFormat.format(profile.base.atk ?? 0)} ·{' '}
-                      {inventoryCopy.characters.def} {numberFormat.format(profile.base.def ?? 0)}
+                      {profileStatsLine(template, profile)}
                     </p>
                   </div>
                 </div>

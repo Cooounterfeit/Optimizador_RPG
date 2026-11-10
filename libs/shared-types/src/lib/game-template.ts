@@ -177,6 +177,7 @@ export const GameAssetsSchema = z.object({
   characters: z.record(z.string(), z.string()).optional(),
   weapons: z.record(z.string(), z.string()).optional(),
   artifacts: z.record(z.string(), z.record(z.string(), z.string())).optional(),
+  skills: z.record(z.string(), z.string()).optional(),
   rarity: z
     .object({
       characters: z.record(z.string(), z.number()).optional(),
@@ -186,6 +187,84 @@ export const GameAssetsSchema = z.object({
 });
 
 export type GameAssets = z.infer<typeof GameAssetsSchema>;
+
+const CALCULATOR_ID_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+/** Campo de entrada de una calculadora definida por el juego. */
+export const DamageCalculatorFieldSchema = z.object({
+  id: z
+    .string()
+    .regex(CALCULATOR_ID_PATTERN, 'El id debe empezar con letra o "_" y solo usar letras, numeros y "_".'),
+  label: z.string().min(1),
+  description: z.string().optional(),
+  /** 'percent' muestra el sufijo %; 'flat' no agrega sufijo. */
+  unit: z.enum(['flat', 'percent']).optional(),
+  default: z.number().optional(),
+  min: z.number().optional(),
+  max: z.number().optional(),
+});
+
+export type DamageCalculatorField = z.infer<typeof DamageCalculatorFieldSchema>;
+
+/** Resultado calculado por una formula de la plantilla, en orden. */
+export const DamageCalculatorOutputSchema = z.object({
+  id: z
+    .string()
+    .regex(CALCULATOR_ID_PATTERN, 'El id debe empezar con letra o "_" y solo usar letras, numeros y "_".'),
+  label: z.string().min(1),
+  formula: z.string().min(1),
+  unit: z.string().optional(),
+  /** Decimales visibles al mostrar el resultado. */
+  decimals: z.number().int().min(0).max(6).optional(),
+});
+
+export type DamageCalculatorOutput = z.infer<typeof DamageCalculatorOutputSchema>;
+
+/**
+ * Calculadora opcional del juego.
+ *
+ * No hay campos ni formulas por defecto: si el juego no declara este bloque, no
+ * tiene calculadora. Las formulas se evaluan en orden y cada salida puede usar
+ * los campos y las salidas anteriores.
+ */
+export const DamageCalculatorSchema = z
+  .object({
+    title: z.string().min(1),
+    description: z.string().optional(),
+    note: z.string().optional(),
+    fields: z.array(DamageCalculatorFieldSchema).min(1),
+    outputs: z.array(DamageCalculatorOutputSchema).min(1),
+  })
+  .superRefine((value, ctx) => {
+    const seen = new Set<string>();
+
+    for (const field of value.fields) {
+      if (seen.has(field.id)) {
+        ctx.addIssue({ code: 'custom', message: `El id "${field.id}" esta repetido.`, path: ['fields'] });
+      }
+      seen.add(field.id);
+
+      if (field.min !== undefined && field.max !== undefined && field.min > field.max) {
+        ctx.addIssue({ code: 'custom', message: `"${field.id}" tiene min mayor que max.`, path: ['fields'] });
+      }
+      if (
+        field.default !== undefined &&
+        ((field.min !== undefined && field.default < field.min) ||
+          (field.max !== undefined && field.default > field.max))
+      ) {
+        ctx.addIssue({ code: 'custom', message: `El valor por defecto de "${field.id}" esta fuera de rango.`, path: ['fields'] });
+      }
+    }
+
+    for (const output of value.outputs) {
+      if (seen.has(output.id)) {
+        ctx.addIssue({ code: 'custom', message: `El id "${output.id}" esta repetido.`, path: ['outputs'] });
+      }
+      seen.add(output.id);
+    }
+  });
+
+export type DamageCalculator = z.infer<typeof DamageCalculatorSchema>;
 
 /** Plantilla completa de un juego. Es el unico input especifico del juego. */
 export const GameTemplateSchema = z.object({
@@ -231,6 +310,8 @@ export const GameTemplateSchema = z.object({
   skillTrees: z.array(SkillTreeDefSchema).optional(),
   /** Niveles del personaje y como crecen sus valores base (opcional). */
   leveling: LevelingDefSchema.optional(),
+  /** Calculadora propia del juego (opcional). Sin bloque, no hay calculadora. */
+  damageCalculator: DamageCalculatorSchema.optional(),
   notes: z.string().optional(),
   /**
    * PRESENTACION. Nada de esto entra en el calculo: el motor ignora estos tres

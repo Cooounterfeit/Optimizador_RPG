@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { sanitizeSelection } from '@zenith/core-engine';
+import type { Constraint } from '@zenith/shared-types';
+
 import { Button, buttonVariants } from '../components/ui/Button';
 import { cn } from '../lib/cn';
 import { EmptyState } from '../features/catalog/components/EmptyState';
@@ -9,19 +12,55 @@ import { getCatalogRepository } from '../features/catalog/catalog-repository';
 import type { CatalogOptimizer } from '../features/catalog/types';
 import { gameCopy } from '../features/game/copy';
 import { useGame } from '../features/game/useGame';
+import { useProfileBase } from '../features/game/useProfileBase';
 import { useInventory } from '../features/inventory/useInventory';
 import { ItemGlyph } from '../features/inventory/ItemGlyph';
+import { inventoryCopy } from '../features/inventory/copy';
+import { getInventoryRepository } from '../features/game/repositories';
+import { ConstraintEditor } from '../features/optimizer/ConstraintEditor';
+import { LevelHistoryPanel } from '../features/optimizer/LevelHistoryPanel';
+import { OptimizerResult } from '../features/optimizer/OptimizerResult';
+import { StatsPanel } from '../features/optimizer/StatsPanel';
+import { useOptimizer } from '../features/optimizer/useOptimizer';
+import { useSkillSelection } from '../features/skills/useSkillSelection';
 import { itemIconUrls } from '../lib/images';
 
 export function OptimizerPage() {
   const { id = '' } = useParams();
   const { state, retry } = useGame(id);
   const template = state.status === 'ready' ? state.template : undefined;
+  const sampleItems = state.status === 'ready' ? state.sampleItems : [];
 
   const inventory = useInventory(template?.gameId);
+  const { selection: skillSelection } = useSkillSelection(template);
+  const [loadingSamples, setLoadingSamples] = useState(false);
   const [profileId, setProfileId] = useState('');
   const [objectiveId, setObjectiveId] = useState('');
+  const [constraints, setConstraints] = useState<Constraint[]>([]);
   const [demoCard, setDemoCard] = useState<CatalogOptimizer | null>(null);
+  const {
+    phase,
+    progress,
+    result,
+    error: optimizerError,
+    run,
+    cancel,
+    reset,
+  } = useOptimizer();
+
+  const templateProfile =
+    template?.baseProfiles.find((entry) => entry.id === profileId) ?? template?.baseProfiles[0];
+  const { base: profileBase, save: saveProfileBase } = useProfileBase(
+    template?.gameId,
+    templateProfile,
+  );
+
+  useEffect(() => {
+    setProfileId('');
+    setObjectiveId('');
+    setConstraints([]);
+    reset();
+  }, [id, reset]);
 
   /**
    * El catalogo mock trae tarjetas de diseno que no tienen plantilla. En vez de
@@ -93,8 +132,7 @@ export function OptimizerPage() {
 
   if (!template) return null;
 
-  const profile =
-    template.baseProfiles.find((entry) => entry.id === profileId) ?? template.baseProfiles[0];
+  const profile = templateProfile ? { ...templateProfile, base: profileBase } : undefined;
   const objective =
     template.objectives.find((entry) => entry.id === objectiveId) ?? template.objectives[0];
 
@@ -107,9 +145,33 @@ export function OptimizerPage() {
   ];
 
   const items = inventory.items ?? [];
-  const constrainable = template.constrainableStats
-    .map((statId) => template.stats.find((stat) => stat.id === statId)?.name ?? statId)
-    .slice(0, 8);
+  const canRun = items.length > 0 && Boolean(profile) && Boolean(objective) && phase !== 'running';
+
+  const loadSamples = async () => {
+    if (!template || sampleItems.length === 0) return;
+    setLoadingSamples(true);
+    try {
+      for (const item of sampleItems) {
+        await getInventoryRepository().addItem(item, template.gameId);
+      }
+      await inventory.reload();
+    } finally {
+      setLoadingSamples(false);
+    }
+  };
+
+  const start = () => {
+    if (!profile || !objective) return;
+    run({
+      template,
+      items,
+      profileId: profile.id,
+      objectiveId: objective.id,
+      constraints,
+      topN: 3,
+      skills: sanitizeSelection(template, skillSelection),
+    });
+  };
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 pb-20 pt-6 max-[860px]:px-4">
@@ -172,6 +234,8 @@ export function OptimizerPage() {
             </select>
           </section>
 
+          {profile ? <StatsPanel template={template} profile={profile} /> : null}
+
           <section className="rounded-[4px] border border-line bg-surface p-4">
             <p className="label-caps">02 · {gameCopy.cockpit.objective}</p>
             <p className="mt-1 text-[11.5px] text-muted-foreground">{gameCopy.cockpit.objectiveHint}</p>
@@ -205,18 +269,11 @@ export function OptimizerPage() {
           <section className="rounded-[4px] border border-line bg-surface p-4">
             <p className="label-caps">03 · {gameCopy.cockpit.constraints}</p>
             <p className="mt-1 text-[11.5px] text-muted-foreground">{gameCopy.cockpit.constraintsHint}</p>
-            {constrainable.length > 0 ? (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {constrainable.map((name) => (
-                  <span
-                    key={name}
-                    className="rounded-[2px] border border-line px-2 py-1 font-mono text-[10px] text-muted-foreground"
-                  >
-                    {name}
-                  </span>
-                ))}
-              </div>
-            ) : null}
+            <ConstraintEditor
+              template={template}
+              constraints={constraints}
+              onChange={setConstraints}
+            />
           </section>
         </div>
 
@@ -247,14 +304,97 @@ export function OptimizerPage() {
               <Link to={`/optimizer/${id}/inventario`} className={buttonVariants()}>
                 {gameCopy.openInventory}
               </Link>
-              <Button variant="outline" disabled title={gameCopy.cockpit.optimizeNote}>
-                {gameCopy.cockpit.optimize}
-              </Button>
+              {template.damageCalculator ? (
+                <Link
+                  to={`/optimizer/${id}/dano`}
+                  className={buttonVariants({ variant: 'outline' })}
+                >
+                  {gameCopy.openDamageCalculator}
+                </Link>
+              ) : null}
+              {template.skillTrees?.length ? (
+                <Link
+                  to={`/optimizer/${id}/habilidades`}
+                  className={buttonVariants({ variant: 'outline' })}
+                >
+                  {gameCopy.openSkillTree}
+                  {Object.keys(skillSelection).length > 0
+                    ? ` (${Object.keys(skillSelection).length})`
+                    : ''}
+                </Link>
+              ) : null}
+              {phase === 'running' ? (
+                <Button variant="outline" onClick={cancel}>
+                  {gameCopy.cockpit.stop}
+                </Button>
+              ) : (
+                <Button onClick={start} disabled={!canRun}>
+                  {gameCopy.cockpit.optimize}
+                </Button>
+              )}
               <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
-                {gameCopy.cockpit.optimizeNote}
+                {phase === 'running' ? gameCopy.cockpit.running : gameCopy.cockpit.optimizeNote}
               </span>
             </div>
+
+            {phase === 'running' ? (
+              <div className="mt-3 rounded-[2px] border border-line px-3 py-2">
+                <p className="m-0 font-mono text-[10.5px] text-muted-foreground">
+                  {progress
+                    ? `${progress.evaluated.toLocaleString('en-US')} evaluated · ${progress.pruned.toLocaleString('en-US')} pruned · ${Math.round(progress.elapsedMs / 1000)}s · ${gameCopy.cockpit.bestScore} ${progress.bestScore.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+                    : gameCopy.cockpit.running}
+                </p>
+                <p className="m-0 mt-1 text-[11px] leading-snug text-muted-foreground">
+                  {gameCopy.cockpit.stopNote}
+                </p>
+              </div>
+            ) : null}
+
+            {optimizerError ? (
+              <p
+                role="alert"
+                className="mt-3 rounded-[2px] border border-[oklch(0.6_0.19_25)] px-3 py-2 text-[12px] text-[oklch(0.78_0.16_25)]"
+              >
+                {optimizerError}
+              </p>
+            ) : null}
+
+            {inventory.items !== null && items.length === 0 ? (
+              <div className="mt-3 rounded-[2px] border border-dashed border-line-strong px-3 py-2 text-[12px] text-muted-foreground">
+                <p className="m-0">
+                  <strong className="text-foreground">{gameCopy.cockpit.emptyInventoryTitle}.</strong>{' '}
+                  {gameCopy.cockpit.emptyInventoryBody}
+                </p>
+                {sampleItems.length > 0 ? (
+                  <Button
+                    variant="outline"
+                    className="mt-2"
+                    onClick={() => void loadSamples()}
+                    disabled={loadingSamples}
+                  >
+                    {loadingSamples ? inventoryCopy.loadingSamples : inventoryCopy.loadSamples}
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
           </section>
+
+          {result && objective ? (
+            <OptimizerResult
+              template={template}
+              objective={objective}
+              result={result}
+              items={items}
+            />
+          ) : null}
+
+          {profile ? (
+            <LevelHistoryPanel
+              template={template}
+              profile={profile}
+              onLevelUp={saveProfileBase}
+            />
+          ) : null}
 
           <section className="rounded-[4px] border border-line bg-surface p-5">
             <div className="flex items-baseline justify-between gap-3">

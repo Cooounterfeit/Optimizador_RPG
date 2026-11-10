@@ -32,6 +32,9 @@ const template: GameTemplate = {
         weaponSlot: 'slot-a',
         slots: { 'slot-a': 'slot-a' },
         stats: { might: 'might', haste: 'haste' },
+        rarities: [1, 2, 3, 4, 5],
+        artifactLevelRange: { min: 0, max: 20 },
+        itemLevelRange: { min: 0, max: 99 },
         mainStats: {
           might: {
             '5': [[0, 100], [20, 500]],

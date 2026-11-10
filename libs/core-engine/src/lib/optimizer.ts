@@ -364,8 +364,8 @@ function withSkills(req: SolveRequest): { req: SolveRequest; strip: <T extends {
   if (problemas.length) throw new Error(`Seleccion de habilidades invalida: ${problemas[0].message}`)
   const stats = skillContribution(req.template, req.skills)
   if (Object.keys(stats).length === 0) return none
-  const template = { ...req.template, slots: [...req.template.slots, { id: SKILL_SLOT, name: 'Habilidades' }] }
-  const items: Item[] = [...req.items, { id: SKILL_ITEM, slot: SKILL_SLOT, setId: null, name: 'Habilidades', stats }]
+  const template = { ...req.template, slots: [...req.template.slots, { id: SKILL_SLOT, name: 'Skills' }] }
+  const items: Item[] = [...req.items, { id: SKILL_ITEM, slot: SKILL_SLOT, setId: null, name: 'Skills', stats }]
   const k = req.template.slots.length
   return {
     req: { ...req, template, items },

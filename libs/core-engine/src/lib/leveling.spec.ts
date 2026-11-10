@@ -16,7 +16,7 @@ import { validateTemplate } from './validate.js';
 const close = (a: number | undefined, b: number) => a !== undefined && Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b));
 
 const guerrero: BaseProfile = { id: 'g', name: 'Guerrero', base: { nivel: 10, fuerza: 20, destreza: 15, inteligencia: 12 } };
-const t = { leveling: { min: 1, max: 50, growth: { fuerza: '1.6', destreza: '1', inteligencia: '0.4' } } };
+const t = { leveling: { levelKey: 'nivel', min: 1, max: 50, growth: { fuerza: '1.6', destreza: '1', inteligencia: '0.4' } } };
 const err = (x: ReturnType<typeof projectProfile>) => (x.ok ? '' : x.error);
 
 describe('1. ejemplo del Jira', () => {
@@ -67,7 +67,7 @@ describe('2. mensajes de los criterios de aceptacion', () => {
 });
 
 describe('3. curvas que dependen del nivel', () => {
-  const t2 = { leveling: { min: 1, max: 99, growth: { vida: 'base_crecVida + nivel', fuerza: 'if(nivel % 5 == 0, 3, 1)' } } };
+  const t2 = { leveling: { levelKey: 'nivel', min: 1, max: 99, growth: { vida: 'base_crecVida + nivel', fuerza: 'if(nivel % 5 == 0, 3, 1)' } } };
   const p2: BaseProfile = { id: 'p', name: 'p', base: { nivel: 1, vida: 100, crecVida: 10, fuerza: 5 } };
   const r2 = projectProfile(t2, p2, 10);
 
@@ -85,7 +85,10 @@ describe('3. curvas que dependen del nivel', () => {
 });
 
 describe('4. validacion', () => {
-  const conf = (leveling: LevelingDef, profiles: BaseProfile[] = [guerrero]) => checkLeveling({ leveling, baseProfiles: profiles });
+  const conf = (
+    leveling: Omit<LevelingDef, 'levelKey'> & { levelKey?: string },
+    profiles: BaseProfile[] = [guerrero],
+  ) => checkLeveling({ leveling: { levelKey: 'nivel', ...leveling }, baseProfiles: profiles });
 
   it('max debe ser mayor que min', () => {
     expect(conf({ min: 5, max: 5, growth: { fuerza: '1' } }).errors.length > 0).toBe(true);
@@ -165,7 +168,7 @@ describe('6. curvas por tramos', () => {
 });
 
 describe('7. niveles por puntos', () => {
-  const ts = { leveling: { min: 1, max: 99, mode: 'points' as const, points: { attributes: ['vigor', 'fuerza'], perLevel: 1, maxValue: 40 }, growth: {} } };
+  const ts = { leveling: { levelKey: 'nivel', min: 1, max: 99, mode: 'points' as const, points: { attributes: ['vigor', 'fuerza'], perLevel: 1, maxValue: 40 }, growth: {} } };
   const pj: BaseProfile = { id: 'c', name: 'Caballero', base: { nivel: 10, vigor: 12, fuerza: 14, fe: 9 } };
 
   it('5 niveles dan 5 puntos', () => {
@@ -207,7 +210,7 @@ describe('7. niveles por puntos', () => {
 
 describe('8. reparto automatico', () => {
   const soft = (x: number, a: number, b: number) => Math.min(x, a) * 3 + Math.max(0, Math.min(x, b) - a) * 1 + Math.max(0, x - b) * 0.2;
-  const t8 = { leveling: { min: 1, max: 99, mode: 'points' as const, points: { attributes: ['a', 'b', 'c'] }, growth: {} } };
+  const t8 = { leveling: { levelKey: 'nivel', min: 1, max: 99, mode: 'points' as const, points: { attributes: ['a', 'b', 'c'] }, growth: {} } };
   const p8: BaseProfile = { id: 'x', name: 'X', base: { nivel: 1, a: 5, b: 8, c: 2 } };
 
   it('igual a la fuerza bruta en 30 casos con topes blandos', () => {

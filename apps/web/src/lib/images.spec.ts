@@ -73,9 +73,9 @@ describe('iconos', () => {
 });
 
 describe('rarezas', () => {
-  it('usa el mapa y cae en el valor por defecto', () => {
+  it('usa solo la rareza declarada por la plantilla', () => {
     expect(characterRarityOf(assets, { id: 'nova', name: 'Nova', base: {} })).toBe(5);
-    expect(characterRarityOf(assets, { id: 'otro', name: 'Otro', base: {} })).toBe(4);
-    expect(characterRarityOf(undefined, { id: 'nova', name: 'Nova', base: {} })).toBe(4);
+    expect(characterRarityOf(assets, { id: 'otro', name: 'Otro', base: {} })).toBeUndefined();
+    expect(characterRarityOf(undefined, { id: 'nova', name: 'Nova', base: {} })).toBeUndefined();
   });
 });

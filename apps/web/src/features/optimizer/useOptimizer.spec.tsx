@@ -1,0 +1,164 @@
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import type { BuildResult, SolveRequest, SolveResponse } from '@zenith/shared-types';
+
+import { useOptimizer } from './useOptimizer';
+import type { Setup, WorkerIn, WorkerOut } from './optimizer.worker';
+
+class FakeWorker {
+  static instances: FakeWorker[] = [];
+  static reset() {
+    FakeWorker.instances = [];
+  }
+
+  onmessage: ((event: MessageEvent<WorkerOut>) => void) | null = null;
+  onerror: ((event: ErrorEvent) => void) | null = null;
+  sent: WorkerIn | null = null;
+  terminated = false;
+
+  constructor() {
+    FakeWorker.instances.push(this);
+  }
+
+  postMessage(message: WorkerIn) {
+    this.sent = message;
+  }
+
+  terminate() {
+    this.terminated = true;
+  }
+
+  emit(message: WorkerOut) {
+    this.onmessage?.({ data: message } as MessageEvent<WorkerOut>);
+  }
+}
+
+const setup: Setup = {
+  totalCombinations: 10,
+  searchSpace: 10,
+  boundFiltered: 0,
+  dominated: 0,
+  candidatesPerSlot: [],
+  relevantStats: ['atk'],
+  mergedDimensions: 0,
+  requirementFiltered: 0,
+  mode: 'exacto',
+  bound: 'monotono',
+};
+
+const build: BuildResult = {
+  score: 42,
+  itemIds: ['weapon'],
+  finalStats: { atk: 42 },
+  activeSets: [],
+};
+
+const result: SolveResponse = {
+  builds: [build],
+  stats: {
+    ...setup,
+    evaluated: 10,
+    pruned: 0,
+    elapsedMs: 12,
+    feasible: true,
+    provenOptimal: true,
+  },
+};
+
+const lastWorker = (): FakeWorker => {
+  const worker = FakeWorker.instances.at(-1);
+  if (!worker) throw new Error('The fake worker was not created.');
+  return worker;
+};
+
+function Probe() {
+  const optimizer = useOptimizer();
+
+  return (
+    <div>
+      <span data-testid="phase">{optimizer.phase}</span>
+      <span data-testid="progress">{optimizer.progress?.evaluated ?? 0}</span>
+      <span data-testid="result">{optimizer.result?.builds.length ?? 0}</span>
+      <span data-testid="optimal">{String(optimizer.result?.stats.provenOptimal ?? false)}</span>
+      <span data-testid="error">{optimizer.error ?? ''}</span>
+      <button onClick={() => optimizer.run({} as SolveRequest)}>run</button>
+      <button onClick={optimizer.cancel}>cancel</button>
+    </div>
+  );
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  FakeWorker.reset();
+});
+
+describe('useOptimizer', () => {
+  it('recibe setup, progreso y resultado', () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+    render(<Probe />);
+
+    fireEvent.click(screen.getByText('run'));
+    expect(screen.getByTestId('phase').textContent).toBe('running');
+
+    const worker = FakeWorker.instances.at(-1);
+    expect(worker?.sent?.type).toBe('solve');
+
+    act(() => worker?.emit({ type: 'setup', setup }));
+    act(() =>
+      worker?.emit({
+        type: 'progress',
+        evaluated: 4,
+        pruned: 1,
+        elapsedMs: 8,
+        bestScore: 42,
+        builds: [build],
+      }),
+    );
+    expect(screen.getByTestId('progress').textContent).toBe('4');
+
+    act(() => worker?.emit({ type: 'done', result }));
+    expect(screen.getByTestId('phase').textContent).toBe('done');
+    expect(screen.getByTestId('result').textContent).toBe('1');
+    expect(screen.getByTestId('optimal').textContent).toBe('true');
+    expect(worker?.terminated).toBe(true);
+  });
+
+  it('cancelar conserva la mejor build parcial', () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+    render(<Probe />);
+
+    fireEvent.click(screen.getByText('run'));
+    const worker = lastWorker();
+
+    act(() => worker.emit({ type: 'setup', setup }));
+    act(() =>
+      worker.emit({
+        type: 'progress',
+        evaluated: 3,
+        pruned: 2,
+        elapsedMs: 5,
+        bestScore: 42,
+        builds: [build],
+      }),
+    );
+    fireEvent.click(screen.getByText('cancel'));
+
+    expect(screen.getByTestId('phase').textContent).toBe('done');
+    expect(screen.getByTestId('result').textContent).toBe('1');
+    expect(screen.getByTestId('optimal').textContent).toBe('false');
+    expect(worker.terminated).toBe(true);
+  });
+
+  it('propaga el error del worker', () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+    render(<Probe />);
+
+    fireEvent.click(screen.getByText('run'));
+    const worker = lastWorker();
+    act(() => worker.emit({ type: 'error', message: 'boom' }));
+
+    expect(screen.getByTestId('phase').textContent).toBe('error');
+    expect(screen.getByTestId('error').textContent).toBe('boom');
+  });
+});

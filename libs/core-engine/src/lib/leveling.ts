@@ -11,7 +11,7 @@
 import { compileFormula, FormulaError, formulaVariables } from './formula.js'
 import type { BaseProfile, GameTemplate, LevelingDef } from '@zenith/shared-types'
 
-export const levelKeyOf = (l: LevelingDef) => l.levelKey || 'nivel'
+export const levelKeyOf = (l: LevelingDef) => l.levelKey
 
 /** Nivel actual del perfil, o null si el juego no tiene niveles o el perfil no lo declara. */
 export function currentLevel(t: Pick<GameTemplate, 'leveling'>, p: BaseProfile): number | null {
@@ -46,12 +46,13 @@ export type Allocation = Record<string, number>
 export const allocated = (a: Allocation = {}) => Object.values(a).reduce((x, y) => x + (y > 0 ? y : 0), 0)
 
 /**
- * Compila las curvas para un perfil. Variables disponibles: `nivel` y
- * `base_<clave>` de todas las claves del perfil (con su valor ACTUAL).
+ * Compila las curvas para un perfil. Variables disponibles: la clave de nivel
+ * declarada por la plantilla y `base_<clave>` de todas las claves del perfil
+ * (con su valor ACTUAL).
  */
 function compileGrowth(l: LevelingDef, p: BaseProfile) {
   const keys = Object.keys(p.base)
-  const varIndex = new Map<string, number>([['nivel', 0]])
+  const varIndex = new Map<string, number>([[levelKeyOf(l), 0]])
   keys.forEach((k, i) => varIndex.set(`base_${k}`, i + 1))
   const vars = new Float64Array(keys.length + 1)
   keys.forEach((k, i) => { vars[i + 1] = p.base[k] })
@@ -173,14 +174,14 @@ export function checkLeveling(t: Pick<GameTemplate, 'leveling' | 'baseProfiles'>
     }
   }
   if (Object.prototype.hasOwnProperty.call(growth, key)) errors.push(`"${key}" es el nivel: no puede tener curva propia.`)
-  // Cada curva tiene que compilar con `nivel` y las claves del primer perfil.
+  // Cada curva tiene que compilar con la clave de nivel y las claves del primer perfil.
   const p0 = t.baseProfiles[0]
   if (p0) {
-    const disponibles = new Set(['nivel', ...Object.keys(p0.base).map((k) => `base_${k}`)])
+    const disponibles = new Set([key, ...Object.keys(p0.base).map((k) => `base_${k}`)])
     for (const [k, f] of Object.entries(growth)) {
       try {
         for (const v of formulaVariables(String(f))) {
-          if (!disponibles.has(v)) errors.push(`La curva de "${k}" usa "${v}", que no existe (usa "nivel" o base_<clave>).`)
+          if (!disponibles.has(v)) errors.push(`La curva de "${k}" usa "${v}", que no existe (usa "${key}" o base_<clave>).`)
         }
       } catch (e) {
         errors.push(`La curva de "${k}" no es válida: ${e instanceof FormulaError ? e.message : String(e)}`)

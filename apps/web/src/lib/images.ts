@@ -1,5 +1,5 @@
 import { goodKey } from '@zenith/inventory';
-import type { BaseProfile, GameAssets, Item } from '@zenith/shared-types';
+import type { BaseProfile, GameAssets, Item, SkillNode } from '@zenith/shared-types';
 
 /**
  * Unico punto de resolucion de iconos. Ningun componente arma URLs por su
@@ -43,10 +43,17 @@ export function itemIconUrls(assets: GameAssets | undefined, item: Item): string
   return entryIconUrls(assets, item.name);
 }
 
-export function characterRarityOf(assets: GameAssets | undefined, profile: BaseProfile): number {
-  return assets?.rarity?.characters?.[profile.assetKey ?? profile.id] ?? 4;
+export function skillIconUrls(assets: GameAssets | undefined, node: SkillNode): string[] {
+  return assetUrls(assets, assets?.skills?.[node.assetKey ?? node.id]);
 }
 
-export function entryRarityOf(assets: GameAssets | undefined, key: string): number {
-  return assets?.rarity?.weapons?.[key] ?? 3;
+export function characterRarityOf(
+  assets: GameAssets | undefined,
+  profile: BaseProfile,
+): number | undefined {
+  return assets?.rarity?.characters?.[profile.assetKey ?? profile.id];
+}
+
+export function entryRarityOf(assets: GameAssets | undefined, key: string): number | undefined {
+  return assets?.rarity?.weapons?.[key];
 }

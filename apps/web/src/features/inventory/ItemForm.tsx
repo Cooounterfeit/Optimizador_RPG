@@ -45,14 +45,14 @@ const messageOf = (cause: unknown): string =>
 
 export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProps) {
   const rules = inventoryRules(template);
-  const rarities = rules?.rarities ?? [1, 2, 3, 4, 5];
-  const levelRange = rules?.itemLevelRange ?? { min: 0, max: 99 };
+  const rarities = rules?.rarities ?? [];
+  const levelRange = rules?.itemLevelRange;
 
   const [name, setName] = useState(initial?.name ?? '');
   const [slot, setSlot] = useState(initial?.slot ?? '');
   const [setId, setSetId] = useState(initial?.setId ?? '');
-  const [rarity, setRarity] = useState(String(initial?.rarity ?? rarities[0] ?? 1));
-  const [level, setLevel] = useState(String(initial?.level ?? levelRange.min));
+  const [rarity, setRarity] = useState(String(initial?.rarity ?? rarities[0] ?? ''));
+  const [level, setLevel] = useState(String(initial?.level ?? levelRange?.min ?? ''));
   const [rows, setRows] = useState<StatRow[]>(() => rowsFrom(initial));
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -70,6 +70,7 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
   };
 
   const build = (): { item: Item } | { error: string } => {
+    if (!rules || !levelRange) return { error: inventoryCopy.form.errors.rules };
     const trimmedName = name.trim();
     if (!trimmedName) return { error: inventoryCopy.form.errors.name };
     if (trimmedName.length > 80) return { error: inventoryCopy.form.errors.nameLength };
@@ -230,8 +231,8 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
             id="item-level"
             className={fieldClass}
             type="number"
-            min={levelRange.min}
-            max={levelRange.max}
+            min={levelRange?.min}
+            max={levelRange?.max}
             value={level}
             onChange={(event) => setLevel(event.target.value)}
           />

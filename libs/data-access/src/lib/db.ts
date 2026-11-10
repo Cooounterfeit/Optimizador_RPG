@@ -35,6 +35,14 @@ export interface EquipmentRow {
   updatedAt: number;
 }
 
+/** Valores base de un perfil que el jugador cambio subiendo de nivel. */
+export interface ProfileBaseRow {
+  gameId: string;
+  profileId: string;
+  base: Record<string, number>;
+  updatedAt: number;
+}
+
 /** Un nivel registrado del historial de estadisticas (SIM-03). */
 export interface LevelRow {
   gameId: string;
@@ -65,6 +73,7 @@ export class ZenithDatabase extends Dexie {
   local_settings!: Table<SettingRow, string>;
   games!: Table<GameRow, string>;
   equipment!: Table<EquipmentRow, [string, string]>;
+  profile_base!: Table<ProfileBaseRow, [string, string]>;
   level_history!: Table<LevelRow, [string, string, number]>;
   skills!: Table<SkillsRow, string>;
   images!: Table<ImageRow, string>;
@@ -79,6 +88,9 @@ export class ZenithDatabase extends Dexie {
       level_history: '[gameId+profileId+level], gameId',
       skills: 'gameId',
       images: 'id, gameId, key',
+    });
+    this.version(2).stores({
+      profile_base: '[gameId+profileId], gameId',
     });
   }
 }

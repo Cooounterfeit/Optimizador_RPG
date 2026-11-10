@@ -2,14 +2,23 @@ import {
   gameRepository,
   imagesRepository,
   inventoryRepository,
+  levelHistoryRepository,
+  profileBaseRepository,
+  skillsRepository,
   type GameRepository,
   type ImagesRepository,
   type InventoryRepository,
+  type LevelHistoryRepository,
+  type ProfileBaseRepository,
+  type SkillsRepository,
 } from '@zenith/data-access';
 
 let games: GameRepository = gameRepository;
 let inventory: InventoryRepository = inventoryRepository;
 let images: ImagesRepository = imagesRepository;
+let levels: LevelHistoryRepository = levelHistoryRepository;
+let profileBase: ProfileBaseRepository = profileBaseRepository;
+let skills: SkillsRepository = skillsRepository;
 
 export function getGameRepository(): GameRepository {
   return games;
@@ -33,4 +42,28 @@ export function getImagesRepository(): ImagesRepository {
 
 export function setImagesRepository(next: ImagesRepository): void {
   images = next;
+}
+
+export function getLevelHistoryRepository(): LevelHistoryRepository {
+  return levels;
+}
+
+export function setLevelHistoryRepository(next: LevelHistoryRepository): void {
+  levels = next;
+}
+
+export function getProfileBaseRepository(): ProfileBaseRepository {
+  return profileBase;
+}
+
+export function setProfileBaseRepository(next: ProfileBaseRepository): void {
+  profileBase = next;
+}
+
+export function getSkillsRepository(): SkillsRepository {
+  return skills;
+}
+
+export function setSkillsRepository(next: SkillsRepository): void {
+  skills = next;
 }

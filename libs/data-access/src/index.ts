@@ -10,6 +10,7 @@ export * from './lib/images.repo.js';
 export * from './lib/levels.repo.js';
 export * from './lib/package.js';
 export * from './lib/ports.js';
+export * from './lib/profile-base.repo.js';
 export * from './lib/settings.repo.js';
 export * from './lib/skills.repo.js';
 export * from './lib/template.js';

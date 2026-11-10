@@ -23,7 +23,11 @@ const pointer: InventoryPointer = {
   kind: 'inventory',
   catalogUrl: 'https://example.test/catalog-1.json',
   catalogVersion: '1',
-  rules: InventoryRulesSchema.parse({}),
+  rules: InventoryRulesSchema.parse({
+    rarities: [1, 2, 3, 4, 5],
+    artifactLevelRange: { min: 0, max: 20 },
+    itemLevelRange: { min: 0, max: 99 },
+  }),
 };
 
 const template = (extensions?: Record<string, unknown>): GameTemplate =>
