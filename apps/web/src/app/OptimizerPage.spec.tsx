@@ -359,6 +359,23 @@ describe('OptimizerPage con juego real', () => {
     await waitFor(() => expect(screen.queryByText(gameCopy.cockpit.noFeasible)).toBeNull());
   });
 
+  it('limpia el resultado cuando un objeto cambia de stats sin cambiar de id', async () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+    useTemplate();
+
+    inventoryMock.active = true;
+    const base = seed.items[0];
+    inventoryMock.items = [base];
+
+    const view = renderPage();
+    await runAndFinish();
+
+    inventoryMock.items = [{ ...base, stats: { ...base.stats, atk: 9999 } }];
+    view.rerender(page());
+
+    await waitFor(() => expect(screen.queryByText(gameCopy.cockpit.noFeasible)).toBeNull());
+  });
+
   it('limpia el resultado aunque el guardado de la subida de nivel falle', async () => {
     vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
     useTemplate();
@@ -386,7 +403,7 @@ describe('OptimizerPage con juego real', () => {
     await waitFor(() => expect(screen.queryByText(gameCopy.cockpit.noFeasible)).toBeNull());
   });
 
-  it('pasa el limite de tiempo elegido y ninguno por defecto', async () => {
+  it('pasa el limite de tiempo escrito en segundos y ninguno cuando es 0', async () => {
     vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
     useTemplate();
 
@@ -394,12 +411,15 @@ describe('OptimizerPage con juego real', () => {
     await runAndFinish();
     expect(lastWorker().sent?.deadlineMs).toBeUndefined();
 
-    fireEvent.change(screen.getByLabelText(gameCopy.cockpit.timeLimit), {
-      target: { value: '15000' },
-    });
+    const timeLimit = () => screen.getByLabelText(gameCopy.cockpit.timeLimit);
+    fireEvent.change(timeLimit(), { target: { value: '15' } });
     fireEvent.click(optimizeButton());
-
     expect(lastWorker().sent?.deadlineMs).toBe(15000);
+
+    act(() => lastWorker().emit({ type: 'done', result: emptyResult }));
+    fireEvent.change(timeLimit(), { target: { value: '0' } });
+    fireEvent.click(optimizeButton());
+    expect(lastWorker().sent?.deadlineMs).toBeUndefined();
   });
 
   it('avisa cuando se cancela antes del primer progreso', async () => {

@@ -29,13 +29,14 @@ export function useInventory(gameId: string | undefined): UseInventoryResult {
   const requestId = useRef(0);
 
   const reload = useCallback(async () => {
+    const mine = (requestId.current += 1);
+
     if (!gameId) {
       setItems([]);
       setError(null);
       return;
     }
 
-    const mine = (requestId.current += 1);
     try {
       const list = await getInventoryRepository().getAll(gameId);
       if (mine !== requestId.current) return;

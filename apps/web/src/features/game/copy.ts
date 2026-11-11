@@ -87,9 +87,8 @@ export const gameCopy = {
       'The search keeps running if you change tabs. Stopping keeps the best build found so far.',
     timeLimit: 'Time limit',
     timeLimitHint:
-      'A safety net, not a target: without a limit the search stops only when it proves the best build.',
-    timeUnlimited: 'No limit',
-    timeSeconds: (seconds: number) => `${seconds} seconds`,
+      'Seconds the search may spend. 0 means no limit: it stops only when it proves the best build.',
+    timeUnit: 'seconds',
     emptyInventoryTitle: 'Your inventory is empty',
     emptyInventoryBody: 'Add at least one item before running the solver.',
     missingProfiles: 'This template has no characters yet, so the solver has no base to calculate from.',

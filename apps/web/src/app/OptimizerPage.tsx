@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { conBase, sanitizeSelection } from '@zenith/core-engine';
@@ -37,7 +37,7 @@ export function OptimizerPage() {
   const [profileId, setProfileId] = useState('');
   const [objectiveId, setObjectiveId] = useState('');
   const [constraints, setConstraints] = useState<Constraint[]>([]);
-  const [deadlineMs, setDeadlineMs] = useState(0);
+  const [deadlineSeconds, setDeadlineSeconds] = useState('0');
   const [demoCard, setDemoCard] = useState<CatalogOptimizer | null>(null);
   const {
     phase,
@@ -70,14 +70,18 @@ export function OptimizerPage() {
    * las entradas de la busqueda, se descarta: mostrar el podio viejo junto a un
    * objetivo o un inventario nuevos es justo el bug de coherencia que se cierra.
    *
-   * El inventario se compara por contenido y no por identidad del array: cada
-   * `reload()` devuelve un array nuevo aunque los objetos sean los mismos, y
-   * resetear en cada uno mataria una busqueda recien lanzada (los avisos de
-   * escritura llegan con retraso). `profileBase` tampoco entra: su identidad
+   * El inventario se compara por su contenido serializado (incluye stats y
+   * nivel), no por identidad del array ni solo por ids: un objeto editado con el
+   * mismo id tambien invalida. Cada `reload()` devuelve un array nuevo aunque
+   * los objetos sean los mismos, y resetear en cada uno mataria una busqueda
+   * recien lanzada (los avisos de escritura llegan con retraso). `profileBase` tampoco entra: su identidad
    * cambia al resolver Dexie; la carga la cubre el gate `ready` y la subida de
    * nivel se invalida en `onLevelUp`.
    */
-  const inventoryKey = (inventory.items ?? []).map((item) => item.id).join('|');
+  const inventoryKey = useMemo(
+    () => JSON.stringify(inventory.items ?? []),
+    [inventory.items],
+  );
   useEffect(() => {
     reset();
   }, [profileId, objectiveId, constraints, inventoryKey, reset]);
@@ -191,6 +195,7 @@ export function OptimizerPage() {
 
   const start = () => {
     if (!profile || !objective || !profileBaseReady) return;
+    const seconds = Number.parseInt(deadlineSeconds, 10);
     run(
       {
         template: conBase(template, profile.id, profileBase),
@@ -201,7 +206,7 @@ export function OptimizerPage() {
         topN: 3,
         skills: sanitizeSelection(template, skillSelection),
       },
-      deadlineMs > 0 ? deadlineMs : undefined,
+      Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : undefined,
     );
   };
 
@@ -314,20 +319,25 @@ export function OptimizerPage() {
             <label className="sr-only" htmlFor="optimizer-deadline">
               {gameCopy.cockpit.timeLimit}
             </label>
-            <select
-              id="optimizer-deadline"
-              className="mt-3 h-10 w-full rounded-[2px] border border-line bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-line-strong disabled:opacity-60"
-              value={deadlineMs}
-              disabled={phase === 'running'}
-              onChange={(event) => setDeadlineMs(Number(event.target.value))}
-            >
-              <option value={0}>{gameCopy.cockpit.timeUnlimited}</option>
-              {[5, 15, 60].map((seconds) => (
-                <option key={seconds} value={seconds * 1000}>
-                  {gameCopy.cockpit.timeSeconds(seconds)}
-                </option>
-              ))}
-            </select>
+            <div className="mt-3 flex items-center gap-2">
+              <input
+                id="optimizer-deadline"
+                type="number"
+                min={0}
+                step={1}
+                inputMode="numeric"
+                className="h-10 w-24 rounded-[2px] border border-line bg-background px-3 font-mono text-[13px] text-foreground outline-none transition-colors focus:border-line-strong disabled:opacity-60"
+                value={deadlineSeconds}
+                disabled={phase === 'running'}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  if (/^\d*$/.test(next)) setDeadlineSeconds(next);
+                }}
+              />
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                {gameCopy.cockpit.timeUnit}
+              </span>
+            </div>
           </section>
         </div>
 
