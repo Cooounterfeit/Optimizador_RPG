@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { onInventoryChanged } from '@zenith/data-access';
 import type { Item } from '@zenith/shared-types';
@@ -25,6 +25,8 @@ const messageOf = (cause: unknown): string =>
 export function useInventory(gameId: string | undefined): UseInventoryResult {
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Numero de la ultima lectura pedida: una respuesta vieja no pisa a la nueva. */
+  const requestId = useRef(0);
 
   const reload = useCallback(async () => {
     if (!gameId) {
@@ -33,11 +35,14 @@ export function useInventory(gameId: string | undefined): UseInventoryResult {
       return;
     }
 
+    const mine = (requestId.current += 1);
     try {
       const list = await getInventoryRepository().getAll(gameId);
+      if (mine !== requestId.current) return;
       setItems(list);
       setError(null);
     } catch (cause) {
+      if (mine !== requestId.current) return;
       setError(messageOf(cause));
     }
   }, [gameId]);

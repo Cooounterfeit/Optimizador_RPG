@@ -66,6 +66,8 @@ const result: SolveResponse = {
   },
 };
 
+const request = { objectiveId: 'damage' } as SolveRequest;
+
 const lastWorker = (): FakeWorker => {
   const worker = FakeWorker.instances.at(-1);
   if (!worker) throw new Error('The fake worker was not created.');
@@ -81,8 +83,9 @@ function Probe() {
       <span data-testid="progress">{optimizer.progress?.evaluated ?? 0}</span>
       <span data-testid="result">{optimizer.result?.builds.length ?? 0}</span>
       <span data-testid="optimal">{String(optimizer.result?.stats.provenOptimal ?? false)}</span>
+      <span data-testid="ranFor">{optimizer.ranFor?.objectiveId ?? ''}</span>
       <span data-testid="error">{optimizer.error ?? ''}</span>
-      <button onClick={() => optimizer.run({} as SolveRequest)}>run</button>
+      <button onClick={() => optimizer.run(request)}>run</button>
       <button onClick={optimizer.cancel}>cancel</button>
     </div>
   );
@@ -148,6 +151,31 @@ describe('useOptimizer', () => {
     expect(screen.getByTestId('result').textContent).toBe('1');
     expect(screen.getByTestId('optimal').textContent).toBe('false');
     expect(worker.terminated).toBe(true);
+  });
+
+  it('cancelar antes del primer progreso deja la busqueda cancelada', () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+    render(<Probe />);
+
+    fireEvent.click(screen.getByText('run'));
+    fireEvent.click(screen.getByText('cancel'));
+
+    expect(screen.getByTestId('phase').textContent).toBe('cancelled');
+    expect(screen.getByTestId('result').textContent).toBe('0');
+  });
+
+  it('limpia el resultado anterior y recuerda la peticion que lo produjo', () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+    render(<Probe />);
+
+    fireEvent.click(screen.getByText('run'));
+    act(() => lastWorker().emit({ type: 'done', result }));
+    expect(screen.getByTestId('result').textContent).toBe('1');
+    expect(screen.getByTestId('ranFor').textContent).toBe('damage');
+
+    fireEvent.click(screen.getByText('run'));
+    expect(screen.getByTestId('phase').textContent).toBe('running');
+    expect(screen.getByTestId('result').textContent).toBe('0');
   });
 
   it('propaga el error del worker', () => {

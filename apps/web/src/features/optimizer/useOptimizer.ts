@@ -26,6 +26,8 @@ export function useOptimizer() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [progress, setProgress] = useState<Progress | null>(null);
   const [result, setResult] = useState<SolveResponse | null>(null);
+  /** Peticion que produjo el resultado visible: la vista se etiqueta con ella, no con el estado actual. */
+  const [ranFor, setRanFor] = useState<SolveRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const stopWorker = useCallback(() => {
@@ -42,6 +44,8 @@ export function useOptimizer() {
       setupRef.current = null;
       setPhase('running');
       setProgress(null);
+      setResult(null);
+      setRanFor(request);
       setError(null);
 
       const worker = new Worker(new URL('./optimizer.worker.ts', import.meta.url), {
@@ -100,6 +104,7 @@ export function useOptimizer() {
     setPhase('idle');
     setProgress(null);
     setResult(null);
+    setRanFor(null);
     setError(null);
   }, [stopWorker]);
 
@@ -127,5 +132,5 @@ export function useOptimizer() {
     setPhase('done');
   }, [stopWorker]);
 
-  return { phase, progress, result, error, run, cancel, reset };
+  return { phase, progress, result, ranFor, error, run, cancel, reset };
 }

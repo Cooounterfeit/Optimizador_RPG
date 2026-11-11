@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import { sanitizeSelection } from '@zenith/core-engine';
+import { conBase, sanitizeSelection } from '@zenith/core-engine';
 import type { Constraint } from '@zenith/shared-types';
 
 import { Button, buttonVariants } from '../components/ui/Button';
@@ -37,11 +37,13 @@ export function OptimizerPage() {
   const [profileId, setProfileId] = useState('');
   const [objectiveId, setObjectiveId] = useState('');
   const [constraints, setConstraints] = useState<Constraint[]>([]);
+  const [deadlineMs, setDeadlineMs] = useState(0);
   const [demoCard, setDemoCard] = useState<CatalogOptimizer | null>(null);
   const {
     phase,
     progress,
     result,
+    ranFor,
     error: optimizerError,
     run,
     cancel,
@@ -50,10 +52,11 @@ export function OptimizerPage() {
 
   const templateProfile =
     template?.baseProfiles.find((entry) => entry.id === profileId) ?? template?.baseProfiles[0];
-  const { base: profileBase, save: saveProfileBase } = useProfileBase(
-    template?.gameId,
-    templateProfile,
-  );
+  const {
+    base: profileBase,
+    save: saveProfileBase,
+    ready: profileBaseReady,
+  } = useProfileBase(template?.gameId, templateProfile);
 
   useEffect(() => {
     setProfileId('');
@@ -61,6 +64,23 @@ export function OptimizerPage() {
     setConstraints([]);
     reset();
   }, [id, reset]);
+
+  /**
+   * El resultado pertenece a la peticion que lo produjo. Si cambia cualquiera de
+   * las entradas de la busqueda, se descarta: mostrar el podio viejo junto a un
+   * objetivo o un inventario nuevos es justo el bug de coherencia que se cierra.
+   *
+   * El inventario se compara por contenido y no por identidad del array: cada
+   * `reload()` devuelve un array nuevo aunque los objetos sean los mismos, y
+   * resetear en cada uno mataria una busqueda recien lanzada (los avisos de
+   * escritura llegan con retraso). `profileBase` tampoco entra: su identidad
+   * cambia al resolver Dexie; la carga la cubre el gate `ready` y la subida de
+   * nivel se invalida en `onLevelUp`.
+   */
+  const inventoryKey = (inventory.items ?? []).map((item) => item.id).join('|');
+  useEffect(() => {
+    reset();
+  }, [profileId, objectiveId, constraints, inventoryKey, reset]);
 
   /**
    * El catalogo mock trae tarjetas de diseno que no tienen plantilla. En vez de
@@ -135,6 +155,9 @@ export function OptimizerPage() {
   const profile = templateProfile ? { ...templateProfile, base: profileBase } : undefined;
   const objective =
     template.objectives.find((entry) => entry.id === objectiveId) ?? template.objectives[0];
+  const resultObjective = ranFor
+    ? template.objectives.find((entry) => entry.id === ranFor.objectiveId)
+    : undefined;
 
   const counts = [
     { label: gameCopy.counts.stats, value: template.stats.length },
@@ -145,7 +168,13 @@ export function OptimizerPage() {
   ];
 
   const items = inventory.items ?? [];
-  const canRun = items.length > 0 && Boolean(profile) && Boolean(objective) && phase !== 'running';
+  const canRun =
+    items.length > 0 &&
+    !loadingSamples &&
+    profileBaseReady &&
+    Boolean(profile) &&
+    Boolean(objective) &&
+    phase !== 'running';
 
   const loadSamples = async () => {
     if (!template || sampleItems.length === 0) return;
@@ -161,16 +190,19 @@ export function OptimizerPage() {
   };
 
   const start = () => {
-    if (!profile || !objective) return;
-    run({
-      template,
-      items,
-      profileId: profile.id,
-      objectiveId: objective.id,
-      constraints,
-      topN: 3,
-      skills: sanitizeSelection(template, skillSelection),
-    });
+    if (!profile || !objective || !profileBaseReady) return;
+    run(
+      {
+        template: conBase(template, profile.id, profileBase),
+        items,
+        profileId: profile.id,
+        objectiveId: objective.id,
+        constraints,
+        topN: 3,
+        skills: sanitizeSelection(template, skillSelection),
+      },
+      deadlineMs > 0 ? deadlineMs : undefined,
+    );
   };
 
   return (
@@ -275,6 +307,28 @@ export function OptimizerPage() {
               onChange={setConstraints}
             />
           </section>
+
+          <section className="rounded-[4px] border border-line bg-surface p-4">
+            <p className="label-caps">04 · {gameCopy.cockpit.timeLimit}</p>
+            <p className="mt-1 text-[11.5px] text-muted-foreground">{gameCopy.cockpit.timeLimitHint}</p>
+            <label className="sr-only" htmlFor="optimizer-deadline">
+              {gameCopy.cockpit.timeLimit}
+            </label>
+            <select
+              id="optimizer-deadline"
+              className="mt-3 h-10 w-full rounded-[2px] border border-line bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-line-strong disabled:opacity-60"
+              value={deadlineMs}
+              disabled={phase === 'running'}
+              onChange={(event) => setDeadlineMs(Number(event.target.value))}
+            >
+              <option value={0}>{gameCopy.cockpit.timeUnlimited}</option>
+              {[5, 15, 60].map((seconds) => (
+                <option key={seconds} value={seconds * 1000}>
+                  {gameCopy.cockpit.timeSeconds(seconds)}
+                </option>
+              ))}
+            </select>
+          </section>
         </div>
 
         <div className="flex min-w-0 flex-col gap-4">
@@ -299,6 +353,17 @@ export function OptimizerPage() {
                 </li>
               ))}
             </ol>
+
+            {template.baseProfiles.length === 0 || template.objectives.length === 0 ? (
+              <div className="mt-4 rounded-[2px] border border-dashed border-line-strong px-3 py-2 text-[12px] text-muted-foreground">
+                {template.baseProfiles.length === 0 ? (
+                  <p className="m-0">{gameCopy.cockpit.missingProfiles}</p>
+                ) : null}
+                {template.objectives.length === 0 ? (
+                  <p className="m-0 mt-1">{gameCopy.cockpit.missingObjectives}</p>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-4">
               <Link to={`/optimizer/${id}/inventario`} className={buttonVariants()}>
@@ -359,6 +424,15 @@ export function OptimizerPage() {
               </p>
             ) : null}
 
+            {phase === 'cancelled' ? (
+              <p
+                role="status"
+                className="mt-3 rounded-[2px] border border-line px-3 py-2 text-[12px] text-muted-foreground"
+              >
+                {gameCopy.cockpit.cancelled}
+              </p>
+            ) : null}
+
             {inventory.items !== null && items.length === 0 ? (
               <div className="mt-3 rounded-[2px] border border-dashed border-line-strong px-3 py-2 text-[12px] text-muted-foreground">
                 <p className="m-0">
@@ -379,10 +453,10 @@ export function OptimizerPage() {
             ) : null}
           </section>
 
-          {result && objective ? (
+          {result && resultObjective ? (
             <OptimizerResult
               template={template}
-              objective={objective}
+              objective={resultObjective}
               result={result}
               items={items}
             />
@@ -392,7 +466,13 @@ export function OptimizerPage() {
             <LevelHistoryPanel
               template={template}
               profile={profile}
-              onLevelUp={saveProfileBase}
+              onLevelUp={async (base) => {
+                try {
+                  await saveProfileBase(base);
+                } finally {
+                  reset();
+                }
+              }}
             />
           ) : null}
 
