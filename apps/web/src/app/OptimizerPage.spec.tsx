@@ -6,17 +6,19 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type {
+  EquipmentRepository,
   GameRepository,
   InventoryRepository,
   LevelHistoryRepository,
   ProfileBaseRepository,
   SkillsRepository,
 } from '@zenith/data-access';
-import type { GameTemplate, Item, SolveResponse } from '@zenith/shared-types';
+import type { BuildResult, Equipment, GameTemplate, Item, SolveResponse } from '@zenith/shared-types';
 
 import { mockCatalogRepository, setCatalogRepository } from '../features/catalog/catalog-repository';
 import { gameCopy } from '../features/game/copy';
 import {
+  setEquipmentRepository,
   setGameRepository,
   setInventoryRepository,
   setLevelHistoryRepository,
@@ -88,6 +90,13 @@ const lastWorker = (): FakeWorker => {
   const worker = FakeWorker.instances.at(-1);
   if (!worker) throw new Error('The fake worker was not created.');
   return worker;
+};
+
+/** Ultimo mensaje enviado a un worker, con el tipo ya estrechado. */
+const sentOf = <T extends WorkerIn['type']>(type: T): Extract<WorkerIn, { type: T }> => {
+  const sent = lastWorker().sent;
+  if (!sent || sent.type !== type) throw new Error(`Expected a ${type} message.`);
+  return sent as Extract<WorkerIn, { type: T }>;
 };
 
 /** En jsdom `import.meta.url` no siempre es `file:`, asi que se ubica la raiz del workspace. */
@@ -176,6 +185,26 @@ const baseRepo = (
   removeByGame: async () => undefined,
 });
 
+const equipmentRepo = (
+  saved: Equipment = {},
+  save: EquipmentRepository['save'] = async () => undefined,
+): EquipmentRepository => ({
+  get: async () => ({ ...saved }),
+  save,
+  removeProfile: async () => undefined,
+  removeByGame: async () => undefined,
+});
+
+/** Una build valida para el seed: una pieza por ranura, en el orden de la plantilla. */
+const buildFromSeed = (score = 100): BuildResult => ({
+  score,
+  itemIds: seed.template.slots.map(
+    (slot) => seed.items.find((item) => item.slot === slot.id)?.id ?? '',
+  ),
+  finalStats: {},
+  activeSets: [],
+});
+
 const useTemplate = (
   template: GameTemplate = seed.template,
   items: Item[] = seed.items,
@@ -186,6 +215,7 @@ const useTemplate = (
   setSkillsRepository(skillsRepo());
   setLevelHistoryRepository(levelHistoryRepo());
   setProfileBaseRepository(baseRepo());
+  setEquipmentRepository(equipmentRepo());
 };
 
 const page = (id: string = GAME_ID) => (
@@ -216,6 +246,7 @@ afterEach(() => {
   setGameRepository(noopGames);
   setInventoryRepository(inventoryRepo([]));
   setProfileBaseRepository(baseRepo());
+  setEquipmentRepository(equipmentRepo());
   setSkillsRepository(skillsRepo());
   setLevelHistoryRepository(levelHistoryRepo());
   vi.unstubAllGlobals();
@@ -268,7 +299,7 @@ describe('OptimizerPage con juego real', () => {
     await waitFor(() => expect(optimizeDisabled()).toBe(false));
     fireEvent.click(optimizeButton());
 
-    const request = lastWorker().sent?.request;
+    const request = sentOf('solve').request;
     expect(request?.profileId).toBe(profileId);
     const sentProfile = request?.template.baseProfiles.find(
       (entry) => entry.id === request.profileId,
@@ -286,7 +317,7 @@ describe('OptimizerPage con juego real', () => {
     renderPage();
     await runAndFinish();
 
-    const request = lastWorker().sent?.request;
+    const request = sentOf('solve').request;
     const sentProfile = request?.template.baseProfiles.find((entry) => entry.id === request.profileId);
     const published = seed.template.baseProfiles.find((entry) => entry.id === request?.profileId);
 
@@ -337,7 +368,7 @@ describe('OptimizerPage con juego real', () => {
     await waitFor(() => expect(optimizeDisabled()).toBe(false));
     fireEvent.click(optimizeButton());
 
-    const request = lastWorker().sent?.request;
+    const request = sentOf('solve').request;
     expect(request?.profileId).toBe(second.id);
     const sentProfile = request?.template.baseProfiles.find((entry) => entry.id === second.id);
     expect(sentProfile?.base.atk).toBe(777);
@@ -409,17 +440,17 @@ describe('OptimizerPage con juego real', () => {
 
     renderPage();
     await runAndFinish();
-    expect(lastWorker().sent?.deadlineMs).toBeUndefined();
+    expect(sentOf('solve').deadlineMs).toBeUndefined();
 
     const timeLimit = () => screen.getByLabelText(gameCopy.cockpit.timeLimit);
     fireEvent.change(timeLimit(), { target: { value: '15' } });
     fireEvent.click(optimizeButton());
-    expect(lastWorker().sent?.deadlineMs).toBe(15000);
+    expect(sentOf('solve').deadlineMs).toBe(15000);
 
     act(() => lastWorker().emit({ type: 'done', result: emptyResult }));
     fireEvent.change(timeLimit(), { target: { value: '0' } });
     fireEvent.click(optimizeButton());
-    expect(lastWorker().sent?.deadlineMs).toBeUndefined();
+    expect(sentOf('solve').deadlineMs).toBeUndefined();
   });
 
   it('avisa cuando se cancela antes del primer progreso', async () => {
@@ -454,7 +485,80 @@ describe('OptimizerPage con juego real', () => {
     expect(await screen.findByText(gameCopy.cockpit.missingProfiles)).toBeTruthy();
     expect(optimizeDisabled()).toBe(true);
   });
+});
 
+describe('OptimizerPage · build actual', () => {
+  const equippedWithSeed = (): Equipment =>
+    Object.fromEntries(
+      seed.template.slots.map((slot) => [
+        slot.id,
+        seed.items.find((item) => item.slot === slot.id)?.id ?? '',
+      ]),
+    );
+
+  const solveWith = (score: number): SolveResponse =>
+    ({ builds: [buildFromSeed(score)], stats: emptyResult.stats }) as unknown as SolveResponse;
+
+  it('equipa una build por ranura y vuelve a evaluar el panel', async () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+    useTemplate();
+
+    const saved: Equipment[] = [];
+    setEquipmentRepository(
+      equipmentRepo({}, async (_gameId, _profileId, slots) => {
+        saved.push({ ...slots });
+      }),
+    );
+
+    renderPage();
+    await waitFor(() => expect(optimizeDisabled()).toBe(false));
+    fireEvent.click(optimizeButton());
+    act(() => lastWorker().emit({ type: 'done', result: solveWith(100) }));
+
+    fireEvent.click(screen.getByRole('button', { name: gameCopy.cockpit.equip }));
+
+    await waitFor(() => expect(saved).toHaveLength(1));
+    expect(saved[0]).toEqual(equippedWithSeed());
+
+    // El panel se reevalua sin recargar: un worker nuevo con el equipo puesto.
+    await waitFor(() => expect(lastWorker().sent?.type).toBe('evaluate'));
+    expect(sentOf('evaluate').equipment).toEqual(equippedWithSeed());
+    expect(await screen.findByText(gameCopy.cockpit.equipped)).toBeTruthy();
+  });
+
+  it('muestra el puntaje del equipo puesto y su diferencia contra la mejor build', async () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+    useTemplate();
+    setEquipmentRepository(equipmentRepo(equippedWithSeed()));
+
+    renderPage();
+    await screen.findByText(gameCopy.cockpit.currentBuild);
+
+    await waitFor(() => expect(FakeWorker.instances.length).toBe(1));
+    expect(lastWorker().sent?.type).toBe('evaluate');
+    act(() =>
+      lastWorker().emit({
+        type: 'evaluated',
+        evaluation: {
+          finalStats: { atk: 12 },
+          vars: new Map(),
+          objetivos: { damage: 80 },
+          conjuntos: [],
+        },
+      }),
+    );
+
+    expect(await screen.findByText('80')).toBeTruthy();
+
+    await waitFor(() => expect(optimizeDisabled()).toBe(false));
+    fireEvent.click(optimizeButton());
+    act(() => lastWorker().emit({ type: 'done', result: solveWith(100) }));
+
+    expect(await screen.findByText('-20 vs. best')).toBeTruthy();
+  });
+});
+
+describe('OptimizerPage · plantilla cargando', () => {
   it('no rompe mientras la plantilla todavia esta cargando', () => {
     setOptimizerRepository({ getOptimizer: () => new Promise<never>(() => undefined) });
     setGameRepository(noopGames);
@@ -462,6 +566,7 @@ describe('OptimizerPage con juego real', () => {
     setSkillsRepository(skillsRepo());
     setLevelHistoryRepository(levelHistoryRepo());
     setProfileBaseRepository(baseRepo());
+    setEquipmentRepository(equipmentRepo());
 
     renderPage();
 

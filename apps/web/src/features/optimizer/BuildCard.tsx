@@ -12,6 +12,10 @@ interface BuildCardProps {
   rank: number;
   objective: GameTemplate['objectives'][number];
   items: Map<string, Item>;
+  /** Guarda esta build como el equipo puesto del personaje. */
+  onEquip?: (build: BuildResult) => void;
+  /** `true` cuando las piezas de esta build son las que estan puestas. */
+  equipped?: boolean;
 }
 
 const numberFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
@@ -23,7 +27,7 @@ const formatStat = (value: number, unit: string | undefined): string => {
   return formatted;
 };
 
-export function BuildCard({ template, build, best, rank, objective, items }: BuildCardProps) {
+export function BuildCard({ template, build, best, rank, objective, items, onEquip, equipped }: BuildCardProps) {
   const bestScore = best.score;
   const difference = build.score - bestScore;
   const ties = rank > 0 && Math.abs(difference) <= 1e-9 * Math.max(1, Math.abs(bestScore));
@@ -110,6 +114,24 @@ export function BuildCard({ template, build, best, rank, objective, items }: Bui
             );
           })}
       </dl>
+
+      {onEquip ? (
+        <div className="mt-3 flex items-center justify-end gap-2 border-t border-line pt-3">
+          {equipped ? (
+            <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+              {gameCopy.cockpit.equipped}
+            </span>
+          ) : null}
+          <button
+            type="button"
+            className="h-8 rounded-[2px] border border-line px-2.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-foreground transition-colors hover:border-line-strong disabled:opacity-50"
+            disabled={equipped === true}
+            onClick={() => onEquip(build)}
+          >
+            {gameCopy.cockpit.equip}
+          </button>
+        </div>
+      ) : null}
     </article>
   );
 }

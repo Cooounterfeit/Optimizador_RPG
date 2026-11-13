@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { Evaluacion } from '@zenith/core-engine';
 import type { BuildResult, SolveRequest, SolveResponse } from '@zenith/shared-types';
 
 import { useOptimizer } from './useOptimizer';
@@ -68,6 +69,13 @@ const result: SolveResponse = {
 
 const request = { objectiveId: 'damage' } as SolveRequest;
 
+const evaluation: Evaluacion = {
+  finalStats: { atk: 12 },
+  vars: new Map(),
+  objetivos: { damage: 80 },
+  conjuntos: [],
+};
+
 const lastWorker = (): FakeWorker => {
   const worker = FakeWorker.instances.at(-1);
   if (!worker) throw new Error('The fake worker was not created.');
@@ -85,7 +93,11 @@ function Probe() {
       <span data-testid="optimal">{String(optimizer.result?.stats.provenOptimal ?? false)}</span>
       <span data-testid="ranFor">{optimizer.ranFor?.objectiveId ?? ''}</span>
       <span data-testid="error">{optimizer.error ?? ''}</span>
+      <span data-testid="evaluating">{String(optimizer.evaluating)}</span>
+      <span data-testid="evaluation">{optimizer.evaluation?.objetivos.damage ?? ''}</span>
+      <span data-testid="evaluationError">{optimizer.evaluationError ?? ''}</span>
       <button onClick={() => optimizer.run(request)}>run</button>
+      <button onClick={() => optimizer.evaluate(request, { weapon: 'w1' })}>evaluate</button>
       <button onClick={optimizer.cancel}>cancel</button>
     </div>
   );
@@ -188,5 +200,36 @@ describe('useOptimizer', () => {
 
     expect(screen.getByTestId('phase').textContent).toBe('error');
     expect(screen.getByTestId('error').textContent).toBe('boom');
+  });
+
+  it('evalua el equipo puesto en su propio worker', () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+    render(<Probe />);
+
+    fireEvent.click(screen.getByText('evaluate'));
+
+    const sent = lastWorker().sent;
+    expect(sent?.type).toBe('evaluate');
+    if (!sent || sent.type !== 'evaluate') throw new Error('Expected an evaluate message.');
+    expect(sent.equipment).toEqual({ weapon: 'w1' });
+    expect(screen.getByTestId('evaluating').textContent).toBe('true');
+
+    act(() => lastWorker().emit({ type: 'evaluated', evaluation }));
+
+    expect(screen.getByTestId('evaluation').textContent).toBe('80');
+    expect(screen.getByTestId('evaluating').textContent).toBe('false');
+    expect(lastWorker().terminated).toBe(true);
+  });
+
+  it('informa el error de la evaluacion sin tocar la busqueda', () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+    render(<Probe />);
+
+    fireEvent.click(screen.getByText('evaluate'));
+    act(() => lastWorker().emit({ type: 'evaluateError', message: 'sin equipo valido' }));
+
+    expect(screen.getByTestId('evaluationError').textContent).toBe('sin equipo valido');
+    expect(screen.getByTestId('evaluating').textContent).toBe('false');
+    expect(screen.getByTestId('phase').textContent).toBe('idle');
   });
 });

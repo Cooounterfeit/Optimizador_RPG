@@ -1,4 +1,4 @@
-import type { GameTemplate, Item, SolveResponse } from '@zenith/shared-types';
+import type { BuildResult, Equipment, GameTemplate, Item, SolveResponse } from '@zenith/shared-types';
 
 import { gameCopy } from '../game/copy';
 import { BuildCard } from './BuildCard';
@@ -9,9 +9,20 @@ interface OptimizerResultProps {
   objective: GameTemplate['objectives'][number];
   result: SolveResponse;
   items: Item[];
+  /** Equipo puesto: para marcar cual build ya es "mi build". */
+  equipment?: Equipment;
+  /** Guarda una build como el equipo del personaje. */
+  onEquip?: (build: BuildResult) => void;
 }
 
-export function OptimizerResult({ template, objective, result, items }: OptimizerResultProps) {
+export function OptimizerResult({
+  template,
+  objective,
+  result,
+  items,
+  equipment,
+  onEquip,
+}: OptimizerResultProps) {
   const byId = new Map(items.map((item) => [item.id, item]));
   const best = result.builds[0];
 
@@ -34,6 +45,13 @@ export function OptimizerResult({ template, objective, result, items }: Optimize
       ? gameCopy.cockpit.stoppedByUser
       : gameCopy.cockpit.stoppedByTime;
 
+  /** Las piezas que estan puestas, en el orden de las ranuras de la plantilla. */
+  const equippedIds = template.slots.map((slot) => equipment?.[slot.id] ?? '');
+  const isEquipped = (build: BuildResult): boolean =>
+    onEquip !== undefined &&
+    build.itemIds.length === equippedIds.length &&
+    build.itemIds.every((itemId, index) => (itemId ?? '') === equippedIds[index]);
+
   return (
     <section className="rounded-[4px] border border-line bg-surface p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
@@ -55,6 +73,8 @@ export function OptimizerResult({ template, objective, result, items }: Optimize
             rank={index}
             objective={objective}
             items={byId}
+            onEquip={onEquip}
+            equipped={isEquipped(build)}
           />
         ))}
       </div>

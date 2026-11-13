@@ -71,6 +71,30 @@ test('carga el inventario de muestra y optimiza sin agregar objetos a mano', asy
   await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
 });
 
+test('equipa una build, el panel la compara y sigue equipada al recargar', async ({ page }) => {
+  await page.goto('/optimizer/gacha-demo');
+
+  const panel = () =>
+    page.locator('section').filter({ has: page.getByText('My build', { exact: true }) });
+
+  await expect(panel().getByText(/Nothing equipped yet/)).toBeVisible();
+
+  await page.getByRole('button', { name: 'Load sample items' }).click();
+  await page.getByRole('button', { name: 'Optimize build' }).click();
+  await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
+
+  await page.getByRole('button', { name: 'Equip', exact: true }).first().click();
+
+  // La tarjeta queda marcada como puesta y el panel la compara con la optima.
+  await expect(page.getByText('Equipped')).toBeVisible();
+  await expect(panel().getByText('Ties the best')).toBeVisible();
+
+  await page.reload();
+
+  await expect(panel().getByText(/Run an optimization to compare it with the best one/)).toBeVisible();
+  await expect(panel().getByText('Score', { exact: true })).toBeVisible();
+});
+
 test('con el inventario vacío no deja optimizar', async ({ page }) => {
   await page.goto('/optimizer/gacha-demo');
 

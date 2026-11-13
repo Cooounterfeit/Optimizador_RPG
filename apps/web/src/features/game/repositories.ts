@@ -1,10 +1,12 @@
 import {
+  equipmentRepository,
   gameRepository,
   imagesRepository,
   inventoryRepository,
   levelHistoryRepository,
   profileBaseRepository,
   skillsRepository,
+  type EquipmentRepository,
   type GameRepository,
   type ImagesRepository,
   type InventoryRepository,
@@ -16,6 +18,7 @@ import {
 let games: GameRepository = gameRepository;
 let inventory: InventoryRepository = inventoryRepository;
 let images: ImagesRepository = imagesRepository;
+let equipment: EquipmentRepository = equipmentRepository;
 let levels: LevelHistoryRepository = levelHistoryRepository;
 let profileBase: ProfileBaseRepository = profileBaseRepository;
 let skills: SkillsRepository = skillsRepository;
@@ -42,6 +45,14 @@ export function getImagesRepository(): ImagesRepository {
 
 export function setImagesRepository(next: ImagesRepository): void {
   images = next;
+}
+
+export function getEquipmentRepository(): EquipmentRepository {
+  return equipment;
+}
+
+export function setEquipmentRepository(next: EquipmentRepository): void {
+  equipment = next;
 }
 
 export function getLevelHistoryRepository(): LevelHistoryRepository {

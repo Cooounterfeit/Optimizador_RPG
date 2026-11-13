@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { conBase, sanitizeSelection } from '@zenith/core-engine';
-import type { Constraint } from '@zenith/shared-types';
+import type { BuildResult, Constraint, Equipment, Item, SolveRequest } from '@zenith/shared-types';
 
 import { Button, buttonVariants } from '../components/ui/Button';
 import { cn } from '../lib/cn';
@@ -11,6 +11,7 @@ import { CoverArt } from '../features/catalog/components/CoverArt';
 import { getCatalogRepository } from '../features/catalog/catalog-repository';
 import type { CatalogOptimizer } from '../features/catalog/types';
 import { gameCopy } from '../features/game/copy';
+import { useEquipment } from '../features/game/useEquipment';
 import { useGame } from '../features/game/useGame';
 import { useProfileBase } from '../features/game/useProfileBase';
 import { useInventory } from '../features/inventory/useInventory';
@@ -18,12 +19,16 @@ import { ItemGlyph } from '../features/inventory/ItemGlyph';
 import { inventoryCopy } from '../features/inventory/copy';
 import { getInventoryRepository } from '../features/game/repositories';
 import { ConstraintEditor } from '../features/optimizer/ConstraintEditor';
+import { CurrentBuildPanel } from '../features/optimizer/CurrentBuildPanel';
 import { LevelHistoryPanel } from '../features/optimizer/LevelHistoryPanel';
 import { OptimizerResult } from '../features/optimizer/OptimizerResult';
 import { StatsPanel } from '../features/optimizer/StatsPanel';
 import { useOptimizer } from '../features/optimizer/useOptimizer';
 import { useSkillSelection } from '../features/skills/useSkillSelection';
 import { itemIconUrls } from '../lib/images';
+
+/** Lista vacia estable: `inventory.items ?? []` crearia un array nuevo en cada render. */
+const NO_ITEMS: Item[] = [];
 
 export function OptimizerPage() {
   const { id = '' } = useParams();
@@ -45,7 +50,11 @@ export function OptimizerPage() {
     result,
     ranFor,
     error: optimizerError,
+    evaluation,
+    evaluationError,
+    evaluating,
     run,
+    evaluate,
     cancel,
     reset,
   } = useOptimizer();
@@ -57,6 +66,43 @@ export function OptimizerPage() {
     save: saveProfileBase,
     ready: profileBaseReady,
   } = useProfileBase(template?.gameId, templateProfile);
+  const {
+    equipment,
+    save: saveEquipment,
+    ready: equipmentReady,
+  } = useEquipment(template?.gameId, templateProfile?.id);
+  const [equipError, setEquipError] = useState<string | null>(null);
+
+  /**
+   * Peticion al motor con el estado completo del jugador. La usan la busqueda y
+   * la evaluacion de la build actual: asi lo que se ve y lo que se calcula
+   * salen del mismo sitio.
+   */
+  const buildRequest = useCallback((): SolveRequest | null => {
+    if (!template || !templateProfile || !profileBaseReady) return null;
+    const target =
+      template.objectives.find((entry) => entry.id === objectiveId) ?? template.objectives[0];
+    if (!target) return null;
+
+    return {
+      template: conBase(template, templateProfile.id, profileBase),
+      items: inventory.items ?? NO_ITEMS,
+      profileId: templateProfile.id,
+      objectiveId: target.id,
+      constraints,
+      topN: 3,
+      skills: sanitizeSelection(template, skillSelection),
+    };
+  }, [
+    template,
+    templateProfile,
+    profileBaseReady,
+    profileBase,
+    objectiveId,
+    inventory.items,
+    constraints,
+    skillSelection,
+  ]);
 
   useEffect(() => {
     setProfileId('');
@@ -85,6 +131,20 @@ export function OptimizerPage() {
   useEffect(() => {
     reset();
   }, [profileId, objectiveId, constraints, inventoryKey, reset]);
+
+  /**
+   * "Mi build" se evalua sola cuando cambia el equipo, el perfil, el objetivo, la
+   * base o el inventario. No se guardan sus numeros: se recalculan con las reglas
+   * vigentes, igual que los del optimizador.
+   */
+  useEffect(() => {
+    if (!equipmentReady) return;
+    const hasEquipped = Object.values(equipment).some((itemId) => itemId !== '');
+    if (!hasEquipped) return;
+    const request = buildRequest();
+    if (!request) return;
+    evaluate(request, equipment);
+  }, [equipment, equipmentReady, buildRequest, evaluate]);
 
   /**
    * El catalogo mock trae tarjetas de diseno que no tienen plantilla. En vez de
@@ -171,7 +231,7 @@ export function OptimizerPage() {
     { label: gameCopy.counts.characters, value: template.baseProfiles.length },
   ];
 
-  const items = inventory.items ?? [];
+  const items = inventory.items ?? NO_ITEMS;
   const canRun =
     items.length > 0 &&
     !loadingSamples &&
@@ -179,6 +239,28 @@ export function OptimizerPage() {
     Boolean(profile) &&
     Boolean(objective) &&
     phase !== 'running';
+
+  /** Puntaje de la mejor build para el objetivo que se esta mirando. */
+  const bestScore =
+    result && resultObjective && resultObjective.id === objective?.id
+      ? result.builds[0]?.score
+      : undefined;
+
+  /** Traduce las piezas de la build a ranuras y las guarda como equipo puesto. */
+  const equip = async (build: BuildResult) => {
+    if (!template || !profile) return;
+    const slots: Equipment = {};
+    template.slots.forEach((slot, index) => {
+      slots[slot.id] = build.itemIds[index] ?? '';
+    });
+
+    setEquipError(null);
+    try {
+      await saveEquipment(slots);
+    } catch (cause) {
+      setEquipError(cause instanceof Error ? cause.message : gameCopy.cockpit.equipFailed);
+    }
+  };
 
   const loadSamples = async () => {
     if (!template || sampleItems.length === 0) return;
@@ -194,20 +276,10 @@ export function OptimizerPage() {
   };
 
   const start = () => {
-    if (!profile || !objective || !profileBaseReady) return;
+    const request = buildRequest();
+    if (!request) return;
     const seconds = Number.parseInt(deadlineSeconds, 10);
-    run(
-      {
-        template: conBase(template, profile.id, profileBase),
-        items,
-        profileId: profile.id,
-        objectiveId: objective.id,
-        constraints,
-        topN: 3,
-        skills: sanitizeSelection(template, skillSelection),
-      },
-      Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : undefined,
-    );
+    run(request, Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : undefined);
   };
 
   return (
@@ -463,12 +535,28 @@ export function OptimizerPage() {
             ) : null}
           </section>
 
+          {profile && objective ? (
+            <CurrentBuildPanel
+              template={template}
+              objective={objective}
+              equipment={equipment}
+              items={new Map(items.map((item) => [item.id, item]))}
+              evaluation={evaluation}
+              evaluating={evaluating}
+              error={evaluationError ?? equipError}
+              bestScore={bestScore}
+              loading={!equipmentReady}
+            />
+          ) : null}
+
           {result && resultObjective ? (
             <OptimizerResult
               template={template}
               objective={resultObjective}
               result={result}
               items={items}
+              equipment={equipment}
+              onEquip={(build) => void equip(build)}
             />
           ) : null}
 
