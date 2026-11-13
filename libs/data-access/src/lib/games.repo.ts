@@ -85,6 +85,7 @@ export function createGameRepository(database: ZenithDatabase = db): GameReposit
           [
             database.local_inventory,
             database.equipment,
+            database.profile_base,
             database.level_history,
             database.skills,
             database.images,
@@ -92,6 +93,7 @@ export function createGameRepository(database: ZenithDatabase = db): GameReposit
           async () => {
             await database.local_inventory.where('gameId').equals(gameId).delete();
             await database.equipment.where('gameId').equals(gameId).delete();
+            await database.profile_base.where('gameId').equals(gameId).delete();
             await database.level_history.where('gameId').equals(gameId).delete();
             await database.skills.delete(gameId);
             await database.images.where('gameId').equals(gameId).delete();

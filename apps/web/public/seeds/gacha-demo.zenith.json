@@ -7,11 +7,11 @@
     "name": "Astral Forge",
     "description": "Synthetic gacha game for demos and tests. Its data is public and forkable.",
     "stats": [
-      { "id": "atk", "name": "ATK", "unit": "flat" },
-      { "id": "hp", "name": "HP", "unit": "flat" },
-      { "id": "critRate", "name": "CRIT Rate", "unit": "percent" },
-      { "id": "critDMG", "name": "CRIT DMG", "unit": "percent" },
-      { "id": "energy", "name": "Energy Recharge", "unit": "percent" }
+      { "id": "atk", "name": "ATK", "unit": "flat", "group": "Offense" },
+      { "id": "hp", "name": "HP", "unit": "flat", "group": "Survival" },
+      { "id": "critRate", "name": "CRIT Rate", "unit": "percent", "group": "Offense" },
+      { "id": "critDMG", "name": "CRIT DMG", "unit": "percent", "group": "Offense" },
+      { "id": "energy", "name": "Energy Recharge", "unit": "percent", "group": "Utility" }
     ],
     "slots": [
       { "id": "weapon", "name": "Weapon" },
@@ -39,7 +39,223 @@
         ]
       }
     ],
-    "derived": [],
+    "derived": [
+      {
+        "id": "effectiveAtk",
+        "name": "Effective ATK",
+        "formula": "atk * (1 + critRate / 100 * critDMG / 100)",
+        "group": "Damage"
+      }
+    ],
+    "leveling": {
+      "levelKey": "nivel",
+      "min": 1,
+      "max": 90,
+      "growth": {
+        "hp": "120",
+        "atk": "7",
+        "critRate": "0.1",
+        "critDMG": "0.2",
+        "energy": "0.2"
+      }
+    },
+    "damageCalculator": {
+      "title": "Damage per hit",
+      "description": "Estimate one hit with and without a critical, using this game's own formula.",
+      "note": "Additional crit damage is a percentage: 50 means +50%.",
+      "fields": [
+        { "id": "attack", "label": "Attack", "default": 0, "min": 0 },
+        { "id": "baseDamage", "label": "Base damage", "default": 0, "min": 0 },
+        { "id": "critDamage", "label": "Additional crit damage", "unit": "percent", "default": 0, "min": 0 },
+        { "id": "critChance", "label": "Crit chance", "unit": "percent", "default": 0, "min": 0, "max": 100 },
+        { "id": "defense", "label": "Enemy defense", "default": 0, "min": 0 }
+      ],
+      "outputs": [
+        {
+          "id": "withoutCrit",
+          "label": "Damage without crit",
+          "formula": "max(0, attack + baseDamage - defense)"
+        },
+        {
+          "id": "withCrit",
+          "label": "Damage with crit",
+          "formula": "max(0, (attack + baseDamage) * (1 + critDamage / 100) - defense)"
+        },
+        {
+          "id": "average",
+          "label": "Average damage per hit",
+          "formula": "withoutCrit * (1 - critChance / 100) + withCrit * (critChance / 100)",
+          "decimals": 1
+        }
+      ]
+    },
+    "skillTrees": [
+      {
+        "id": "astral-core",
+        "name": "Astral Core",
+        "description": "A synthetic tree with offense, defense and utility paths.",
+        "budget": 12,
+        "nodes": [
+          {
+            "id": "astralMight",
+            "name": "Astral Might",
+            "description": "Strengthen every weapon with raw astral force.",
+            "category": "Offense",
+            "type": "Passive",
+            "cost": 1,
+            "maxRank": 3,
+            "x": 0,
+            "y": 0,
+            "effects": { "atk": 12 }
+          },
+          {
+            "id": "focusedStrike",
+            "name": "Focused Strike",
+            "description": "Trade reckless swings for precise hits.",
+            "category": "Offense",
+            "type": "Passive",
+            "cost": 1,
+            "maxRank": 3,
+            "x": 240,
+            "y": 0,
+            "requires": ["astralMight"],
+            "effects": { "critRate": 4 }
+          },
+          {
+            "id": "voidPrecision",
+            "name": "Void Precision",
+            "description": "Critical hits strike deeper into weak points.",
+            "category": "Offense",
+            "type": "Passive",
+            "cost": 1,
+            "maxRank": 2,
+            "x": 480,
+            "y": 0,
+            "requires": ["focusedStrike"],
+            "effects": { "critDMG": 12 }
+          },
+          {
+            "id": "meteorStrike",
+            "name": "Meteor Strike",
+            "description": "Call down a shard of the astral core.",
+            "category": "Offense",
+            "type": "Active",
+            "cost": 2,
+            "maxRank": 1,
+            "x": 720,
+            "y": 0,
+            "requires": ["voidPrecision"],
+            "requiresPoints": 6,
+            "effects": { "atk": 35 }
+          },
+          {
+            "id": "ironWill",
+            "name": "Iron Will",
+            "description": "Endure the pressure of the astral current.",
+            "category": "Defense",
+            "type": "Passive",
+            "cost": 1,
+            "maxRank": 3,
+            "x": 0,
+            "y": 150,
+            "effects": { "hp": 320 }
+          },
+          {
+            "id": "bulwark",
+            "name": "Astral Bulwark",
+            "description": "Shape the current into a protective shell.",
+            "category": "Defense",
+            "type": "Passive",
+            "cost": 1,
+            "maxRank": 2,
+            "x": 240,
+            "y": 150,
+            "requires": ["ironWill"],
+            "effects": { "hp": 500 }
+          },
+          {
+            "id": "energyFlow",
+            "name": "Energy Flow",
+            "description": "Let the astral current cycle faster.",
+            "category": "Utility",
+            "type": "Passive",
+            "cost": 1,
+            "maxRank": 3,
+            "x": 0,
+            "y": 300,
+            "effects": { "energy": 6 }
+          },
+          {
+            "id": "astralReservoir",
+            "name": "Astral Reservoir",
+            "description": "Store excess energy for the next engagement.",
+            "category": "Utility",
+            "type": "Passive",
+            "cost": 1,
+            "maxRank": 2,
+            "x": 240,
+            "y": 300,
+            "requires": ["energyFlow"],
+            "effects": { "energy": 10 }
+          },
+          {
+            "id": "emberEdge",
+            "name": "Ember Edge",
+            "description": "Choose the burning path of the astral core.",
+            "category": "Offense",
+            "type": "Choice",
+            "cost": 2,
+            "maxRank": 1,
+            "x": 480,
+            "y": 150,
+            "requires": ["astralMight"],
+            "choiceGroup": "astralElement",
+            "effects": { "atk": 18 }
+          },
+          {
+            "id": "frostEdge",
+            "name": "Frost Edge",
+            "description": "Choose the freezing path of the astral core.",
+            "category": "Offense",
+            "type": "Choice",
+            "cost": 2,
+            "maxRank": 1,
+            "x": 480,
+            "y": 300,
+            "requires": ["astralMight"],
+            "choiceGroup": "astralElement",
+            "effects": { "critDMG": 25 }
+          },
+          {
+            "id": "battleRhythm",
+            "name": "Battle Rhythm",
+            "description": "Alternate elements to keep the pressure up.",
+            "category": "Offense",
+            "type": "Passive",
+            "cost": 1,
+            "maxRank": 2,
+            "x": 720,
+            "y": 150,
+            "requiresAny": ["emberEdge", "frostEdge"],
+            "effects": { "atk": 10 }
+          },
+          {
+            "id": "starfall",
+            "name": "Starfall",
+            "description": "The ultimate expression of the astral core.",
+            "category": "Offense",
+            "type": "Active",
+            "cost": 3,
+            "maxRank": 1,
+            "x": 960,
+            "y": 75,
+            "requires": ["voidPrecision", "battleRhythm"],
+            "requiresPoints": 8,
+            "effects": { "critDMG": 30 }
+          }
+        ]
+      }
+    ],
     "objectives": [
       {
         "id": "damage",
@@ -55,13 +271,13 @@
         "id": "nova",
         "name": "Nova",
         "assetKey": "nova",
-        "base": { "hp": 5000, "atk": 300, "critRate": 5, "critDMG": 50, "energy": 100 }
+        "base": { "nivel": 1, "hp": 5000, "atk": 300, "critRate": 5, "critDMG": 50, "energy": 100 }
       },
       {
         "id": "orion",
         "name": "Orion",
         "assetKey": "orion",
-        "base": { "hp": 6000, "atk": 280, "critRate": 5, "critDMG": 50, "energy": 100 }
+        "base": { "nivel": 1, "hp": 6000, "atk": 280, "critRate": 5, "critDMG": 50, "energy": 100 }
       }
     ],
     "constrainableStats": ["atk", "critRate"],
@@ -69,7 +285,7 @@
       "inventory": {
         "kind": "inventory",
         "catalogUrl": "/seeds/gacha-demo.catalog.json",
-        "catalogVersion": "demo-2",
+        "catalogVersion": "demo-3",
         "rules": {
           "format": "good",
           "weaponSlot": "weapon",
@@ -129,5 +345,148 @@
       }
     }
   },
-  "items": []
+  "items": [
+    {
+      "id": "sample-weapon-astral",
+      "slot": "weapon",
+      "setId": "astral-core",
+      "name": "Astral Edge",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "atk": 120,
+        "critRate": 8
+      }
+    },
+    {
+      "id": "sample-weapon-void",
+      "slot": "weapon",
+      "setId": "void-song",
+      "name": "Void Fang",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "atk": 100,
+        "critDMG": 20
+      }
+    },
+    {
+      "id": "sample-flower-astral",
+      "slot": "flower",
+      "setId": "astral-core",
+      "name": "Astral Bloom",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "hp": 800,
+        "atk": 20
+      }
+    },
+    {
+      "id": "sample-flower-void",
+      "slot": "flower",
+      "setId": "void-song",
+      "name": "Void Bloom",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "hp": 600,
+        "critRate": 5
+      }
+    },
+    {
+      "id": "sample-plume-astral",
+      "slot": "plume",
+      "setId": "astral-core",
+      "name": "Astral Plume",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "atk": 60
+      }
+    },
+    {
+      "id": "sample-plume-void",
+      "slot": "plume",
+      "setId": "void-song",
+      "name": "Void Plume",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "atk": 45,
+        "critDMG": 10
+      }
+    },
+    {
+      "id": "sample-sands-astral",
+      "slot": "sands",
+      "setId": "astral-core",
+      "name": "Astral Sands",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "atk": 18,
+        "energy": 12
+      }
+    },
+    {
+      "id": "sample-sands-void",
+      "slot": "sands",
+      "setId": "void-song",
+      "name": "Void Sands",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "atk": 12,
+        "hp": 400
+      }
+    },
+    {
+      "id": "sample-goblet-astral",
+      "slot": "goblet",
+      "setId": "astral-core",
+      "name": "Astral Goblet",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "atk": 15,
+        "critRate": 6
+      }
+    },
+    {
+      "id": "sample-goblet-void",
+      "slot": "goblet",
+      "setId": "void-song",
+      "name": "Void Goblet",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "atk": 10,
+        "critDMG": 15
+      },
+      "requires": { "critDMG": 60 }
+    },
+    {
+      "id": "sample-circlet-astral",
+      "slot": "circlet",
+      "setId": "astral-core",
+      "name": "Astral Circlet",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "critRate": 10
+      }
+    },
+    {
+      "id": "sample-circlet-void",
+      "slot": "circlet",
+      "setId": "void-song",
+      "name": "Void Circlet",
+      "rarity": 5,
+      "level": 20,
+      "stats": {
+        "critDMG": 18
+      }
+    }
+  ]
 }

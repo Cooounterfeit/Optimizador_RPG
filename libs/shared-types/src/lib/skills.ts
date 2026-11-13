@@ -34,6 +34,12 @@ export const SkillNodeSchema = z.object({
    * `Item.stats`. Respeta el modo de cada estadistica: suma o multiplica.
    */
   effects: z.record(z.string(), z.number()).optional(),
+  /** PRESENTACION: clave para resolver el icono en `assets.skills`. */
+  assetKey: z.string().optional(),
+  /** PRESENTACION: familia de la habilidad ("Offense", "Defense"...). */
+  category: z.string().optional(),
+  /** PRESENTACION: clase de habilidad ("Passive", "Active", "Choice"...). */
+  type: z.string().optional(),
   /** PRESENTACION: posicion en el editor visual. El motor la ignora. */
   x: z.number().optional(),
   y: z.number().optional(),

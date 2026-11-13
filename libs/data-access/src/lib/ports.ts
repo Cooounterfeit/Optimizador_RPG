@@ -40,6 +40,14 @@ export interface EquipmentRepository {
   removeByGame(gameId: string): Promise<void>;
 }
 
+/** Valores base de un perfil modificados por el jugador (subir de nivel). */
+export interface ProfileBaseRepository {
+  get(gameId: string, profileId: string): Promise<Record<string, number> | undefined>;
+  save(gameId: string, profileId: string, base: Record<string, number>): Promise<void>;
+  removeProfile(gameId: string, profileId: string): Promise<void>;
+  removeByGame(gameId: string): Promise<void>;
+}
+
 /** Historial de estadisticas por nivel (SIM-03). */
 export interface LevelHistoryRepository {
   list(gameId: string, profileId: string): Promise<LevelSnapshot[]>;

@@ -32,6 +32,30 @@
         "weaponAtk": { "value": 400 },
         "atk": { "value": 20 }
       }
+    },
+    {
+      "key": "astral-edge",
+      "name": "Astral Edge",
+      "rarity": 5,
+      "type": "sword",
+      "slot": "weapon",
+      "maxLevel": 90,
+      "stats": {
+        "atk": { "value": 120 },
+        "critRate": { "value": 8 }
+      }
+    },
+    {
+      "key": "void-fang",
+      "name": "Void Fang",
+      "rarity": 5,
+      "type": "sword",
+      "slot": "weapon",
+      "maxLevel": 90,
+      "stats": {
+        "atk": { "value": 100 },
+        "critDMG": { "value": 20 }
+      }
     }
   ],
   "curves": {

@@ -15,6 +15,9 @@ const rules: InventoryRules = InventoryRulesSchema.parse({
   format: 'good',
   slots: { 'slot-a': 'slot-a' },
   stats: { might: 'might' },
+  rarities: [1, 2, 3, 4, 5],
+  artifactLevelRange: { min: 0, max: 20 },
+  itemLevelRange: { min: 0, max: 99 },
   mainStats: {
     might: { '5': [[0, 100], [20, 500]] },
   },
@@ -43,7 +46,12 @@ describe('inventoryRules', () => {
         inventory: {
           kind: 'inventory',
           catalogUrl: '/catalog.json',
-          rules: { mainStats: rules.mainStats },
+          rules: {
+            rarities: rules.rarities,
+            artifactLevelRange: rules.artifactLevelRange,
+            itemLevelRange: rules.itemLevelRange,
+            mainStats: rules.mainStats,
+          },
         },
       }),
     );

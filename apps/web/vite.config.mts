@@ -20,6 +20,7 @@ const cspPlugin: Plugin = {
       "script-src 'self'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
+      "worker-src 'self' blob:",
       "connect-src 'self' https://*.supabase.co",
       "font-src 'self' data:",
       "object-src 'none'",
@@ -50,10 +51,9 @@ export default defineConfig(() => ({
     host: 'localhost',
   },
   plugins: [react(), tailwindcss(), cspPlugin],
-  // Uncomment this if you are using workers.
-  // worker: {
-  //  plugins: [],
-  // },
+  worker: {
+    format: 'es' as const,
+  },
   build: {
     outDir: './dist',
     emptyOutDir: true,

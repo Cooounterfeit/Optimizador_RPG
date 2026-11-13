@@ -30,6 +30,20 @@ const template: GameTemplate = {
   objectives: [{ id: 'score', name: 'Score', description: '', kind: 'linear', formula: 'atk' }],
   baseProfiles: [{ id: 'base', name: 'Base', base: { atk: 100 } }],
   constrainableStats: [],
+  extensions: {
+    inventory: {
+      kind: 'inventory',
+      catalogUrl: '/catalog.json',
+      rules: {
+        format: 'good',
+        slots: { weapon: 'weapon', flower: 'flower' },
+        stats: { atk: 'atk', hp: 'hp' },
+        rarities: [1, 2, 3, 4, 5],
+        artifactLevelRange: { min: 0, max: 20 },
+        itemLevelRange: { min: 0, max: 99 },
+      },
+    },
+  },
 };
 
 const item: Item = {

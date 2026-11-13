@@ -25,7 +25,7 @@ describe('database (esquema, persistencia y concurrencia)', () => {
     const tables = database.tables.map((table) => table.name).sort();
 
     expect(tables).toEqual(
-      ['equipment', 'games', 'images', 'level_history', 'local_inventory', 'local_settings', 'skills'].sort(),
+      ['equipment', 'games', 'images', 'level_history', 'local_inventory', 'local_settings', 'profile_base', 'skills'].sort(),
     );
   });
 

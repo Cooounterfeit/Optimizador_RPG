@@ -5,11 +5,12 @@ import { catalogFixtures } from './fixtures';
 import { createSupabaseCatalogRepository } from './supabase-catalog-repository';
 import type { CatalogOptimizer, CatalogRepository } from './types';
 
+const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === '1';
+
 /**
- * Sin variables de entorno el hub sigue con fixtures (y con los juegos
- * integrados, para que el recorrido hub → juego → inventario funcione); con
- * ellas, lee los optimizadores publicados de Supabase. Los componentes no
- * cambian.
+ * Solo para mock/e2e: fixtures y juegos integrados. Con Supabase configurado
+ * el hub lee los optimizadores publicados; sin Supabase y sin mocks no inventa
+ * un catalogo.
  */
 export const mockCatalogRepository: CatalogRepository = {
   async list(): Promise<CatalogOptimizer[]> {
@@ -17,10 +18,18 @@ export const mockCatalogRepository: CatalogRepository = {
   },
 };
 
+const emptyCatalogRepository: CatalogRepository = {
+  async list(): Promise<CatalogOptimizer[]> {
+    return [];
+  },
+};
+
 export const defaultCatalogRepository: CatalogRepository =
   isSupabaseConfigured && supabase
     ? createSupabaseCatalogRepository(supabase)
-    : mockCatalogRepository;
+    : USE_MOCKS
+      ? mockCatalogRepository
+      : emptyCatalogRepository;
 
 let current: CatalogRepository = defaultCatalogRepository;
 

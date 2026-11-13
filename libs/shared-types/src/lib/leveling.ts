@@ -4,16 +4,17 @@ import { z } from 'zod';
  * Niveles del personaje y curvas de crecimiento (TEC-12, SIM-02..04).
  *
  * El nivel actual vive en el perfil, en `base[levelKey]`. Cada entrada de
- * `growth` dice cuanto SUBE una clave de `base` al pasar al nivel `nivel`
+ * `growth` dice cuanto SUBE una clave de `base` al pasar al nivel `levelKey`
  * (de nivel-1 a nivel). Puede ser un numero ("2") o una formula con la
- * variable `nivel` y los valores base del perfil (`base_crecFuerza`), lo que
- * permite curvas distintas por clase o crecimiento que acelera con el nivel.
+ * variable declarada en `levelKey` y los valores base del perfil
+ * (`base_crecFuerza`), lo que permite curvas distintas por clase o crecimiento
+ * que acelera con el nivel.
  *
  * Proyectar del nivel actual N al nivel L suma el crecimiento de N+1 a L.
  */
 export const LevelingDefSchema = z.object({
-  /** Clave de `base` que guarda el nivel actual. Por defecto "nivel". */
-  levelKey: z.string().optional(),
+  /** Clave de `base` que guarda el nivel actual. La usan las formulas de crecimiento. */
+  levelKey: z.string().min(1),
   min: z.number(),
   max: z.number(),
   /**

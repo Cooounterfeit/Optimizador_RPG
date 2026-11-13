@@ -97,6 +97,48 @@ describe('GameTemplateSchema', () => {
 
     expect(result.success).toBe(false);
   });
+
+  it('acepta una calculadora declarada por el juego', () => {
+    const parsed = GameTemplateSchema.parse({
+      ...minimalTemplate(),
+      damageCalculator: {
+        title: 'Dano por golpe',
+        fields: [{ id: 'ataque', label: 'Ataque', default: 0, min: 0 }],
+        outputs: [{ id: 'golpe', label: 'Golpe', formula: 'max(0, ataque)' }],
+      },
+    });
+
+    expect(parsed.damageCalculator?.outputs[0].formula).toBe('max(0, ataque)');
+  });
+
+  it('rechaza ids repetidos en la calculadora', () => {
+    const result = GameTemplateSchema.safeParse({
+      ...minimalTemplate(),
+      damageCalculator: {
+        title: 'Dano',
+        fields: [
+          { id: 'ataque', label: 'Ataque' },
+          { id: 'ataque', label: 'Otro ataque' },
+        ],
+        outputs: [{ id: 'golpe', label: 'Golpe', formula: 'ataque' }],
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it('rechaza un valor por defecto fuera de los limites', () => {
+    const result = GameTemplateSchema.safeParse({
+      ...minimalTemplate(),
+      damageCalculator: {
+        title: 'Dano',
+        fields: [{ id: 'ataque', label: 'Ataque', default: 150, max: 100 }],
+        outputs: [{ id: 'golpe', label: 'Golpe', formula: 'ataque' }],
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
 });
 
 describe('ItemSchema', () => {

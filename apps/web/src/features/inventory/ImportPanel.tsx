@@ -52,8 +52,8 @@ export function ImportPanel({ template, onImported }: ImportPanelProps) {
 
   const kind = useMemo(() => detect(raw), [raw]);
   const entrySlot = rules?.weaponSlot;
-  const artifactLevelMax = rules?.artifactLevelRange.max ?? 20;
-  const rarityMax = rules ? Math.max(...rules.rarities) : 5;
+  const artifactLevelMax = rules?.artifactLevelRange.max;
+  const rarityMax = rules ? Math.max(...rules.rarities) : undefined;
   const entriesLabel = rules?.labels.entries ?? inventoryCopy.import.entries;
   const includeEntriesLabel =
     rules?.labels.includeEntries ?? inventoryCopy.import.includeEntries;
