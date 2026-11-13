@@ -2,7 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { EquipmentRepository } from '@zenith/data-access';
-import type { Equipment } from '@zenith/shared-types';
+import type { Equipment, Item } from '@zenith/shared-types';
 
 import { setEquipmentRepository } from './repositories';
 import { useEquipment } from './useEquipment';
@@ -104,5 +104,28 @@ describe('useEquipment', () => {
 
     expect(result.current.ready).toBe(false);
     expect(result.current.equipment).toEqual({});
+  });
+
+  it('descarta las piezas que ya no estan en el inventario', async () => {
+    const repo = memoryRepo({ weapon: 'gone', flower: 'kept' });
+    setEquipmentRepository(repo);
+
+    const items = [{ id: 'kept' }] as unknown as Item[];
+    const { result } = renderHook(() => useEquipment('g1', 'nova', items));
+
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    await waitFor(() => expect(result.current.equipment).toEqual({ flower: 'kept' }));
+    expect(repo.save).toHaveBeenCalledWith('g1', 'nova', { flower: 'kept' });
+  });
+
+  it('no limpia nada mientras el inventario es desconocido', async () => {
+    const repo = memoryRepo({ weapon: 'sword' });
+    setEquipmentRepository(repo);
+
+    const { result } = renderHook(() => useEquipment('g1', 'nova', null));
+
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.equipment).toEqual({ weapon: 'sword' });
+    expect(repo.save).not.toHaveBeenCalled();
   });
 });

@@ -7,11 +7,11 @@
     "name": "Astral Forge",
     "description": "Synthetic gacha game for demos and tests. Its data is public and forkable.",
     "stats": [
-      { "id": "atk", "name": "ATK", "unit": "flat" },
-      { "id": "hp", "name": "HP", "unit": "flat" },
-      { "id": "critRate", "name": "CRIT Rate", "unit": "percent" },
-      { "id": "critDMG", "name": "CRIT DMG", "unit": "percent" },
-      { "id": "energy", "name": "Energy Recharge", "unit": "percent" }
+      { "id": "atk", "name": "ATK", "unit": "flat", "group": "Offense" },
+      { "id": "hp", "name": "HP", "unit": "flat", "group": "Survival" },
+      { "id": "critRate", "name": "CRIT Rate", "unit": "percent", "group": "Offense" },
+      { "id": "critDMG", "name": "CRIT DMG", "unit": "percent", "group": "Offense" },
+      { "id": "energy", "name": "Energy Recharge", "unit": "percent", "group": "Utility" }
     ],
     "slots": [
       { "id": "weapon", "name": "Weapon" },
@@ -39,7 +39,14 @@
         ]
       }
     ],
-    "derived": [],
+    "derived": [
+      {
+        "id": "effectiveAtk",
+        "name": "Effective ATK",
+        "formula": "atk * (1 + critRate / 100 * critDMG / 100)",
+        "group": "Damage"
+      }
+    ],
     "leveling": {
       "levelKey": "nivel",
       "min": 1,
@@ -456,7 +463,8 @@
       "stats": {
         "atk": 10,
         "critDMG": 15
-      }
+      },
+      "requires": { "critDMG": 60 }
     },
     {
       "id": "sample-circlet-astral",

@@ -14,6 +14,7 @@ import {
   getImagesRepository,
   getInventoryRepository,
 } from '../game/repositories';
+import { profileStatsLine } from '../game/profileSummary';
 import { useGame } from '../game/useGame';
 import { CatalogPanel } from './CatalogPanel';
 import { inventoryCopy } from './copy';
@@ -37,20 +38,6 @@ const slotName = (template: GameTemplate, slotId: string): string =>
 
 const setName = (template: GameTemplate, setId: string | null): string =>
   setId ? (template.sets.find((set) => set.id === setId)?.name ?? setId) : inventoryCopy.noSet;
-
-const profileStatsLine = (
-  template: GameTemplate,
-  profile: GameTemplate['baseProfiles'][number],
-): string => {
-  const entries = template.stats.slice(0, 3);
-  if (entries.length === 0) return inventoryCopy.characters.noStats;
-  return entries
-    .map((stat) => {
-      const unit = stat.unit === 'percent' ? '%' : '';
-      return `${stat.name} ${numberFormat.format(profile.base[stat.id] ?? 0)}${unit}`;
-    })
-    .join(' · ');
-};
 
 const statsLine = (template: GameTemplate, item: Item): string => {
   const entries = Object.entries(item.stats).slice(0, 3);
@@ -512,7 +499,7 @@ export function InventoryPage() {
                   <div className="min-w-0">
                     <p className="truncate text-[12.5px] font-semibold">{profile.name}</p>
                     <p className="truncate font-mono text-[9.5px] text-muted-foreground tabular-nums">
-                      {profileStatsLine(template, profile)}
+                      {profileStatsLine(template, profile, inventoryCopy.characters.noStats)}
                     </p>
                   </div>
                 </div>

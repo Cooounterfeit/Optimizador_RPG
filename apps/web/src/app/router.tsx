@@ -9,6 +9,7 @@ import { LoginPage } from '../features/auth/LoginPage';
 import { ProfilePage } from '../features/auth/ProfilePage';
 import { RegisterPage } from '../features/auth/RegisterPage';
 import { RedirectIfSignedIn, RequireSession } from '../features/auth/guards';
+import { CharacterSheetPage } from '../features/sheet/CharacterSheetPage';
 import { AppLayout } from './AppLayout';
 import { OptimizerPage } from './OptimizerPage';
 import { SimplePage } from './SimplePage';
@@ -43,6 +44,7 @@ export const routes = createBrowserRouter([
         ),
       },
       { path: 'optimizer/:id', element: <OptimizerPage /> },
+      { path: 'optimizer/:id/personaje', element: <CharacterSheetPage /> },
       { path: 'optimizer/:id/inventario', element: <InventoryPage /> },
       { path: 'optimizer/:id/habilidades', element: <SkillTreePage /> },
       { path: 'optimizer/:id/dano', element: <DamageCalculatorPage /> },

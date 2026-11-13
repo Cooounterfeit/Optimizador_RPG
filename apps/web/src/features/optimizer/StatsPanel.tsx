@@ -1,19 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import {
-  currentLevel,
-  futureLevels,
-  projectProfile,
-} from '@zenith/core-engine';
 import type { BaseProfile, GameTemplate } from '@zenith/shared-types';
 
-import { cn } from '../../lib/cn';
 import { gameCopy } from '../game/copy';
 import { ItemGlyph } from '../inventory/ItemGlyph';
+import { useSetLevel } from './useSetLevel';
 
 interface StatsPanelProps {
   template: GameTemplate;
   profile: BaseProfile;
+  onSaveBase?: (base: Record<string, number>) => Promise<void> | void;
 }
 
 type Order = 'value' | 'name';
@@ -31,46 +27,37 @@ const formatValue = (value: number, unit: string | undefined): string =>
     ? `×${numberFormat.format(value)}`
     : `${numberFormat.format(value)}${unitOf(unit)}`;
 
-export function StatsPanel({ template, profile }: StatsPanelProps) {
+export function StatsPanel({ template, profile, onSaveBase }: StatsPanelProps) {
   const [order, setOrder] = useState<Order>('value');
-  const [target, setTarget] = useState<number | null>(null);
-
-  useEffect(() => {
-    setTarget(null);
-  }, [profile.id]);
-
-  const level = currentLevel(template, profile);
-  const levels = futureLevels(template, profile);
-  const projection = target === null ? null : projectProfile(template, profile, target);
-
-  useEffect(() => {
-    if (target !== null && (level === null || target <= level)) setTarget(null);
-  }, [level, target]);
+  const {
+    current: level,
+    levels,
+    canSet,
+    pointsMode,
+    saving,
+    error,
+    setLevel,
+  } = useSetLevel({ template, profile, onSave: onSaveBase ?? (() => undefined) });
+  const [saved, setSaved] = useState<number | null>(null);
 
   const rows = useMemo(
     () =>
       template.stats
         .filter((stat) => typeof profile.base[stat.id] === 'number')
-        .map((stat) => ({
-          stat,
-          current: profile.base[stat.id] ?? 0,
-          projected: projection?.ok ? projection.base[stat.id] : undefined,
-        }))
+        .map((stat) => ({ stat, value: profile.base[stat.id] ?? 0 }))
         .sort((a, b) =>
           order === 'name'
             ? a.stat.name.localeCompare(b.stat.name)
-            : b.current - a.current || a.stat.name.localeCompare(b.stat.name),
+            : b.value - a.value || a.stat.name.localeCompare(b.stat.name),
         ),
-    [order, profile, projection, template.stats],
+    [order, profile.base, template.stats],
   );
 
-  const projectionMessage = !template.leveling || level === null
-    ? gameCopy.cockpit.projectionUnavailable
-    : levels.length === 0
-      ? gameCopy.cockpit.maxLevel
-      : projection && !projection.ok
-        ? projection.error
-        : null;
+  const levelMessage = pointsMode
+    ? gameCopy.cockpit.levelPointsMode
+    : !canSet
+      ? gameCopy.cockpit.levelsUnavailable
+      : null;
 
   return (
     <section className="rounded-[4px] border border-line bg-surface p-4">
@@ -89,30 +76,45 @@ export function StatsPanel({ template, profile }: StatsPanelProps) {
       ) : (
         <>
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground" htmlFor="future-level">
-              {gameCopy.cockpit.futureLevel}
+            <label
+              className="flex items-center gap-1.5 text-[11px] text-muted-foreground"
+              htmlFor="character-level"
+            >
+              {gameCopy.cockpit.characterLevel}
             </label>
             <select
-              id="future-level"
+              id="character-level"
               className="h-8 rounded-[2px] border border-line bg-background px-2 font-mono text-[11px] text-foreground outline-none transition-colors focus:border-line-strong disabled:opacity-50"
-              value={target ?? ''}
-              disabled={levels.length === 0}
-              onChange={(event) => setTarget(event.target.value === '' ? null : Number(event.target.value))}
+              value={level ?? ''}
+              disabled={!canSet || saving || !onSaveBase}
+              onChange={(event) => {
+                const next = Number(event.target.value);
+                void setLevel(next).then((ok) => {
+                  if (ok) setSaved(next);
+                });
+              }}
             >
-              <option value="">
-                {levels.length === 0 ? gameCopy.cockpit.maxLevel : gameCopy.cockpit.chooseLevel}
-              </option>
-              {levels.map((future) => (
-                <option key={future} value={future}>
-                  {gameCopy.cockpit.level} {future}
+              {levels.map((option) => (
+                <option key={option} value={option}>
+                  {gameCopy.cockpit.level} {option}
                 </option>
               ))}
             </select>
           </div>
 
-          {projectionMessage ? (
+          {levelMessage ? (
             <p role="status" className="mt-2 text-[11px] text-muted-foreground">
-              {projectionMessage}
+              {levelMessage}
+            </p>
+          ) : null}
+          {saved !== null && !levelMessage ? (
+            <p role="status" className="mt-2 text-[11px] text-[oklch(0.72_0.14_150)]">
+              {gameCopy.cockpit.levelSet(saved)}
+            </p>
+          ) : null}
+          {error ? (
+            <p role="alert" className="mt-2 text-[11px] text-[oklch(0.78_0.16_25)]">
+              {error}
             </p>
           ) : null}
 
@@ -133,50 +135,26 @@ export function StatsPanel({ template, profile }: StatsPanelProps) {
                   <th scope="col" className="px-2 py-1.5 text-right">
                     {gameCopy.cockpit.current}
                   </th>
-                  {projection?.ok ? (
-                    <th scope="col" className="px-2 py-1.5 text-right text-[oklch(0.78_0.16_60)]">
-                      {gameCopy.cockpit.projected}
-                    </th>
-                  ) : null}
                 </tr>
               </thead>
               <tbody>
-                {rows.map(({ stat, current, projected }) => {
-                  const delta = projected === undefined ? 0 : projected - current;
-                  return (
-                    <tr
-                      key={stat.id}
-                      className="border-b border-line last:border-b-0"
-                      title={`${stat.name}${unitOf(stat.unit) ? ` (${unitOf(stat.unit)})` : ''}`}
-                    >
-                      <th scope="row" aria-label={stat.name} className="px-2 py-1.5 text-left font-normal">
-                        <span className="flex items-center gap-2">
-                          <ItemGlyph name={stat.name} className="h-6 w-6 text-[8px]" />
-                          <span className="truncate">{stat.name}</span>
-                        </span>
-                      </th>
-                      <td className="px-2 py-1.5 text-right font-mono tabular-nums">
-                        {formatValue(current, stat.unit)}
-                      </td>
-                      {projection?.ok ? (
-                        <td
-                          className={cn(
-                            'px-2 py-1.5 text-right font-mono tabular-nums',
-                            Math.abs(delta) > 1e-9 && 'text-[oklch(0.78_0.16_60)]',
-                          )}
-                        >
-                          {projected === undefined ? '—' : formatValue(projected, stat.unit)}
-                          {Math.abs(delta) > 1e-9 ? (
-                            <span className="ml-1 text-[10px]">
-                              {delta > 0 ? '↑ +' : '↓ '}
-                              {numberFormat.format(Math.abs(delta))}
-                            </span>
-                          ) : null}
-                        </td>
-                      ) : null}
-                    </tr>
-                  );
-                })}
+                {rows.map(({ stat, value }) => (
+                  <tr
+                    key={stat.id}
+                    className="border-b border-line last:border-b-0"
+                    title={`${stat.name}${unitOf(stat.unit) ? ` (${unitOf(stat.unit)})` : ''}`}
+                  >
+                    <th scope="row" aria-label={stat.name} className="px-2 py-1.5 text-left font-normal">
+                      <span className="flex items-center gap-2">
+                        <ItemGlyph name={stat.name} className="h-6 w-6 text-[8px]" />
+                        <span className="truncate">{stat.name}</span>
+                      </span>
+                    </th>
+                    <td className="px-2 py-1.5 text-right font-mono tabular-nums">
+                      {formatValue(value, stat.unit)}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

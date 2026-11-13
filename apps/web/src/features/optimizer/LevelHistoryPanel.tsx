@@ -11,6 +11,7 @@ import { cn } from '../../lib/cn';
 import { gameCopy } from '../game/copy';
 import { ItemGlyph } from '../inventory/ItemGlyph';
 import { useLevelHistory } from './useLevelHistory';
+import { useSetLevel } from './useSetLevel';
 
 interface LevelHistoryPanelProps {
   template: GameTemplate;
@@ -40,7 +41,7 @@ export function LevelHistoryPanel({ template, profile, onLevelUp }: LevelHistory
   const { history, error: historyError, record } = useLevelHistory(template.gameId, profile.id);
   const [pastLevel, setPastLevel] = useState<number | null>(null);
   const [target, setTarget] = useState<number | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [levelUpBusy, setLevelUpBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,6 +66,31 @@ export function LevelHistoryPanel({ template, profile, onLevelUp }: LevelHistory
   }, [target, futureOptions]);
 
   const stats = template.stats.filter((stat) => typeof profile.base[stat.id] === 'number');
+
+  const {
+    levels,
+    canSet,
+    pointsMode,
+    saving: levelSaving,
+    error: levelError,
+    setLevel,
+  } = useSetLevel({
+    template,
+    profile,
+    beforeSave: async (level, base) => {
+      await record(level, base);
+    },
+    onSave: onLevelUp,
+  });
+  const busy = levelUpBusy || levelSaving;
+
+  const applyLevel = async (level: number) => {
+    setMessage(null);
+    if (!(await setLevel(level))) return;
+    setTarget(null);
+    setPastLevel(null);
+    setMessage(gameCopy.cockpit.levelSet(level));
+  };
 
   const pastMessage =
     history === null
@@ -92,7 +118,7 @@ export function LevelHistoryPanel({ template, profile, onLevelUp }: LevelHistory
 
   const recordCurrent = async () => {
     if (current === null) return;
-    setBusy(true);
+    setLevelUpBusy(true);
     setError(null);
     try {
       await record(current, profile.base);
@@ -100,7 +126,7 @@ export function LevelHistoryPanel({ template, profile, onLevelUp }: LevelHistory
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : gameCopy.cockpit.historyError);
     } finally {
-      setBusy(false);
+      setLevelUpBusy(false);
     }
   };
 
@@ -112,7 +138,7 @@ export function LevelHistoryPanel({ template, profile, onLevelUp }: LevelHistory
       return;
     }
 
-    setBusy(true);
+    setLevelUpBusy(true);
     setError(null);
     setMessage(null);
     try {
@@ -129,7 +155,7 @@ export function LevelHistoryPanel({ template, profile, onLevelUp }: LevelHistory
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : gameCopy.cockpit.historyError);
     } finally {
-      setBusy(false);
+      setLevelUpBusy(false);
     }
   };
 
@@ -144,6 +170,32 @@ export function LevelHistoryPanel({ template, profile, onLevelUp }: LevelHistory
       <p className="mt-1 text-[11.5px] text-muted-foreground">{gameCopy.cockpit.levelHistoryHint}</p>
 
       <div className="mt-3 flex flex-wrap items-end gap-2">
+        {canSet ? (
+          <>
+            <label
+              className="flex items-center gap-1.5 text-[11px] text-muted-foreground"
+              htmlFor="history-set-level"
+              title={pointsMode ? gameCopy.cockpit.levelPointsMode : gameCopy.cockpit.setLevelHint}
+            >
+              {gameCopy.cockpit.setLevel}
+            </label>
+            <select
+              id="history-set-level"
+              className="h-8 rounded-[2px] border border-line bg-background px-2 font-mono text-[11px] text-foreground outline-none transition-colors focus:border-line-strong disabled:opacity-50"
+              value={current ?? ''}
+              disabled={busy || pointsMode}
+              title={pointsMode ? gameCopy.cockpit.levelPointsMode : gameCopy.cockpit.setLevelHint}
+              onChange={(event) => void applyLevel(Number(event.target.value))}
+            >
+              {levels.map((level) => (
+                <option key={level} value={level}>
+                  {gameCopy.cockpit.level} {level}
+                </option>
+              ))}
+            </select>
+          </>
+        ) : null}
+
         <button
           type="button"
           className="h-8 rounded-[2px] border border-line px-2.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-foreground transition-colors hover:border-line-strong disabled:opacity-50"
@@ -205,9 +257,9 @@ export function LevelHistoryPanel({ template, profile, onLevelUp }: LevelHistory
           {message}
         </p>
       ) : null}
-      {error ?? historyError ? (
+      {error ?? levelError ?? historyError ? (
         <p role="alert" className="mt-2 text-[11px] text-[oklch(0.78_0.16_25)]">
-          {error ?? historyError}
+          {error ?? levelError ?? historyError}
         </p>
       ) : null}
 
@@ -301,7 +353,7 @@ function Column({
                     <span
                       className={cn(
                         'ml-1 text-[9.5px]',
-                        delta > 0 ? 'text-[oklch(0.72_0.14_150)]' : 'text-[oklch(0.7_0.16_25)]',
+                        delta > 0 ? 'text-[oklch(0.75_0.13_250)]' : 'text-[oklch(0.7_0.16_25)]',
                       )}
                     >
                       {delta > 0 ? '↑' : '↓'} {formatDelta(delta, stat.unit)}

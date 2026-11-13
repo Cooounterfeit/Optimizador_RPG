@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import { conBase, sanitizeSelection } from '@zenith/core-engine';
+import { currentLevel } from '@zenith/core-engine';
 import type { BuildResult, Constraint, Equipment, Item, SolveRequest } from '@zenith/shared-types';
 
 import { Button, buttonVariants } from '../components/ui/Button';
@@ -10,6 +10,7 @@ import { EmptyState } from '../features/catalog/components/EmptyState';
 import { CoverArt } from '../features/catalog/components/CoverArt';
 import { getCatalogRepository } from '../features/catalog/catalog-repository';
 import type { CatalogOptimizer } from '../features/catalog/types';
+import { CharacterPickerDialog } from '../features/game/CharacterPicker';
 import { gameCopy } from '../features/game/copy';
 import { useEquipment } from '../features/game/useEquipment';
 import { useGame } from '../features/game/useGame';
@@ -22,10 +23,11 @@ import { ConstraintEditor } from '../features/optimizer/ConstraintEditor';
 import { CurrentBuildPanel } from '../features/optimizer/CurrentBuildPanel';
 import { LevelHistoryPanel } from '../features/optimizer/LevelHistoryPanel';
 import { OptimizerResult } from '../features/optimizer/OptimizerResult';
+import { buildSolveRequest } from '../features/optimizer/request';
 import { StatsPanel } from '../features/optimizer/StatsPanel';
 import { useOptimizer } from '../features/optimizer/useOptimizer';
 import { useSkillSelection } from '../features/skills/useSkillSelection';
-import { itemIconUrls } from '../lib/images';
+import { itemIconUrls, characterIconUrls, characterRarityOf } from '../lib/images';
 
 /** Lista vacia estable: `inventory.items ?? []` crearia un array nuevo en cada render. */
 const NO_ITEMS: Item[] = [];
@@ -37,9 +39,12 @@ export function OptimizerPage() {
   const sampleItems = state.status === 'ready' ? state.sampleItems : [];
 
   const inventory = useInventory(template?.gameId);
+  const inventoryForGame =
+    template && inventory.loadedFor === template.gameId ? inventory.items : null;
   const { selection: skillSelection } = useSkillSelection(template);
   const [loadingSamples, setLoadingSamples] = useState(false);
   const [profileId, setProfileId] = useState('');
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [objectiveId, setObjectiveId] = useState('');
   const [constraints, setConstraints] = useState<Constraint[]>([]);
   const [deadlineSeconds, setDeadlineSeconds] = useState('0');
@@ -70,7 +75,7 @@ export function OptimizerPage() {
     equipment,
     save: saveEquipment,
     ready: equipmentReady,
-  } = useEquipment(template?.gameId, templateProfile?.id);
+  } = useEquipment(template?.gameId, templateProfile?.id, inventoryForGame);
   const [equipError, setEquipError] = useState<string | null>(null);
 
   /**
@@ -80,19 +85,17 @@ export function OptimizerPage() {
    */
   const buildRequest = useCallback((): SolveRequest | null => {
     if (!template || !templateProfile || !profileBaseReady) return null;
-    const target =
-      template.objectives.find((entry) => entry.id === objectiveId) ?? template.objectives[0];
-    if (!target) return null;
 
-    return {
-      template: conBase(template, templateProfile.id, profileBase),
-      items: inventory.items ?? NO_ITEMS,
+    return buildSolveRequest({
+      template,
       profileId: templateProfile.id,
-      objectiveId: target.id,
+      profileBase,
+      items: inventory.items ?? NO_ITEMS,
+      objectiveId,
       constraints,
+      skills: skillSelection,
       topN: 3,
-      skills: sanitizeSelection(template, skillSelection),
-    };
+    });
   }, [
     template,
     templateProfile,
@@ -326,24 +329,47 @@ export function OptimizerPage() {
           <section className="rounded-[4px] border border-line bg-surface p-4">
             <p className="label-caps">01 · {gameCopy.cockpit.character}</p>
             <p className="mt-1 text-[11.5px] text-muted-foreground">{gameCopy.cockpit.characterHint}</p>
-            <label className="sr-only" htmlFor="optimizer-profile">
-              {gameCopy.cockpit.character}
-            </label>
-            <select
-              id="optimizer-profile"
-              className="mt-3 h-10 w-full rounded-[2px] border border-line bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-line-strong"
-              value={profile?.id ?? ''}
-              onChange={(event) => setProfileId(event.target.value)}
-            >
-              {template.baseProfiles.map((entry) => (
-                <option key={entry.id} value={entry.id}>
-                  {entry.name}
-                </option>
-              ))}
-            </select>
+            {profile ? (
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => setPickerOpen(true)}
+                className="group mt-3 flex w-full items-center gap-3 rounded-[2px] border border-line bg-background px-2.5 py-2 text-start transition-colors hover:border-line-strong focus-visible:border-line-strong"
+              >
+                <ItemGlyph
+                  name={profile.name}
+                  rarity={template.assets ? characterRarityOf(template.assets, profile) : undefined}
+                  sources={template.assets ? characterIconUrls(template.assets, profile) : []}
+                  className="h-10 w-10 text-[12px]"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13px]">{profile.name}</span>
+                  <span className="block font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+                    {currentLevel(template, profile) === null
+                      ? gameCopy.cockpit.noLevel
+                      : `${gameCopy.cockpit.level} ${currentLevel(template, profile)}`}
+                  </span>
+                </span>
+                <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground transition-colors group-hover:text-foreground">
+                  {gameCopy.cockpit.changeCharacter}
+                </span>
+              </button>
+            ) : null}
           </section>
 
-          {profile ? <StatsPanel template={template} profile={profile} /> : null}
+          {profile ? (
+            <StatsPanel
+              template={template}
+              profile={profile}
+              onSaveBase={async (base) => {
+                try {
+                  await saveProfileBase(base);
+                } finally {
+                  reset();
+                }
+              }}
+            />
+          ) : null}
 
           <section className="rounded-[4px] border border-line bg-surface p-4">
             <p className="label-caps">02 · {gameCopy.cockpit.objective}</p>
@@ -448,7 +474,10 @@ export function OptimizerPage() {
             ) : null}
 
             <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-4">
-              <Link to={`/optimizer/${id}/inventario`} className={buttonVariants()}>
+              <Link to={`/optimizer/${id}/personaje`} className={buttonVariants()}>
+                {gameCopy.openSheet}
+              </Link>
+              <Link to={`/optimizer/${id}/inventario`} className={buttonVariants({ variant: 'outline' })}>
                 {gameCopy.openInventory}
               </Link>
               {template.damageCalculator ? (
@@ -640,6 +669,19 @@ export function OptimizerPage() {
           ) : null}
         </div>
       </div>
+
+      {profile ? (
+        <CharacterPickerDialog
+          template={template}
+          currentId={profile.id}
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          onSelect={(nextId) => {
+            setProfileId(nextId);
+            setPickerOpen(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

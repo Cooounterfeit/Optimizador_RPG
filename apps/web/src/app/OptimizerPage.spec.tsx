@@ -48,6 +48,7 @@ vi.mock('../features/inventory/useInventory', async (importOriginal) => {
       if (!inventoryMock.active) return original.useInventory(gameId);
       return {
         items: inventoryMock.items,
+        loadedFor: gameId ?? null,
         error: null,
         reload: async () => undefined,
         add: async () => undefined,
@@ -360,9 +361,8 @@ describe('OptimizerPage con juego real', () => {
     renderPage();
     await runAndFinish();
 
-    fireEvent.change(screen.getByLabelText(gameCopy.cockpit.character, { exact: true }), {
-      target: { value: second.id },
-    });
+    fireEvent.click(screen.getByRole('button', { name: /Change/ }));
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(`^${second.name}`) }));
 
     await waitFor(() => expect(screen.queryByText(gameCopy.cockpit.noFeasible)).toBeNull());
     await waitFor(() => expect(optimizeDisabled()).toBe(false));

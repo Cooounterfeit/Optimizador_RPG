@@ -10,6 +10,7 @@ import { LevelHistoryPanel } from './LevelHistoryPanel';
 const template = {
   gameId: 'g1',
   stats: [{ id: 'atk', name: 'ATK', unit: 'flat' }],
+  baseProfiles: [{ id: 'nova', name: 'Nova', base: { nivel: 1, atk: 10 } }],
   leveling: {
     levelKey: 'nivel',
     min: 1,
@@ -78,6 +79,33 @@ describe('LevelHistoryPanel', () => {
       expect.objectContaining({ nivel: 2, atk: 20 }),
     );
     expect(await screen.findByText('Level 2 saved.')).toBeTruthy();
+  });
+
+  it('fija el nivel que se elija y deriva la base de las curvas', async () => {
+    makeRepo();
+    const onLevelUp = vi.fn(async () => undefined);
+    render(<LevelHistoryPanel template={template} profile={profile} onLevelUp={onLevelUp} />);
+
+    fireEvent.change(screen.getByLabelText('Set level'), { target: { value: '5' } });
+
+    await waitFor(() =>
+      expect(onLevelUp).toHaveBeenCalledWith(expect.objectContaining({ nivel: 5, atk: 50 })),
+    );
+    expect(await screen.findByText('Level 5 saved.')).toBeTruthy();
+  });
+
+  it('permite bajar de nivel y deja registro del que se deja', async () => {
+    const repo = makeRepo();
+    const onLevelUp = vi.fn(async () => undefined);
+    const high = { ...profile, base: { nivel: 9, atk: 90 } } as BaseProfile;
+    render(<LevelHistoryPanel template={template} profile={high} onLevelUp={onLevelUp} />);
+
+    fireEvent.change(screen.getByLabelText('Set level'), { target: { value: '3' } });
+
+    await waitFor(() =>
+      expect(onLevelUp).toHaveBeenCalledWith(expect.objectContaining({ nivel: 3, atk: 30 })),
+    );
+    expect(repo.recordLevel).toHaveBeenCalledWith('g1', 'nova', 9, high.base);
   });
 
   it('compara un nivel anterior contra el presente', async () => {

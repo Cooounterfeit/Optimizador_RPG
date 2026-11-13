@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { BaseProfile, GameTemplate } from '@zenith/shared-types';
 
@@ -10,6 +10,7 @@ const template = {
     { id: 'atk', name: 'ATK', unit: 'flat' },
     { id: 'hp', name: 'HP', unit: 'flat' },
   ],
+  baseProfiles: [{ id: 'nova', name: 'Nova', base: { nivel: 1, atk: 10, hp: 100 } }],
   leveling: {
     levelKey: 'nivel',
     min: 1,
@@ -36,23 +37,35 @@ describe('StatsPanel', () => {
     expect(rows()).toEqual(['ATK', 'HP']);
   });
 
-  it('proyecta las estadísticas a un nivel futuro', () => {
-    render(<StatsPanel template={template} profile={profile} />);
+  it('fija el nivel elegido y guarda la base derivada', async () => {
+    const onSaveBase = vi.fn(async () => undefined);
+    render(<StatsPanel template={template} profile={profile} onSaveBase={onSaveBase} />);
 
-    fireEvent.change(screen.getByLabelText('Future level'), { target: { value: '3' } });
+    fireEvent.change(screen.getByLabelText('Character level'), { target: { value: '3' } });
 
-    expect(screen.getByText('Projected')).toBeTruthy();
-    const atkRow = screen.getByRole('row', { name: /ATK/ });
-    expect(within(atkRow).getByText('30')).toBeTruthy();
-    expect(within(atkRow).getByText(/↑ \+20/)).toBeTruthy();
+    await waitFor(() =>
+      expect(onSaveBase).toHaveBeenCalledWith(expect.objectContaining({ nivel: 3, atk: 30, hp: 300 })),
+    );
   });
 
-  it('explica cuando no hay niveles o stats base', () => {
-    const sinNiveles = { stats: template.stats } as unknown as GameTemplate;
-    render(<StatsPanel template={sinNiveles} profile={profile} />);
+  it('permite bajar el nivel de un perfil que ya subió', async () => {
+    const onSaveBase = vi.fn(async () => undefined);
+    const high = { ...profile, base: { nivel: 9, atk: 90, hp: 900 } } as BaseProfile;
+    render(<StatsPanel template={template} profile={high} onSaveBase={onSaveBase} />);
 
-    expect(screen.getByText(/Future simulation is not available/)).toBeTruthy();
-    expect((screen.getByLabelText('Future level') as HTMLSelectElement).disabled).toBe(true);
+    fireEvent.change(screen.getByLabelText('Character level'), { target: { value: '2' } });
+
+    await waitFor(() =>
+      expect(onSaveBase).toHaveBeenCalledWith(expect.objectContaining({ nivel: 2, atk: 20, hp: 200 })),
+    );
+  });
+
+  it('explica cuando el juego no define niveles', () => {
+    const sinNiveles = { stats: template.stats } as unknown as GameTemplate;
+    render(<StatsPanel template={sinNiveles} profile={profile} onSaveBase={vi.fn()} />);
+
+    expect(screen.getByText(/Levels are not available/)).toBeTruthy();
+    expect((screen.getByLabelText('Character level') as HTMLSelectElement).disabled).toBe(true);
   });
 
   it('muestra un mensaje si el perfil no tiene stats', () => {

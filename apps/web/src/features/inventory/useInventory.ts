@@ -8,6 +8,12 @@ import { getInventoryRepository } from '../game/repositories';
 
 export interface UseInventoryResult {
   items: Item[] | null;
+  /**
+   * Juego al que pertenece la lista ya leida. `null` mientras se lee o cuando
+   * no hay juego. Sirve para no confundir un `[]` transitorio (juego todavia
+   * sin resolver) con un inventario vacio de verdad.
+   */
+  loadedFor: string | null;
   error: string | null;
   reload: () => Promise<void>;
   add: (item: Item) => Promise<void>;
@@ -24,6 +30,7 @@ const messageOf = (cause: unknown): string =>
  */
 export function useInventory(gameId: string | undefined): UseInventoryResult {
   const [items, setItems] = useState<Item[] | null>(null);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   /** Numero de la ultima lectura pedida: una respuesta vieja no pisa a la nueva. */
   const requestId = useRef(0);
@@ -33,6 +40,7 @@ export function useInventory(gameId: string | undefined): UseInventoryResult {
 
     if (!gameId) {
       setItems([]);
+      setLoadedFor(null);
       setError(null);
       return;
     }
@@ -41,6 +49,7 @@ export function useInventory(gameId: string | undefined): UseInventoryResult {
       const list = await getInventoryRepository().getAll(gameId);
       if (mine !== requestId.current) return;
       setItems(list);
+      setLoadedFor(gameId);
       setError(null);
     } catch (cause) {
       if (mine !== requestId.current) return;
@@ -50,6 +59,7 @@ export function useInventory(gameId: string | undefined): UseInventoryResult {
 
   useEffect(() => {
     setItems(null);
+    setLoadedFor(null);
     setError(null);
     void reload();
 
@@ -75,5 +85,5 @@ export function useInventory(gameId: string | undefined): UseInventoryResult {
     await reload();
   };
 
-  return { items, error, reload, add, update, remove };
+  return { items, loadedFor, error, reload, add, update, remove };
 }
