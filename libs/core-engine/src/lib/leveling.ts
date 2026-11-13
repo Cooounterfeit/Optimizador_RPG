@@ -169,8 +169,13 @@ export function checkLeveling(t: Pick<GameTemplate, 'leveling' | 'baseProfiles'>
       continue
     }
     if (nv < l.min || nv > l.max) errors.push(`El perfil "${p.name}" está en el nivel ${nv}, fuera de ${l.min}–${l.max}.`)
-    for (const k of Object.keys(growth)) {
-      if (typeof p.base[k] !== 'number') warnings.push(`El perfil "${p.name}" no tiene "${k}": no crecerá con el nivel.`)
+  }
+  // Un juego con personajes distintos tiene claves que solo algunos traen (p. ej.
+  // cada personaje asciende en una estadistica distinta). Solo es sospechoso que
+  // ninguna la tenga: ahi la curva no hace nada.
+  for (const k of Object.keys(growth)) {
+    if (t.baseProfiles.every((p) => typeof p.base[k] !== 'number')) {
+      warnings.push(`Ningún perfil tiene "${k}": esa curva no se usará.`)
     }
   }
   if (Object.prototype.hasOwnProperty.call(growth, key)) errors.push(`"${key}" es el nivel: no puede tener curva propia.`)
