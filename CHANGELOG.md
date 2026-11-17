@@ -22,7 +22,7 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   resultado con progreso visible.
 - Historial de niveles y panel de comparación de builds.
 - Selección de habilidades integrada al cálculo de estadísticas.
-- Vitest sobre el repositorio definitivo: 514 pruebas verdes.
+- Vitest sobre el repositorio definitivo: 520 pruebas verdes.
 
 ## [F6] — Inventario y catálogo
 

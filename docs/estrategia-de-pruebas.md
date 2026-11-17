@@ -13,9 +13,9 @@ porque ahí vive la lógica que puede estar mal de forma silenciosa.
 | `libs/inventory` | 5 | 29 | Parseo y reglas de inventario |
 | `libs/shared-types` | 2 | 11 | Contrato Zod |
 | `supabase` | 1 | 68 | Esquema y RLS con PGlite |
-| `apps/web` | 37 | 192 | Componentes, hooks, flujos |
+| `apps/web` | 38 | 198 | Componentes, hooks, flujos |
 | `apps/web-e2e` | 7 | — | Recorridos en navegador real |
-| **Total unitarias** | **63** | **514** | |
+| **Total unitarias** | **64** | **520** | |
 
 Ejecución: `npx nx run-many -t test`. Solo lo afectado: `npx nx affected -t test`.
 
@@ -71,7 +71,7 @@ Ningún cambio entra a `main` sin pasar:
 
 1. `lint` — sin errores.
 2. `typecheck` — sin errores de tipos.
-3. `test` — 514 verdes.
+3. `test` — 520 verdes.
 4. `build` — el bundle de producción se genera.
 5. `npm audit --omit=dev --audit-level=high` — sin vulnerabilidades altas en dependencias
    de producción.

@@ -119,7 +119,7 @@ El target `build` de `apps/web` es **solo `vite build`**: no incluye `typecheck`
 los errores de tipos y emite el bundle igual. Un tipo mal escrito **no rompe el build de
 Vercel**; rompe en el navegador del usuario.
 
-Por eso `main` exige CI verde, que además de `build` corre `lint`, `typecheck` y 514 pruebas.
+Por eso `main` exige CI verde, que además de `build` corre `lint`, `typecheck` y 520 pruebas.
 
 ## Cabeceras y SPA
 
