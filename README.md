@@ -164,3 +164,7 @@ arranca con fixtures locales y no toca la red.
 
 **Secretos de CI:** `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` (Settings →
 Secrets → Actions).
+
+> **Estado del despliegue (sin verificar al 17-nov):** el workflow está escrito pero no
+> hay evidencia de que estos secretos existan. La URL `optimizadorrpg.vercel.app` sirve
+> hoy el prototipo archivado, no el build de `apps/web`. Ver `docs/entornos.md`.

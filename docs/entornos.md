@@ -11,7 +11,13 @@ y obliga a construir una vez por entorno.
 | Local | cualquiera | opcional | IndexedDB + fixtures | `http://localhost:4200` |
 | Local con Docker | cualquiera | opcional (en build) | IndexedDB + fixtures | `http://localhost:8080` |
 | Preview (PR) | rama del PR | proyecto real o mocks | según variables | URL del proveedor |
-| Producción | `main` | proyecto real | datos reales | `optimizadorrpg.vercel.app` |
+| Producción | `main` | proyecto real | datos reales | por confirmar — ver nota |
+
+> **Pendiente de verificación (17-nov):** `optimizadorrpg.vercel.app` sirve hoy el
+> prototipo archivado (`<title>Zenith Optimizer — Demo</title>`, bundle
+> `index-B4ufQ3xq.js`), no el build de `apps/web`. El despliegue de producción está
+> conectado a una configuración anterior. Hasta corregirlo, esa URL **no** es la versión
+> final y no debe citarse como evidencia de despliegue.
 
 ## Variables
 
