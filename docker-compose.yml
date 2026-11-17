@@ -1,0 +1,17 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Vite hornea estas variables en el bundle: son de build, no de runtime.
+        # La anon key de Supabase es publica por diseno (va en el cliente y la
+        # protege RLS); nunca poner aqui la service_role key.
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+        VITE_USE_MOCKS: ${VITE_USE_MOCKS:-}
+    image: zenith-optimizer-web:local
+    container_name: zenith-web
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    restart: unless-stopped
