@@ -1,0 +1,49 @@
+node_modules
+**/node_modules
+
+dist
+**/dist
+.nx
+.nx/cache
+.nx/workspace-data
+
+test-output
+**/test-output
+coverage
+
+.env
+.env.*
+!.env.example
+
+.git
+.github
+.vscode
+
+# Material academico y prototipo: no forman parte del build.
+demo
+Fase 1
+Fase 2
+Documentacion de la universidad
+*.pdf
+*.docx
+*.pptx
+
+**/*.spec.ts
+**/*.spec.tsx
+**/*.test.ts
+**/*.test.tsx
+
+# El manifiesto de e2e hace falta para que npm ci resuelva el workspace,
+# pero sus specs y configuracion de Playwright no entran al build.
+apps/web-e2e/src
+apps/web-e2e/fixtures
+apps/web-e2e/playwright.config.mts
+apps/web-e2e/tsconfig.json
+apps/web-e2e/eslint.config.mjs
+playwright-report
+test-results
+
+Dockerfile
+docker-compose*.yml
+.dockerignore
+README.md

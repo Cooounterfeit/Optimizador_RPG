@@ -5,6 +5,15 @@ Prototipo funcional del motor de optimización, escrito como demostración.
 **Estado: referencia.** Se conserva para la presentación y como especificación viva de lo que
 debe hacer `apps/web`. **No se migra código de aquí al monorepo sin un review humano previo.**
 
+> **Esta carpeta no se despliega.** El proyecto de Vercel sirve `apps/web` (build
+> `npx nx build web`, salida `apps/web/dist`). Que la URL de producción haya servido este
+> prototipo fue una configuración heredada, corregida en noviembre de 2026. Si un deploy
+> muestra el título «Zenith Optimizer — Demo», está sirviendo esto por error.
+
+> **Sobre `demo/.env.production`:** contiene la `anon key` del proyecto de Supabase de
+> producción. Es pública por diseño —viaja al navegador en cualquier build— y lo que protege
+> los datos son las políticas RLS. No es un secreto filtrado.
+
 Para correrlo por separado, dentro de esta carpeta: `npm ci && npm run dev` (http://localhost:5173).
 `npm test` corre las pruebas del motor, niveles, sincronización y reglas de Supabase.
 

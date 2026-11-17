@@ -26,8 +26,10 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    /* El trace se guarda al reintentar; el resto de la evidencia, solo si falla. */
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
   /* Run your local dev server before starting the tests.
    * Se vacian las variables de Supabase para que el e2e corra siempre con
