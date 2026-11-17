@@ -151,20 +151,17 @@ El artefacto es un sitio estático: `apps/web/dist` tras `nx build web`. Se pued
 desde cualquier CDN. Como es una SPA, el servidor debe devolver `index.html` en las rutas
 que no correspondan a un archivo (ver `docker/nginx.conf` para el ejemplo con nginx).
 
-Dos caminos equivalentes:
+Dos caminos:
 
 | Vía | Comando | Cuándo |
 |---|---|---|
 | Docker | `docker compose up --build` | Verificar el build de producción en local |
-| CI/CD | push a `main` | Despliegue real |
+| Vercel | push a `main` (producción) o abrir un PR (preview) | Despliegue real |
 
 **Variables de build:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_USE_MOCKS`.
 Vite las fija en el bundle, así que cada entorno necesita su propio build. Sin ellas la app
 arranca con fixtures locales y no toca la red.
 
-**Secretos de CI:** `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` (Settings →
-Secrets → Actions).
-
-> **Estado del despliegue (sin verificar al 17-nov):** el workflow está escrito pero no
-> hay evidencia de que estos secretos existan. La URL `optimizadorrpg.vercel.app` sirve
-> hoy el prototipo archivado, no el build de `apps/web`. Ver `docs/entornos.md`.
+**Consola de Vercel** (no secrets de GitHub): production → `main`, preview → cada PR. El
+detalle de los tres ambientes, los ajustes del proyecto y el reparto de proyectos de Supabase
+está en [`docs/entornos.md`](./docs/entornos.md).
