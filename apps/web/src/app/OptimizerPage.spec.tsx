@@ -432,8 +432,10 @@ describe('OptimizerPage con juego real', () => {
     useTemplate();
 
     renderPage();
-    await runAndFinish();
+    await waitFor(() => expect(optimizeDisabled()).toBe(false));
+    fireEvent.click(optimizeButton());
     expect(sentOf('solve').deadlineMs).toBeUndefined();
+    act(() => lastWorker().emit({ type: 'done', result: emptyResult }));
 
     const timeLimit = () => screen.getByLabelText(gameCopy.cockpit.timeLimit);
     fireEvent.change(timeLimit(), { target: { value: '15' } });
