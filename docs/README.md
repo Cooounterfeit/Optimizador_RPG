@@ -9,6 +9,7 @@ está el detalle que no cabe allí.
 |---|---|
 | [`arquitectura.md`](./arquitectura.md) | Cómo está construido y por qué el cálculo va al cliente |
 | [`entornos.md`](./entornos.md) | Variables, ambientes y qué es público vs. secreto |
+| [`configurar-despliegue.md`](./configurar-despliegue.md) | Paso a paso de Vercel y Supabase (dashboard) |
 | [`estrategia-de-pruebas.md`](./estrategia-de-pruebas.md) | Qué se prueba, con qué y qué falta |
 | [`definition-of-ready-done.md`](./definition-of-ready-done.md) | Cuándo una historia empieza y cuándo termina |
 | [`ritmo-de-trabajo.md`](./ritmo-de-trabajo.md) | Cómo trabajó el equipo y cómo leer el historial de Git |
