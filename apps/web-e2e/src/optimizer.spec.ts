@@ -1,17 +1,20 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { railLink, section } from './nav';
+
 const addItem = async (page: Page, name: string, slot: string) => {
   await page.getByRole('button', { name: 'Add item' }).click();
   await page.getByLabel('Name', { exact: true }).fill(name);
   await page.getByLabel('Slot', { exact: true }).selectOption(slot);
   await page.getByRole('button', { name: 'Save item' }).click();
-  await expect(page.getByText(name)).toBeVisible();
+  // La seccion Optimize sigue montada y tambien lista los primeros objetos.
+  await expect(section(page, 'inventory').getByText(name)).toBeVisible();
 };
 
 test('calcula la mejor build con el inventario del juego sintético', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Open Astral Forge optimizer' }).click();
-  await page.getByRole('link', { name: 'Open inventory' }).click();
+  await railLink(page, 'Inventory').click();
 
   await addItem(page, 'Demo Blade', 'weapon');
   await addItem(page, 'Demo Flower', 'flower');
@@ -26,7 +29,7 @@ test('calcula la mejor build con el inventario del juego sintético', async ({ p
   await addItem(page, 'Demo Goblet B', 'goblet');
   await addItem(page, 'Demo Circlet B', 'circlet');
 
-  await page.getByRole('link', { name: 'Back to optimizer' }).click();
+  await railLink(page, 'Optimize').click();
   await expect(page.getByRole('heading', { name: 'Astral Forge', level: 1 })).toBeVisible();
 
   await expect(page.getByText('Current stats')).toBeVisible();
@@ -123,50 +126,53 @@ test('hoja de personaje: viste una ranura, avisa el requisito y sigue puesta al 
   await page.getByLabel('Character level').selectOption('2');
   await expect(page.getByText('Level 2 saved.')).toBeVisible();
 
-  await page.getByRole('link', { name: 'Open character sheet' }).click();
+  await railLink(page, 'Character').click();
 
-  await expect(page.getByRole('heading', { name: 'Nova', level: 1 })).toBeVisible();
-  await expect(page.getByText('Astral Forge · Level 2')).toBeVisible();
-  await expect(page.getByRole('tab', { name: 'Equipment & stats' })).toBeVisible();
+  // La seccion Optimize sigue montada (oculta): todo lo de abajo se busca en la hoja.
+  const sheet = section(page, 'character');
 
-  await page.getByRole('button', { name: 'Weapon: Empty' }).click();
-  await page.getByRole('button', { name: /Astral Edge/ }).click();
-  await expect(page.getByRole('button', { name: 'Weapon: Astral Edge' })).toBeVisible();
+  await expect(sheet.getByRole('heading', { name: 'Nova', level: 1 })).toBeVisible();
+  await expect(sheet.getByText('Astral Forge · Level 2')).toBeVisible();
+  await expect(sheet.getByRole('tab', { name: 'Equipment & stats' })).toBeVisible();
+
+  await sheet.getByRole('button', { name: 'Weapon: Empty' }).click();
+  await sheet.getByRole('button', { name: /Astral Edge/ }).click();
+  await expect(sheet.getByRole('button', { name: 'Weapon: Astral Edge' })).toBeVisible();
 
   // La copa exige mas daño critico del que tiene el personaje al nivel 1.
-  await page.getByRole('button', { name: 'Goblet: Empty' }).click();
-  await page.getByRole('button', { name: /Void Goblet/ }).click();
-  await expect(page.getByText('Void Goblet requires 60 CRIT DMG')).toBeVisible();
+  await sheet.getByRole('button', { name: 'Goblet: Empty' }).click();
+  await sheet.getByRole('button', { name: /Void Goblet/ }).click();
+  await expect(sheet.getByText('Void Goblet requires 60 CRIT DMG')).toBeVisible();
 
   // El motor evalua el equipo puesto: el objetivo aparece con su puntaje.
-  await expect(page.getByText('Calculating…')).toBeHidden({ timeout: 20_000 });
-  await expect(page.getByText('Damage', { exact: true }).first()).toBeVisible();
+  await expect(sheet.getByText('Calculating…')).toBeHidden({ timeout: 20_000 });
+  await expect(sheet.getByText('Damage', { exact: true }).first()).toBeVisible();
 
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Weapon: Astral Edge' })).toBeVisible();
+  await expect(sheet.getByRole('button', { name: 'Weapon: Astral Edge' })).toBeVisible();
 
-  await page.getByRole('tab', { name: 'Level & history' }).click();
-  await expect(page.getByText('Level history')).toBeVisible();
+  await sheet.getByRole('tab', { name: 'Level & history' }).click();
+  await expect(sheet.getByText('Level history')).toBeVisible();
 
   // El nivel se fija libremente y la base se deriva: sube y baja sin pasar por el historial.
-  await page.getByLabel('Set level').selectOption('20');
-  await expect(page.getByText('Level 20 saved.')).toBeVisible();
-  await page.getByRole('tab', { name: 'Equipment & stats' }).click();
-  await expect(page.getByText('Astral Forge · Level 20')).toBeVisible();
+  await sheet.getByLabel('Set level').selectOption('20');
+  await expect(sheet.getByText('Level 20 saved.')).toBeVisible();
+  await sheet.getByRole('tab', { name: 'Equipment & stats' }).click();
+  await expect(sheet.getByText('Astral Forge · Level 20')).toBeVisible();
 
-  await page.getByRole('tab', { name: 'Level & history' }).click();
-  await page.getByLabel('Set level').selectOption('5');
-  await expect(page.getByText('Level 5 saved.')).toBeVisible();
-  await page.getByRole('tab', { name: 'Equipment & stats' }).click();
-  await expect(page.getByText('Astral Forge · Level 5')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Weapon: Astral Edge' })).toBeVisible();
+  await sheet.getByRole('tab', { name: 'Level & history' }).click();
+  await sheet.getByLabel('Set level').selectOption('5');
+  await expect(sheet.getByText('Level 5 saved.')).toBeVisible();
+  await sheet.getByRole('tab', { name: 'Equipment & stats' }).click();
+  await expect(sheet.getByText('Astral Forge · Level 5')).toBeVisible();
+  await expect(sheet.getByRole('button', { name: 'Weapon: Astral Edge' })).toBeVisible();
 
   // La misma rejilla cambia de personaje en la hoja y el equipo es por personaje.
-  await page.getByRole('button', { name: 'Change character' }).click();
+  await sheet.getByRole('button', { name: 'Change character' }).click();
   await page.getByRole('dialog').getByRole('button', { name: /^Orion/ }).click();
-  await expect(page.getByRole('heading', { name: 'Orion', level: 1 })).toBeVisible();
-  await expect(page.getByText('Astral Forge · Level 1')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Weapon: Empty' })).toBeVisible();
+  await expect(sheet.getByRole('heading', { name: 'Orion', level: 1 })).toBeVisible();
+  await expect(sheet.getByText('Astral Forge · Level 1')).toBeVisible();
+  await expect(sheet.getByRole('button', { name: 'Weapon: Empty' })).toBeVisible();
 });
 
 test('con el inventario vacío no deja optimizar', async ({ page }) => {
@@ -174,4 +180,34 @@ test('con el inventario vacío no deja optimizar', async ({ page }) => {
 
   await expect(page.getByText(/Your inventory is empty/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Optimize build' })).toBeDisabled();
+});
+
+test('cambiar de sección no recarga la página ni pierde el resultado', async ({ page }) => {
+  await page.goto('/optimizer/gacha-demo');
+  await page.getByRole('button', { name: 'Load sample items' }).click();
+  await page.getByRole('button', { name: 'Optimize build' }).click();
+  await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
+
+  await railLink(page, 'Inventory').click();
+  await expect(page.getByRole('tab', { name: /Items/ })).toBeVisible();
+
+  await railLink(page, 'Optimize').click();
+
+  // Ni spinner de carga ni podio perdido: la sección siguió montada.
+  await expect(page.getByText('Loading optimizer…')).toHaveCount(0);
+  await expect(page.getByText('Best builds')).toBeVisible();
+});
+
+test('ir a otra sección no cancela una optimización en curso', async ({ page }) => {
+  await page.goto('/optimizer/gacha-demo');
+  await page.getByRole('button', { name: 'Load sample items' }).click();
+  await page.getByRole('button', { name: 'Optimize build' }).click();
+
+  await railLink(page, 'Inventory').click();
+  await expect(page.getByRole('tab', { name: /Items/ })).toBeVisible();
+
+  await railLink(page, 'Optimize').click();
+
+  await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText(/Search cancelled before it produced a result/)).toHaveCount(0);
 });

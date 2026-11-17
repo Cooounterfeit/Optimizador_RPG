@@ -1,33 +1,13 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../catalog/components/EmptyState';
-import { useGame } from '../game/useGame';
+import { useOptimizerWorkspace } from '../optimizer/workspace/OptimizerWorkspaceProvider';
 import { skillCopy } from './copy';
 import { SkillTreePanel } from './SkillTreePanel';
-import { useSkillSelection } from './useSkillSelection';
 
 export function SkillTreePage() {
-  const { id = '' } = useParams();
-  const { state, retry } = useGame(id);
-  const template = state.status === 'ready' ? state.template : undefined;
-  const { selection, save, error } = useSkillSelection(template);
-
-  if (state.status === 'loading') {
-    return <p className="px-6 py-24 text-center text-sm text-muted-foreground">{skillCopy.loading}</p>;
-  }
-
-  if (state.status === 'error') {
-    return (
-      <div className="mx-auto max-w-[720px] px-6 py-24">
-        <EmptyState title={skillCopy.missingTitle} body={state.message}>
-          <Button variant="outline" onClick={retry}>
-            Try again
-          </Button>
-        </EmptyState>
-      </div>
-    );
-  }
+  const { id, template, skills } = useOptimizerWorkspace();
+  const { selection, save, error } = skills;
 
   if (!template || !template.skillTrees?.length) {
     return (
@@ -46,14 +26,7 @@ export function SkillTreePage() {
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 py-10 max-[860px]:px-4">
-      <Link
-        to={`/optimizer/${id}`}
-        className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        ← {skillCopy.backToOptimizer}
-      </Link>
-
-      <header className="mt-4 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
+      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
         <div className="min-w-0">
           <p className="label-caps mb-1">{skillCopy.eyebrow}</p>
           <h1 className="m-0 text-2xl font-extrabold tracking-[-0.03em]">{skillCopy.title}</h1>

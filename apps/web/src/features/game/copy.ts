@@ -8,10 +8,6 @@ export const gameCopy = {
   retry: 'Try again',
   backToAll: 'All optimizers',
   backToOptimizer: 'Back to optimizer',
-  openInventory: 'Open inventory',
-  openSheet: 'Open character sheet',
-  openDamageCalculator: 'Open damage calculator',
-  openSkillTree: 'Open skill tree',
   viewAllItems: 'View all items',
   browseCatalog: 'Browse catalog',
   counts: {

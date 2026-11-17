@@ -1,21 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { currentLevel } from '@zenith/core-engine';
 import type { BuildResult, Constraint, Equipment, Item, SolveRequest } from '@zenith/shared-types';
 
-import { Button, buttonVariants } from '../components/ui/Button';
+import { Button } from '../components/ui/Button';
 import { cn } from '../lib/cn';
-import { EmptyState } from '../features/catalog/components/EmptyState';
 import { CoverArt } from '../features/catalog/components/CoverArt';
-import { getCatalogRepository } from '../features/catalog/catalog-repository';
-import type { CatalogOptimizer } from '../features/catalog/types';
 import { CharacterPickerDialog } from '../features/game/CharacterPicker';
 import { gameCopy } from '../features/game/copy';
 import { useEquipment } from '../features/game/useEquipment';
-import { useGame } from '../features/game/useGame';
 import { useProfileBase } from '../features/game/useProfileBase';
-import { useInventory } from '../features/inventory/useInventory';
 import { ItemGlyph } from '../features/inventory/ItemGlyph';
 import { inventoryCopy } from '../features/inventory/copy';
 import { getInventoryRepository } from '../features/game/repositories';
@@ -26,29 +21,23 @@ import { OptimizerResult } from '../features/optimizer/OptimizerResult';
 import { buildSolveRequest } from '../features/optimizer/request';
 import { StatsPanel } from '../features/optimizer/StatsPanel';
 import { useOptimizer } from '../features/optimizer/useOptimizer';
-import { useSkillSelection } from '../features/skills/useSkillSelection';
+import { useOptimizerWorkspace } from '../features/optimizer/workspace/OptimizerWorkspaceProvider';
 import { itemIconUrls, characterIconUrls, characterRarityOf } from '../lib/images';
 
 /** Lista vacia estable: `inventory.items ?? []` crearia un array nuevo en cada render. */
 const NO_ITEMS: Item[] = [];
 
 export function OptimizerPage() {
-  const { id = '' } = useParams();
-  const { state, retry } = useGame(id);
-  const template = state.status === 'ready' ? state.template : undefined;
-  const sampleItems = state.status === 'ready' ? state.sampleItems : [];
-
-  const inventory = useInventory(template?.gameId);
+  const { id, template, sampleItems, inventory, skills } = useOptimizerWorkspace();
   const inventoryForGame =
     template && inventory.loadedFor === template.gameId ? inventory.items : null;
-  const { selection: skillSelection } = useSkillSelection(template);
+  const { selection: skillSelection } = skills;
   const [loadingSamples, setLoadingSamples] = useState(false);
   const [profileId, setProfileId] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
   const [objectiveId, setObjectiveId] = useState('');
   const [constraints, setConstraints] = useState<Constraint[]>([]);
   const [deadlineSeconds, setDeadlineSeconds] = useState('0');
-  const [demoCard, setDemoCard] = useState<CatalogOptimizer | null>(null);
   const {
     phase,
     progress,
@@ -149,74 +138,6 @@ export function OptimizerPage() {
     evaluate(request, equipment);
   }, [equipment, equipmentReady, buildRequest, evaluate]);
 
-  /**
-   * El catalogo mock trae tarjetas de diseno que no tienen plantilla. En vez de
-   * un error seco, se muestra la ficha de la tarjeta con un aviso.
-   */
-  useEffect(() => {
-    if (state.status !== 'error') {
-      setDemoCard(null);
-      return;
-    }
-
-    let alive = true;
-    getCatalogRepository()
-      .list()
-      .then((list) => {
-        if (alive) setDemoCard(list.find((optimizer) => optimizer.id === id) ?? null);
-      })
-      .catch(() => {
-        if (alive) setDemoCard(null);
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, [state.status, id]);
-
-  if (state.status === 'loading') {
-    return <p className="px-6 py-24 text-center text-sm text-muted-foreground">{gameCopy.loading}</p>;
-  }
-
-  if (state.status === 'error') {
-    if (demoCard) {
-      return (
-        <div className="mx-auto max-w-[1280px] px-6 py-10 max-[860px]:px-4">
-          <Link to="/" className="text-xs text-muted-foreground hover:text-foreground">
-            ← {gameCopy.backToAll}
-          </Link>
-
-          <header className="mt-4 grid gap-6 border-b border-line pb-6 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
-            <CoverArt name={demoCard.gameName} className="rounded-[4px] border border-line" />
-            <div className="flex min-w-0 flex-col justify-between">
-              <div>
-                <p className="label-caps mb-1">{gameCopy.demoEyebrow}</p>
-                <h1 className="m-0 text-2xl font-extrabold tracking-[-0.03em]">{demoCard.name}</h1>
-                <p className="mt-2 max-w-[70ch] text-sm text-muted-foreground">
-                  {demoCard.gameName} · {demoCard.description}
-                </p>
-              </div>
-            </div>
-          </header>
-
-          <p className="mt-6 rounded-[4px] border border-dashed border-line-strong px-4 py-3 text-[13px] text-muted-foreground">
-            {gameCopy.demoNote}
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="mx-auto max-w-[720px] px-6 py-24">
-        <EmptyState title={gameCopy.errorTitle} body={state.message}>
-          <Button variant="outline" onClick={retry}>
-            {gameCopy.retry}
-          </Button>
-        </EmptyState>
-      </div>
-    );
-  }
-
   if (!template) return null;
 
   const profile = templateProfile ? { ...templateProfile, base: profileBase } : undefined;
@@ -287,11 +208,7 @@ export function OptimizerPage() {
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 pb-20 pt-6 max-[860px]:px-4">
-      <Link to="/" className="text-xs text-muted-foreground hover:text-foreground">
-        ← {gameCopy.backToAll}
-      </Link>
-
-      <header className="mt-4 grid gap-6 border-b border-line pb-6 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
+      <header className="grid gap-6 border-b border-line pb-6 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
         <CoverArt name={template.name} cover={template.cover} className="rounded-[4px] border border-line">
           <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1.5 rounded-[1px] bg-foreground px-2 py-1 font-mono text-[8.5px] font-semibold uppercase tracking-[0.13em] text-primary-foreground">
             <span className="h-1 w-1 bg-current" aria-hidden="true" />
@@ -474,31 +391,6 @@ export function OptimizerPage() {
             ) : null}
 
             <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-4">
-              <Link to={`/optimizer/${id}/personaje`} className={buttonVariants()}>
-                {gameCopy.openSheet}
-              </Link>
-              <Link to={`/optimizer/${id}/inventario`} className={buttonVariants({ variant: 'outline' })}>
-                {gameCopy.openInventory}
-              </Link>
-              {template.damageCalculator ? (
-                <Link
-                  to={`/optimizer/${id}/dano`}
-                  className={buttonVariants({ variant: 'outline' })}
-                >
-                  {gameCopy.openDamageCalculator}
-                </Link>
-              ) : null}
-              {template.skillTrees?.length ? (
-                <Link
-                  to={`/optimizer/${id}/habilidades`}
-                  className={buttonVariants({ variant: 'outline' })}
-                >
-                  {gameCopy.openSkillTree}
-                  {Object.keys(skillSelection).length > 0
-                    ? ` (${Object.keys(skillSelection).length})`
-                    : ''}
-                </Link>
-              ) : null}
               {phase === 'running' ? (
                 <Button variant="outline" onClick={cancel}>
                   {gameCopy.cockpit.stop}

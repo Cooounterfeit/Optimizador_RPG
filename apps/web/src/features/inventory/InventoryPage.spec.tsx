@@ -1,5 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { inventoryRepository, type GameRepository, type InventoryRepository } from '@zenith/data-access';
@@ -10,7 +9,7 @@ import {
   defaultOptimizerRepository,
   setOptimizerRepository,
 } from '../optimizer/optimizer-repository';
-import { InventoryPage } from './InventoryPage';
+import { renderWorkspace } from '../optimizer/workspace/testing';
 
 const template: GameTemplate = {
   schemaVersion: '0.1',
@@ -107,14 +106,7 @@ const memoryInventory = (seed: Item[] = []) => {
 
 const OPTIMIZER_ID = 'a8af21aa-cfef-4975-87f8-d1f43d411a70';
 
-const renderPage = () =>
-  render(
-    <MemoryRouter initialEntries={[`/optimizer/${OPTIMIZER_ID}/inventario`]}>
-      <Routes>
-        <Route path="optimizer/:id/inventario" element={<InventoryPage />} />
-      </Routes>
-    </MemoryRouter>,
-  );
+const renderPage = () => renderWorkspace(`/optimizer/${OPTIMIZER_ID}/inventario`);
 
 const setup = (seed: Item[] = []) => {
   const inventory = memoryInventory(seed);

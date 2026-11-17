@@ -1,8 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { EquipmentRepository, InventoryRepository } from '@zenith/data-access';
@@ -18,7 +17,7 @@ import {
 } from '../game/repositories';
 import { setOptimizerRepository } from '../optimizer/optimizer-repository';
 import type { WorkerIn, WorkerOut } from '../optimizer/optimizer.worker';
-import { CharacterSheetPage } from './CharacterSheetPage';
+import { renderWorkspace } from '../optimizer/workspace/testing';
 import { sheetCopy } from './copy';
 
 class FakeWorker {
@@ -129,14 +128,7 @@ const useTemplate = (
   setEquipmentRepository(equipmentRepo(equipment));
 };
 
-const renderPage = () =>
-  render(
-    <MemoryRouter initialEntries={[`/optimizer/${GAME_ID}/personaje`]}>
-      <Routes>
-        <Route path="optimizer/:id/personaje" element={<CharacterSheetPage />} />
-      </Routes>
-    </MemoryRouter>,
-  );
+const renderPage = () => renderWorkspace(`/optimizer/${GAME_ID}/personaje`);
 
 const evaluation = (overrides: Partial<Record<string, number>> = {}) => ({
   finalStats: { atk: 1, ...overrides },
@@ -206,9 +198,11 @@ describe('CharacterSheetPage', () => {
     useTemplate();
 
     renderPage();
-    await screen.findByRole('button', { name: `Weapon: ${sheetCopy.emptySlot}` });
+    const slot = await screen.findByRole('button', { name: `Weapon: ${sheetCopy.emptySlot}` });
+    // Las ranuras quedan deshabilitadas hasta que el equipo guardado termina de leerse.
+    await waitFor(() => expect(slot).toHaveProperty('disabled', false));
 
-    fireEvent.click(screen.getByRole('button', { name: `Weapon: ${sheetCopy.emptySlot}` }));
+    fireEvent.click(slot);
     expect(screen.getByText(sheetCopy.picker.title('Weapon'))).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: /Astral Edge/ }));
