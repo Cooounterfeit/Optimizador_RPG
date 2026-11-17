@@ -3,7 +3,7 @@ import type { SVGProps } from 'react';
 /**
  * Set de iconos del proyecto: SVG inline, 20x20, trazo 1,5 y color heredado.
  *
- * No hay libreria de iconos y no se agrega una: estos seis trazos cubren la
+ * No hay libreria de iconos y no se agrega una: estos siete trazos cubren la
  * navegacion del workspace. Nada aqui nombra un juego, un elemento ni una
  * ranura; la guardia `check-genres` recorre este archivo.
  */
@@ -20,6 +20,17 @@ const shape = {
   focusable: 'false',
   'aria-hidden': true,
 } as const;
+
+/** Overview: ficha del juego, portada y renglones. */
+export function IconOverview({ className }: IconProps) {
+  return (
+    <svg {...shape} className={className}>
+      <rect x="3" y="2.5" width="14" height="15" />
+      <rect x="5.5" y="5" width="4" height="4" fill="currentColor" stroke="none" />
+      <path d="M11.5 5.5h3M11.5 8h3M5.5 12h9M5.5 14.5h6" />
+    </svg>
+  );
+}
 
 /** Ajustes: tres controles deslizantes. Configurar la corrida. */
 export function IconOptimize({ className }: IconProps) {

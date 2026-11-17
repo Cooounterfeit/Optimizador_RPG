@@ -231,9 +231,9 @@ const useTemplate = (
   setEquipmentRepository(equipmentRepo());
 };
 
-const page = (id: string = GAME_ID) => workspaceElement(`/optimizer/${id}`);
+const page = (id: string = GAME_ID) => workspaceElement(`/optimizer/${id}/optimize`);
 
-const renderPage = (id: string = GAME_ID) => renderWorkspace(`/optimizer/${id}`);
+const renderPage = (id: string = GAME_ID) => renderWorkspace(`/optimizer/${id}/optimize`);
 
 const optimizeButton = () => screen.getByRole('button', { name: gameCopy.cockpit.optimize });
 const optimizeDisabled = (): boolean => (optimizeButton() as HTMLButtonElement).disabled;
