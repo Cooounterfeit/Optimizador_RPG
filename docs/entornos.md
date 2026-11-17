@@ -106,12 +106,29 @@ viene de la protección de rama: `main` solo acepta merges con los jobs de CI en
 
 | Ajuste | Valor |
 |---|---|
-| Root Directory | *(vacío — raíz del repo)* |
+| Root Directory | `./` (la raíz del repo) |
 | Framework Preset | Other |
 | Build Command | `npx nx build web` |
 | Output Directory | `apps/web/dist` |
 | Install Command | `npm ci` |
 | Node | 22 |
+
+Root Directory **no** se apunta a `apps/web`: NX resuelve `libs/` desde la raíz del workspace
+y el build falla buscando `@zenith/core-engine`.
+
+### Estado verificado (17-nov-2026)
+
+| Comprobación | Resultado |
+|---|---|
+| Log del build | `nx run @zenith/web:build` — ya no ejecuta `demo` |
+| Título en producción | `Zenith Optimizer · Proven builds, not guesses` |
+| SPA fallback (`/optimizer`) | HTTP 200 con el HTML de la app |
+| Cache de `/assets/*` | `public, max-age=31536000, immutable` |
+| CSP | presente como `<meta>` en el HTML |
+| `nosniff` / `X-Frame-Options` / `Referrer-Policy` | presentes |
+
+Antes de esta corrección, la URL de producción servía el prototipo archivado. La causa no
+estaba en el repositorio sino en la configuración del proyecto de Vercel.
 
 ### Por qué el CI importa más que el build
 

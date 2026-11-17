@@ -14,6 +14,24 @@ Quien cierra el sprint la mueve a la versión correspondiente.
 - Editor de nodos y compilador de grafo a funciones ejecutables (planificado).
 - Umbral de cobertura en `libs/` y pruebas de accesibilidad en e2e (planificado).
 
+
+### Fixed
+
+- **Producción servía el prototipo archivado.** El proyecto de Vercel estaba configurado para
+  construir `demo/`. Ahora construye `apps/web` (`npx nx build web` → `apps/web/dist`): la URL
+  de producción responde con la versión final. Verificado el título, el SPA fallback, el cache
+  de assets y las cabeceras de seguridad.
+- `zod` 4.6.5 → 4.6.7: agotamiento de memoria al validar colecciones sobredimensionadas
+  (CWE-770). Relevante porque se validan plantillas de juego enviadas por la comunidad.
+- `react-router-dom` 6.30.3 → 6.30.6: open redirect hacia XSS.
+
+### Changed
+
+- El despliegue usa la **integración de Git de Vercel** en vez de un workflow con la CLI. Sin
+  secrets de Vercel en GitHub Actions: los previews de PR son el ambiente de staging.
+- `nx.json` apuntaba a la rama `master`; ahora a `main`, que es la real.
+- `.nvmrc` pedía Node 26.7.0; ahora 22, que es lo que usan CI y Docker.
+
 ## [F7] — Simulación y optimizador
 
 ### Added
