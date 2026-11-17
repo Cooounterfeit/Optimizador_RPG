@@ -1,8 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type {
@@ -31,7 +30,7 @@ import {
   type OptimizerRecord,
 } from '../features/optimizer/optimizer-repository';
 import type { WorkerIn, WorkerOut } from '../features/optimizer/optimizer.worker';
-import { OptimizerPage } from './OptimizerPage';
+import { renderWorkspace, workspaceElement } from '../features/optimizer/workspace/testing';
 
 /**
  * El inventario se puede mockear por test para probar que un cambio despues de
@@ -219,15 +218,9 @@ const useTemplate = (
   setEquipmentRepository(equipmentRepo());
 };
 
-const page = (id: string = GAME_ID) => (
-  <MemoryRouter initialEntries={[`/optimizer/${id}`]}>
-    <Routes>
-      <Route path="optimizer/:id" element={<OptimizerPage />} />
-    </Routes>
-  </MemoryRouter>
-);
+const page = (id: string = GAME_ID) => workspaceElement(`/optimizer/${id}`);
 
-const renderPage = (id: string = GAME_ID) => render(page(id));
+const renderPage = (id: string = GAME_ID) => renderWorkspace(`/optimizer/${id}`);
 
 const optimizeButton = () => screen.getByRole('button', { name: gameCopy.cockpit.optimize });
 const optimizeDisabled = (): boolean => (optimizeButton() as HTMLButtonElement).disabled;
@@ -236,7 +229,7 @@ const runAndFinish = async (): Promise<void> => {
   await waitFor(() => expect(optimizeDisabled()).toBe(false));
   fireEvent.click(optimizeButton());
   act(() => lastWorker().emit({ type: 'done', result: emptyResult }));
-  expect(screen.getByText(gameCopy.cockpit.noFeasible)).toBeTruthy();
+  await waitFor(() => expect(screen.getByText(gameCopy.cockpit.noFeasible)).toBeTruthy());
 };
 
 afterEach(() => {
@@ -515,7 +508,7 @@ describe('OptimizerPage · build actual', () => {
     fireEvent.click(optimizeButton());
     act(() => lastWorker().emit({ type: 'done', result: solveWith(100) }));
 
-    fireEvent.click(screen.getByRole('button', { name: gameCopy.cockpit.equip }));
+    fireEvent.click(await screen.findByRole('button', { name: gameCopy.cockpit.equip }));
 
     await waitFor(() => expect(saved).toHaveLength(1));
     expect(saved[0]).toEqual(equippedWithSeed());

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { clampCalculatorValue, evaluateCalculator, type CalculatorValue } from '@zenith/core-engine';
 import type { DamageCalculator, DamageCalculatorField } from '@zenith/shared-types';
 
-import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../catalog/components/EmptyState';
-import { useGame } from '../game/useGame';
+import { useOptimizerWorkspace } from '../optimizer/workspace/OptimizerWorkspaceProvider';
 import { damageCopy } from './copy';
 
 const formatNumber = (value: number, decimals?: number): string =>
@@ -24,9 +23,8 @@ const initialValues = (calculator: DamageCalculator): Record<string, string> =>
   );
 
 export function DamageCalculatorPage() {
-  const { id = '' } = useParams();
-  const { state, retry } = useGame(id);
-  const calculator = state.status === 'ready' ? state.template.damageCalculator : undefined;
+  const { id, template } = useOptimizerWorkspace();
+  const calculator = template?.damageCalculator;
 
   const [values, setValues] = useState<Record<string, string>>({});
   const [result, setResult] = useState<CalculatorValue[] | null>(null);
@@ -40,22 +38,6 @@ export function DamageCalculatorPage() {
     setError(null);
     setWarning(null);
   }, [calculator]);
-
-  if (state.status === 'loading') {
-    return <p className="px-6 py-24 text-center text-sm text-muted-foreground">{damageCopy.loading}</p>;
-  }
-
-  if (state.status === 'error') {
-    return (
-      <div className="mx-auto max-w-[720px] px-6 py-24">
-        <EmptyState title={damageCopy.missingTitle} body={state.message}>
-          <Button variant="outline" onClick={retry}>
-            Try again
-          </Button>
-        </EmptyState>
-      </div>
-    );
-  }
 
   if (!calculator) {
     return (
@@ -115,14 +97,7 @@ export function DamageCalculatorPage() {
 
   return (
     <div className="mx-auto max-w-[960px] px-6 py-10 max-[860px]:px-4">
-      <Link
-        to={`/optimizer/${id}`}
-        className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        ← {damageCopy.backToOptimizer}
-      </Link>
-
-      <header className="mt-4 border-b border-line pb-6">
+      <header className="border-b border-line pb-6">
         <p className="label-caps mb-1">{damageCopy.eyebrow}</p>
         <h1 className="m-0 text-2xl font-extrabold tracking-[-0.03em]">{calculator.title}</h1>
         {calculator.description ? (

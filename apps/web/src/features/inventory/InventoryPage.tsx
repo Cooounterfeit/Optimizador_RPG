@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import { downloadJson, exportGame } from '@zenith/data-access';
 import type { GameTemplate, Item } from '@zenith/shared-types';
@@ -8,20 +8,18 @@ import { Button, buttonVariants } from '../../components/ui/Button';
 import { cn } from '../../lib/cn';
 import { characterIconUrls, characterRarityOf, itemIconUrls } from '../../lib/images';
 import { EmptyState } from '../catalog/components/EmptyState';
-import { gameCopy } from '../game/copy';
 import {
   getGameRepository,
   getImagesRepository,
   getInventoryRepository,
 } from '../game/repositories';
 import { profileStatsLine } from '../game/profileSummary';
-import { useGame } from '../game/useGame';
+import { useOptimizerWorkspace } from '../optimizer/workspace/OptimizerWorkspaceProvider';
 import { CatalogPanel } from './CatalogPanel';
 import { inventoryCopy } from './copy';
 import { ImportPanel } from './ImportPanel';
 import { ItemForm } from './ItemForm';
 import { ItemGlyph } from './ItemGlyph';
-import { useInventory } from './useInventory';
 
 type Tab = 'items' | 'catalog' | 'characters' | 'import';
 
@@ -53,12 +51,7 @@ const statsLine = (template: GameTemplate, item: Item): string => {
 };
 
 export function InventoryPage() {
-  const { id = '' } = useParams();
-  const game = useGame(id);
-  const template = game.state.status === 'ready' ? game.state.template : undefined;
-  const sampleItems = game.state.status === 'ready' ? game.state.sampleItems : [];
-
-  const inventory = useInventory(template?.gameId);
+  const { template, sampleItems, inventory } = useOptimizerWorkspace();
 
   const [searchParams] = useSearchParams();
   const requested = searchParams.get('tab');
@@ -98,22 +91,6 @@ export function InventoryPage() {
     if (!needle) return template.baseProfiles;
     return template.baseProfiles.filter((profile) => profile.name.toLowerCase().includes(needle));
   }, [template, charQuery]);
-
-  if (game.state.status === 'loading') {
-    return <p className="px-6 py-24 text-center text-sm text-muted-foreground">{gameCopy.loading}</p>;
-  }
-
-  if (game.state.status === 'error') {
-    return (
-      <div className="mx-auto max-w-[720px] px-6 py-24">
-        <EmptyState title={gameCopy.errorTitle} body={game.state.message}>
-          <Button variant="outline" onClick={game.retry}>
-            {gameCopy.retry}
-          </Button>
-        </EmptyState>
-      </div>
-    );
-  }
 
   if (!template) return null;
 
@@ -198,11 +175,7 @@ export function InventoryPage() {
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 pb-20 pt-6 max-[860px]:px-4">
-      <Link to={`/optimizer/${id}`} className="text-xs text-muted-foreground hover:text-foreground">
-        ← {gameCopy.backToOptimizer}
-      </Link>
-
-      <header className="mt-4 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
+      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
         <div className="min-w-0">
           <p className="label-caps mb-1">{inventoryCopy.eyebrow}</p>
           <h1 className="m-0 text-2xl font-extrabold tracking-[-0.03em]">{template.name}</h1>

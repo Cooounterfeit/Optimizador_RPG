@@ -1,21 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { currentLevel } from '@zenith/core-engine';
 import type { Equipment, Item } from '@zenith/shared-types';
 
-import { Button, buttonVariants } from '../../components/ui/Button';
+import { buttonVariants } from '../../components/ui/Button';
 import { cn } from '../../lib/cn';
 import { EmptyState } from '../catalog/components/EmptyState';
 import { CharacterPickerDialog } from '../game/CharacterPicker';
 import { useEquipment } from '../game/useEquipment';
-import { useGame } from '../game/useGame';
 import { useProfileBase } from '../game/useProfileBase';
-import { useInventory } from '../inventory/useInventory';
 import { LevelHistoryPanel } from '../optimizer/LevelHistoryPanel';
 import { buildSolveRequest } from '../optimizer/request';
 import { useOptimizer } from '../optimizer/useOptimizer';
-import { useSkillSelection } from '../skills/useSkillSelection';
+import { useOptimizerWorkspace } from '../optimizer/workspace/OptimizerWorkspaceProvider';
 import { EquipmentDoll } from './EquipmentDoll';
 import { SheetStats } from './SheetStats';
 import { SlotPicker } from './SlotPicker';
@@ -35,13 +33,10 @@ type Tab = 'equipment' | 'levels';
  * `useOptimizer`, con un worker propio: mirar la hoja no corta una busqueda.
  */
 export function CharacterSheetPage() {
-  const { id = '' } = useParams();
-  const { state, retry } = useGame(id);
-  const template = state.status === 'ready' ? state.template : undefined;
-  const inventory = useInventory(template?.gameId);
+  const { id, template, inventory, skills } = useOptimizerWorkspace();
   const inventoryForGame =
     template && inventory.loadedFor === template.gameId ? inventory.items : null;
-  const { selection: skillSelection } = useSkillSelection(template);
+  const { selection: skillSelection } = skills;
 
   const [profileId, setProfileId] = useState('');
   const [openSlot, setOpenSlot] = useState<string | null>(null);
@@ -103,24 +98,6 @@ export function CharacterSheetPage() {
     evaluate(request, equipment);
   }, [request, equipment, equipmentReady, evaluate]);
 
-  if (state.status === 'loading') {
-    return (
-      <p className="px-6 py-24 text-center text-sm text-muted-foreground">{sheetCopy.loading}</p>
-    );
-  }
-
-  if (state.status === 'error') {
-    return (
-      <div className="mx-auto max-w-[720px] px-6 py-24">
-        <EmptyState title={sheetCopy.errorTitle} body={state.message}>
-          <Button variant="outline" onClick={retry}>
-            {sheetCopy.retry}
-          </Button>
-        </EmptyState>
-      </div>
-    );
-  }
-
   if (!template) return null;
 
   if (!template.baseProfiles.length) {
@@ -165,22 +142,8 @@ export function CharacterSheetPage() {
 
   return (
     <div className="mx-auto max-w-[1080px] px-6 pb-20 pt-6 max-[860px]:px-4">
-      <Link
-        to={`/optimizer/${id}`}
-        className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <span aria-hidden>←</span>
-        {sheetCopy.back}
-      </Link>
-
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
         <p className="label-caps m-0">{sheetCopy.eyebrow}</p>
-        <Link
-          to={`/optimizer/${id}`}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
-        >
-          {sheetCopy.findBest}
-        </Link>
       </div>
 
       <div role="tablist" aria-label={sheetCopy.tabs.label} className="mt-4 flex gap-5 border-b border-line">

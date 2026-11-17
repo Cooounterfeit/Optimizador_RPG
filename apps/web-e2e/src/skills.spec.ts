@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test';
 
+import { railLink } from './nav';
+
 test('explora el arbol, selecciona rangos y guarda la seleccion', async ({ page }) => {
   await page.goto('/optimizer/gacha-demo');
-  await page.getByRole('link', { name: 'Open skill tree' }).click();
+  await railLink(page, 'Skills').click();
 
   await expect(page.getByRole('heading', { name: 'Skill tree' })).toBeVisible();
   await page.getByRole('button', { name: 'Add rank to Astral Might' }).click();

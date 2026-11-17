@@ -1,11 +1,10 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DamageCalculator, GameTemplate } from '@zenith/shared-types';
 
 import { useGame } from '../game/useGame';
-import { DamageCalculatorPage } from './DamageCalculatorPage';
+import { renderWorkspace } from '../optimizer/workspace/testing';
 
 vi.mock('../game/useGame', () => ({ useGame: vi.fn() }));
 
@@ -58,14 +57,7 @@ const mockGame = (calculator?: DamageCalculator) => {
   });
 };
 
-const renderPage = () =>
-  render(
-    <MemoryRouter initialEntries={['/optimizer/gacha-demo/dano']}>
-      <Routes>
-        <Route path="/optimizer/:id/dano" element={<DamageCalculatorPage />} />
-      </Routes>
-    </MemoryRouter>,
-  );
+const renderPage = () => renderWorkspace('/optimizer/gacha-demo/dano');
 
 const fill = (label: string, value: string) => {
   fireEvent.change(screen.getByLabelText(label), { target: { value } });
