@@ -13,6 +13,9 @@ concurrency:
 env:
   NX_DAEMON: 'false'
   CI: 'true'
+  # `nx affected` compara contra una base. En un PR es la rama destino; en un
+  # push a main, el commit anterior.
+  NX_BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'HEAD~1' }}
 
 jobs:
   quality:
@@ -42,8 +45,26 @@ jobs:
           restore-keys: |
             nx-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
 
+      # Solo se valida lo que cambió. En push a main la base es HEAD~1, así que
+      # un merge entrante valida todo lo que trae.
       - name: Lint, pruebas, tipos y build
-        run: npx nx run-many -t lint test typecheck build
+        run: npx nx affected -t lint test typecheck build --base=$NX_BASE
+
+  audit:
+    name: Auditoría de dependencias
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Solo dependencias de producción: las de desarrollo no llegan al bundle
+      # que se sirve, y auditarlas genera ruido que nadie acciona.
+      - name: npm audit (producción)
+        run: npm audit --omit=dev --audit-level=high
 
   e2e:
     name: E2E (Chromium)
@@ -73,3 +94,15 @@ jobs:
 
       - name: Pruebas de punta a punta
         run: npx nx e2e web-e2e -- --project=chromium
+
+      # Sin esto, un fallo de e2e en CI es indepurable: no queda video, ni
+      # screenshot, ni trace descargable.
+      - name: Subir reporte de Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/web-e2e/playwright-report
+            apps/web-e2e/test-results
+          retention-days: 7

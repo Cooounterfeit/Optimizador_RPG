@@ -1,0 +1,59 @@
+name: Deploy
+
+# `needs` no cruza archivos de workflow: para no desplegar una versión que el CI
+# no aprobó, el deploy se dispara cuando el workflow CI termina en main.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    name: Producción
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # En workflow_run hay que pedir explícitamente el commit que pasó el CI.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Traer configuración del proyecto
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build de producción
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Desplegar
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Resumen del despliegue
+        run: |
+          echo "### Desplegado a producción" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: ${{ github.event.workflow_run.head_sha || github.sha }}" >> "$GITHUB_STEP_SUMMARY"
