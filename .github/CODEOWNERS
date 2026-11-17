@@ -1,0 +1,36 @@
+# Revisores por área, según la matriz de responsabilidades del equipo.
+# Un PR pide revisión a quien es responsable del área tocada.
+#
+# Nota: CODEOWNERS solo asigna revisión automática si la rama tiene
+# "Require review from Code Owners" activo en la protección de rama.
+
+# Contrato compartido: lo revisa quien define los esquemas.
+/libs/shared-types/       @Moya-Art
+/libs/core-engine/        @Moya-Art
+
+# Interfaz, editor de nodos y experiencia visual.
+/apps/web/src/features/   @Ignacio-Rodriguez-A
+/apps/web/src/lib/        @Ignacio-Rodriguez-A
+/apps/web/index.html      @Ignacio-Rodriguez-A
+
+# Persistencia local y parseo de inventario.
+/libs/data-access/        @Moya-Art
+/libs/inventory/          @Moya-Art
+
+# Base de datos, políticas RLS y migraciones.
+/supabase/                @Moya-Art
+
+# Calidad, integración continua y despliegue.
+/.github/                 @Cooounterfeit
+/Dockerfile               @Cooounterfeit
+/docker-compose.yml       @Cooounterfeit
+/docker/                  @Cooounterfeit
+/apps/web-e2e/            @Cooounterfeit
+
+# Documentación y decisiones de arquitectura.
+/docs/                    @Cooounterfeit
+/README.md                @Cooounterfeit
+/CONTRIBUTING.md          @Cooounterfeit
+
+# Todo lo demás, por defecto, al responsable de release.
+*                         @Cooounterfeit
