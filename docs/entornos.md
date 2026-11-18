@@ -118,25 +118,48 @@ y el build falla buscando `@zenith/core-engine`.
 
 ### Estado verificado (17-nov-2026)
 
-| Comprobación | Resultado |
+| Comprobacion | Resultado |
 |---|---|
-| Log del build | `nx run @zenith/web:build` — ya no ejecuta `demo` |
-| Título en producción | `Zenith Optimizer · Proven builds, not guesses` |
-| SPA fallback (`/optimizer`) | HTTP 200 con el HTML de la app |
+| Log del build | `nx run @zenith/web:build` -- no ejecuta `demo` |
+| Titulo en produccion | `Zenith Optimizer . Proven builds, not guesses` |
+| SPA fallback (`/login`, `/optimizer/abc`) | HTTP 200 con el HTML de la app |
 | Cache de `/assets/*` | `public, max-age=31536000, immutable` |
+| Asset inexistente | HTTP **404** (antes devolvia 200 con HTML) |
 | CSP | presente como `<meta>` en el HTML |
 | `nosniff` / `X-Frame-Options` / `Referrer-Policy` | presentes |
+| Credenciales de Supabase en el bundle | `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` presentes |
+| `service_role` en el bundle | **ausente** |
 
-Antes de esta corrección, la URL de producción servía el prototipo archivado. La causa no
-estaba en el repositorio sino en la configuración del proyecto de Vercel.
+Antes de esta correccion, la URL de produccion servia el prototipo archivado. La causa no
+estaba en el repositorio sino en la configuracion del proyecto de Vercel.
 
-### Por qué el CI importa más que el build
+---
 
-El target `build` de `apps/web` es **solo `vite build`**: no incluye `typecheck`. Vite ignora
-los errores de tipos y emite el bundle igual. Un tipo mal escrito **no rompe el build de
-Vercel**; rompe en el navegador del usuario.
+### El detalle de las variables que cuesta una hora si no se sabe
 
-Por eso `main` exige CI verde, que además de `build` corre `lint`, `typecheck` y 520 pruebas.
+Las variables deben llamarse `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. Vite solo
+expone al bundle las que empiezan con `VITE_`: cualquier otra existe en el entorno del
+build pero no llega al codigo.
+
+El proyecto de Supabase integrado con Vercel inyecta las suyas (`SUPABASE_URL`,
+`SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `POSTGRES_*`, ...). Ninguna sirve para
+esta app, y varias no deben usarse nunca en el cliente: la `SERVICE_ROLE_KEY` omite RLS
+por completo.
+
+El sintoma de tener solo las variables equivocadas es silencioso: la app compila, carga y
+funciona en modo local con fixtures. No hay error en ningun lado. La forma de detectarlo es
+buscar la URL del proyecto en el bundle publicado; si no aparece, no llegaron.
+
+### Por que esto importa mas que el build
+
+El target `build` de `apps/web` es **solo `vite build`**: no incluye `typecheck`. Vite
+ignora los errores de tipos y emite el bundle igual. Un tipo mal escrito **no rompe el
+build de Vercel**; rompe en el navegador del usuario.
+
+Por eso `main` exige CI verde, que ademas de `build` corre `lint`, `typecheck` y las 520
+pruebas.
+
+---
 
 ## Cabeceras y SPA
 
