@@ -166,6 +166,12 @@ sintoma en consola es `Unexpected token <`, y no se recupera hasta purgar la CDN
 Excluir las rutas con extension hace que un asset faltante devuelva un 404 honesto, que
 el navegador maneja como tal.
 
+Un detalle que queda: ese 404 hereda el `cache-control` de `/assets/(.*)`, asi que el
+navegador lo guarda un ano igual. No es grave —un asset que no existe no va a existir
+despues— pero si algun dia se publica un chunk con ese nombre exacto, los clientes que
+ya cachearon el 404 no lo veran hasta purgar. Se acepta: el escenario requiere reutilizar
+un nombre de archivo que ya fallo, y los nombres llevan hash de contenido.
+
 **Headers**: cache inmutable de un ano para `/assets/(.*)` (los nombres llevan hash) y
 `nosniff`, `Referrer-Policy` y `X-Frame-Options` en todas las respuestas.
 
