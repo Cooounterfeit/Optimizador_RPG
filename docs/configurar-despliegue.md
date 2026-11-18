@@ -96,6 +96,35 @@ nuevo con `supabase db push` y el resultado se verificó: `Remote database is up
 > El proyecto viejo se puede borrar, pero recién después de comprobar un registro real contra el
 > nuevo. Hasta entonces sigue siendo la única copia de lo que hubiera en él.
 
+### 2.1.1 Qué se copió del proyecto viejo
+
+El 18-nov-2026 se copió el contenido, **sin cuentas**:
+
+| Tabla | Filas | Detalle |
+|---|---|---|
+| `optimizers` | 3 | `template` y `sample_items` idénticos al origen (verificado por comparación profunda) |
+| `profiles` | 2 | solo los autores de esos optimizadores: `NSY` y `ZenithOptimizer` |
+| `app_settings` | 1 | ya venía de la migración, con el mismo valor |
+| `votes`, `favorites`, `reports`, `cloud_inventory`, `subscriptions` | 0 | no había nada que copiar |
+
+No se copiaron `auth.users`: **el proyecto nuevo tiene 0 cuentas**. Eso significa que los dos
+perfiles existen sin usuario detrás, y que nadie puede iniciar sesión con ellos.
+
+Consecuencia práctica: esos 3 optimizadores son visibles y editables solo por un admin, porque su
+`author_id` apunta a un perfil sin cuenta. Cuando **NSY** y **ZenithOptimizer** se registren, hay
+que reasignar la autoría:
+
+```sql
+-- con el id nuevo de cada uno, sacado de Authentication → Users
+update public.optimizers set author_id = '<id-nuevo>'
+where author_id = '<id-viejo>';
+
+delete from public.profiles where id = '<id-viejo>';
+```
+
+Los paquetes exportados quedaron en `respaldo/optimizadores/` por si hace falta republicarlos
+desde la app en vez de reasignar. Los tres validan contra `GameTemplateSchema` e `ItemSchema`.
+
 ### 2.2 Crear el proyecto de staging
 
 **New project**:
