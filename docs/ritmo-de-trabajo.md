@@ -10,9 +10,9 @@ trabajo, es la forma en que el equipo integró.
 | Dato | Valor |
 |---|---|
 | Periodo con actividad | 15-sep-2026 → 13-nov-2026 |
-| Commits totales en `main` y ramas | 49 |
+| Commits totales en `main` y ramas | 75 (66 en `main`) |
 | Semanas con al menos un commit | 9 de 9 |
-| Sprints | 5 de dos semanas |
+| Sprints | 4 de dos semanas, más un sprint de arranque |
 | Archivos de prueba | 70 (unitarias + e2e) |
 
 La actividad no tuvo huecos: desde la semana 38 hasta la 46 hay commits todas las semanas.
@@ -40,18 +40,23 @@ tiempo de feedback bajo.
 
 Conteo de commits por rango de fechas, sobre todas las ramas:
 
-| Sprint | Rango | Commits |
-|---|---|---|
-| 1 | 15-sep → 28-sep | 2 |
-| 2 | 29-sep → 12-oct | 7 |
-| 3 | 13-oct → 26-oct | 7 |
-| 4 | 27-oct → 09-nov | 16 |
-| 5 | 10-nov → 23-nov | 8 |
+| Sprint | Rango | Commits | Qué concentra |
+|---|---|---|---|
+| Arranque | 02-sep → 16-sep | 1 | creación del repositorio |
+| 1 | 05-oct → 18-oct | 13 | prototipo del motor, PR #2 y port a `libs/core-engine` |
+| 2 | 19-oct → 01-nov | 7 | rediseño, catálogo y esquema Supabase con RLS |
+| 3 | 02-nov → 15-nov | 22 | Dexie, hub con Supabase, F6.1 a F6.4 y F7 |
+| 4 | 16-nov → 29-nov | 26 | documentación, CI/CD, Docker y cierre |
 
-El reparto no es parejo y no pretende serlo. El sprint 1 fue de definición y andamiaje
-—poco que commitear, mucho que decidir—, y el sprint 4 concentró la integración de Supabase,
-RLS, hub y cuentas. Un equipo de tres personas con dedicación parcial no produce un flujo
-constante de commits; produce entregas por funcionalidad.
+El reparto no es parejo y no pretende serlo. El sprint 2 tiene pocos commits porque concentró
+decisiones —esquema de datos, políticas RLS, criterios de diseño— y no código. El sprint 3
+pesa más porque ahí convergen todas las funcionalidades de la aplicación real. Un equipo de
+tres personas con dedicación parcial no produce un flujo constante de commits; produce
+entregas por funcionalidad.
+
+Los 26 commits del sprint 4 son de documentación e infraestructura, no de funcionalidades: el
+desarrollo de features termina el 13 de noviembre. Contarlos como avance de producto sería
+inflar el último sprint.
 
 ## Rituales
 
