@@ -81,10 +81,15 @@ export function createSupabaseAuthService(client: SupabaseClient): AuthService {
     },
 
     async signUp({ email, password, displayName }: SignUpInput) {
+      // Sin este redirect, el enlace del correo vuelve al Site URL del proyecto en
+      // Supabase, que por defecto es http://localhost:3000 y no lleva a ningun lado.
       const { data, error } = await client.auth.signUp({
         email,
         password,
-        options: { data: { display_name: displayName } },
+        options: {
+          data: { display_name: displayName },
+          emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
+        },
       });
       if (error) throw toAuthError(error);
 
