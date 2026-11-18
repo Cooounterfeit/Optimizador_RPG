@@ -142,14 +142,36 @@ Por eso `main` exige CI verde, que además de `build` corre `lint`, `typecheck` 
 
 `vercel.json` define dos cosas:
 
-- **Rewrites** `/(.*)` → `/index.html`: las rutas del router funcionan al recargar. Vercel
-  sirve los archivos estáticos antes de aplicar rewrites, así que los assets no se ven
-  afectados.
-- **Headers**: cache inmutable de un año para `/assets/(.*)` (los nombres llevan hash) y
-  `nosniff`, `Referrer-Policy` y `X-Frame-Options` en todo.
+**Rewrites**: solo las rutas sin extension se reescriben a `/index.html`.
 
-El **CSP** no es un header: se inyecta como `<meta>` en el `index.html` durante el build
-(`cspPlugin` en `apps/web/vite.config.mts`). Por eso se verifica en el HTML, no con `curl -I`.
+```json
+{ "source": "/((?!.*\\..*).*)", "destination": "/index.html" }
+```
+
+La condicion `(?!.*\.)` es el punto importante y no es decorativa. Con un rewrite
+incondicional `/(.*)`, un asset que **no existe** cae en el fallback y Vercel devuelve:
+
+```
+GET /assets/no-existe.js
+  -> 200
+  -> content-type: text/html
+  -> cache-control: public, max-age=31536000, immutable
+```
+
+Es decir: HTML servido como si fuera un asset, y cacheado un ano por ser inmutable.
+Consecuencia real: si un cliente carga un `index.html` cacheado que referencia un chunk
+viejo, el 200 con HTML hace que el navegador intente ejecutar HTML como JavaScript. El
+sintoma en consola es `Unexpected token <`, y no se recupera hasta purgar la CDN.
+
+Excluir las rutas con extension hace que un asset faltante devuelva un 404 honesto, que
+el navegador maneja como tal.
+
+**Headers**: cache inmutable de un ano para `/assets/(.*)` (los nombres llevan hash) y
+`nosniff`, `Referrer-Policy` y `X-Frame-Options` en todas las respuestas.
+
+El **CSP** no es un header: se inyecta como `<meta>` en el `index.html` durante el
+build (`cspPlugin` en `apps/web/vite.config.mts`). Por eso se verifica en el HTML y no
+con `curl -I`.
 
 ## Regla de oro
 
