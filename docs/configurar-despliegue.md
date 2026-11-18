@@ -87,11 +87,14 @@ Los valores de producción están en `demo/.env.production`. Los de staging sale
 
 ### 2.1 Confirmar cuál es producción
 
-El `project-ref` actual es **`fgtiiwhrspukgsubnoyl`** (está en `demo/.env.production`).
+El `project-ref` de producción es **`doogvxsgmwskbvftkkli`**, en la región `us-west-2` (Oregon).
 
-Entrá a [supabase.com/dashboard](https://supabase.com/dashboard) y verificá que ese proyecto
-es el que tiene los datos reales (tabla `profiles`, `optimizers`). **Ese queda como
-producción. No se toca.**
+Hubo un cambio el 18-nov-2026: el proyecto original (`fgtiiwhrspukgsubnoyl`, `ca-central-1`) se
+creó en la región equivocada y se reemplazó por este. Las migraciones se aplicaron al proyecto
+nuevo con `supabase db push` y el resultado se verificó: `Remote database is up to date.`
+
+> El proyecto viejo se puede borrar, pero recién después de comprobar un registro real contra el
+> nuevo. Hasta entonces sigue siendo la única copia de lo que hubiera en él.
 
 ### 2.2 Crear el proyecto de staging
 
@@ -100,7 +103,7 @@ producción. No se toca.**
 | Campo | Valor |
 |---|---|
 | Name | `zenith-staging` |
-| Region | South America (São Paulo) — igual que producción |
+| Region | US West (Oregon) — igual que producción |
 | Password | generá una y guardala |
 
 Anotá:

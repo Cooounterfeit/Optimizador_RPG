@@ -8,7 +8,8 @@ comunidad (optimizadores, votos, favoritos, reportes) para las HUB.
 ## 1. Crear el proyecto
 
 1. Entra a [supabase.com](https://supabase.com), crea una organización y un proyecto en el plan
-   gratuito. Elige la región **South America (São Paulo)**, que es la más cercana a Chile.
+   gratuito. La región no se puede cambiar después de crear el proyecto: elegí la más cercana a
+   los usuarios. Producción está en **US West (Oregon)** (`us-west-2`).
 2. Guarda la contraseña de la base de datos en un lugar seguro. La app no la usa.
 
 ## 2. Aplicar las migraciones
@@ -17,9 +18,29 @@ En el panel del proyecto, abre **SQL Editor → New query** y ejecuta, en este o
 
 1. `migrations/20261005000001_esquema_inicial.sql`: tablas, permisos y reglas de seguridad (RLS).
 2. `migrations/20261005000002_avatares.sql`: el bucket público `avatars` para las fotos de perfil.
+3. `migrations/20261005000003_optimizer_cards.sql`: la vista liviana del catálogo para el hub.
 
 Con la [CLI de Supabase](https://supabase.com/docs/guides/cli) también sirve `supabase link --project-ref <id>`
 y luego `supabase db push`.
+
+### Si la red no tiene IPv6
+
+Las conexiones directas de Supabase resuelven **solo a IPv6** (`db.<ref>.supabase.co` no tiene
+registro A). En una red sin IPv6 el push falla con `Host desconocido` o `ENOTFOUND`, y no hay
+forma de arreglarlo desde el cliente.
+
+La salida es el **session pooler**, que sí tiene IPv4. En el panel: **Connect → Agrupador de
+sesiones**. La URL cambia de forma: el usuario lleva el ref pegado.
+
+```bash
+# en lugar de [REDACTED:connection_string]db.<ref>.supabase.co:5432/postgres
+supabase db push --remote="[REDACTED:connection_string]aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require"
+```
+
+Si no sabés la región, `--dry-run` contra cada candidato distingue los casos: la región
+equivocada responde `tenant/user ... not found`, la correcta responde `Remote database is up to
+date.` Sin `--dry-run` no hay riesgo de escritura en una región equivocada, porque la conexión
+nunca llega a establecerse.
 
 ### Regla de migraciones
 
