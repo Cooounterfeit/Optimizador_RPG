@@ -121,11 +121,21 @@ npx supabase link --project-ref <STAGING_REF>
 npx supabase db push
 ```
 
-`db push` aplica las tres migraciones en orden: `esquema_inicial`, `avatares`,
+**El orden importa, y no es obvio.** Verificado: `db push` sin `link` previo apunta al
+stack **local** (`127.0.0.1:54322`) y falla con `ECONNREFUSED` si Docker no está
+corriendo. El error no dice «falta vincular el proyecto»: dice que no hay base local. Si
+alguien corre `db push` antes de `link`, puede creer que necesita levantar Docker cuando
+en realidad le falta el `link`.
+
+`link` pide un **access token**: se genera en el dashboard (Account → Access Tokens) y
+tiene formato `sbp_...`. La CLI valida ese formato antes que cualquier otra cosa, así que
+un token con formato inválido falla sin mostrar ningún otro problema.
+
+`db push` aplica las tres migraciones en orden: `esquema_inicial`, `avatares` y
 `optimizer_cards`.
 
-**Verificar que aplicó:** en el dashboard de staging → Table Editor. Deberían estar
-`profiles`, `optimizers`, `votes`, `subscriptions` y las demás.
+**Verificar que aplicó:** dashboard de staging → Table Editor. Deberían estar `profiles`,
+`optimizers`, `votes`, `subscriptions` y las demás.
 
 ### 2.4 Verificar RLS
 
