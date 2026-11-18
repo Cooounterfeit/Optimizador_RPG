@@ -17,6 +17,12 @@ export const inventoryCopy = {
   itemCount: (count: number) => `${count} item${count === 1 ? '' : 's'}`,
   noSet: 'No set',
   level: (value: number) => `Lv. ${value}`,
+  card: {
+    slot: 'Slot',
+    rarity: 'Rarity',
+    requires: 'Requires',
+    noStats: 'This item has no stats.',
+  },
   statsSummary: (count: number) => `${count} stat${count === 1 ? '' : 's'}`,
   edit: 'Edit',
   delete: 'Delete',

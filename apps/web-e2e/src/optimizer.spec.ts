@@ -98,6 +98,25 @@ test('equipa una build, el panel la compara y sigue equipada al recargar', async
   await expect(panel().getByText('Score', { exact: true })).toBeVisible();
 });
 
+test('muestra las stats de una pieza al pasar el cursor', async ({ page }) => {
+  await page.goto('/optimizer/gacha-demo/optimize');
+
+  await page.getByRole('button', { name: 'Load sample items' }).click();
+  await page.getByRole('button', { name: 'Optimize build' }).click();
+  await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
+
+  const bestBuild = page.getByRole('article').first();
+  await bestBuild.getByText('Weapon', { exact: true }).first().hover();
+
+  const card = page.getByRole('tooltip');
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('Weapon');
+  await expect(card).toContainText('ATK');
+
+  await page.keyboard.press('Escape');
+  await expect(card).toBeHidden();
+});
+
 test('elige personaje desde la rejilla y lo muestra en la tarjeta', async ({ page }) => {
   await page.goto('/optimizer/gacha-demo/optimize');
 
