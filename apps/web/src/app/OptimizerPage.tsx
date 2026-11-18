@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { currentLevel } from '@zenith/core-engine';
 import type { BuildResult, Constraint, Equipment, Item, SolveRequest } from '@zenith/shared-types';
 
 import { Button } from '../components/ui/Button';
@@ -14,14 +13,14 @@ import { ItemGlyph } from '../features/inventory/ItemGlyph';
 import { inventoryCopy } from '../features/inventory/copy';
 import { getInventoryRepository } from '../features/game/repositories';
 import { ConstraintEditor } from '../features/optimizer/ConstraintEditor';
+import { CharacterPanel } from '../features/optimizer/CharacterPanel';
 import { CurrentBuildPanel } from '../features/optimizer/CurrentBuildPanel';
 import { LevelHistoryPanel } from '../features/optimizer/LevelHistoryPanel';
 import { OptimizerResult } from '../features/optimizer/OptimizerResult';
 import { buildSolveRequest } from '../features/optimizer/request';
-import { StatsPanel } from '../features/optimizer/StatsPanel';
 import { useOptimizer } from '../features/optimizer/useOptimizer';
 import { useOptimizerWorkspace } from '../features/optimizer/workspace/OptimizerWorkspaceProvider';
-import { itemIconUrls, characterIconUrls, characterRarityOf } from '../lib/images';
+import { itemIconUrls } from '../lib/images';
 
 /** Lista vacia estable: `inventory.items ?? []` crearia un array nuevo en cada render. */
 const NO_ITEMS: Item[] = [];
@@ -211,41 +210,11 @@ export function OptimizerPage() {
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-4">
-          <section className="rounded-[4px] border border-line bg-surface p-4">
-            <p className="label-caps">01 · {gameCopy.cockpit.character}</p>
-            <p className="mt-1 text-[11.5px] text-muted-foreground">{gameCopy.cockpit.characterHint}</p>
-            {profile ? (
-              <button
-                type="button"
-                aria-haspopup="dialog"
-                onClick={() => setPickerOpen(true)}
-                className="group mt-3 flex w-full items-center gap-3 rounded-[2px] border border-line bg-background px-2.5 py-2 text-start transition-colors hover:border-line-strong focus-visible:border-line-strong"
-              >
-                <ItemGlyph
-                  name={profile.name}
-                  rarity={template.assets ? characterRarityOf(template.assets, profile) : undefined}
-                  sources={template.assets ? characterIconUrls(template.assets, profile) : []}
-                  className="h-10 w-10 text-[12px]"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13px]">{profile.name}</span>
-                  <span className="block font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
-                    {currentLevel(template, profile) === null
-                      ? gameCopy.cockpit.noLevel
-                      : `${gameCopy.cockpit.level} ${currentLevel(template, profile)}`}
-                  </span>
-                </span>
-                <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground transition-colors group-hover:text-foreground">
-                  {gameCopy.cockpit.changeCharacter}
-                </span>
-              </button>
-            ) : null}
-          </section>
-
           {profile ? (
-            <StatsPanel
+            <CharacterPanel
               template={template}
               profile={profile}
+              onChangeCharacter={() => setPickerOpen(true)}
               onSaveBase={async (base) => {
                 try {
                   await saveProfileBase(base);

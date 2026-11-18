@@ -33,7 +33,8 @@ test('calcula la mejor build con el inventario del juego sintético', async ({ p
   await expect(page.getByRole('heading', { name: 'Astral Forge', level: 1 })).toBeVisible();
 
   await expect(page.getByText('Current stats')).toBeVisible();
-  await page.getByLabel('Character level').selectOption('2');
+  await page.getByLabel('Character level').fill('2');
+  await page.getByLabel('Character level').press('Enter');
   await expect(page.getByText('Level 2 saved.')).toBeVisible();
 
   await expect(page.getByText('Level history')).toBeVisible();
@@ -131,8 +132,10 @@ test('elige personaje desde la rejilla y lo muestra en la tarjeta', async ({ pag
 
   await dialog.getByRole('button', { name: /^Orion/ }).click();
   await expect(dialog).toBeHidden();
-  await expect(page.getByRole('button', { name: /^Orion/ })).toBeVisible();
-  await expect(page.getByText('Current stats')).toBeVisible();
+  // La tarjeta fusionada muestra el nombre junto al retrato, sin boton propio.
+  const optimize = section(page, 'optimize');
+  await expect(optimize.getByRole('group', { name: 'Orion' })).toBeVisible();
+  await expect(optimize.getByText('Current stats')).toBeVisible();
 });
 
 test('hoja de personaje: viste una ranura, avisa el requisito y sigue puesta al recargar', async ({
@@ -142,7 +145,8 @@ test('hoja de personaje: viste una ranura, avisa el requisito y sigue puesta al 
   await page.getByRole('button', { name: 'Load sample items' }).click();
 
   // El nivel se fija desde el optimizador; la hoja debe mostrarlo, no el de la plantilla.
-  await page.getByLabel('Character level').selectOption('2');
+  await page.getByLabel('Character level').fill('2');
+  await page.getByLabel('Character level').press('Enter');
   await expect(page.getByText('Level 2 saved.')).toBeVisible();
 
   await railLink(page, 'Character').click();

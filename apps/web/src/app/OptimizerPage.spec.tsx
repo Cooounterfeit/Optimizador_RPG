@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, configure, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type {
@@ -31,6 +31,13 @@ import {
 } from '../features/optimizer/optimizer-repository';
 import type { WorkerIn, WorkerOut } from '../features/optimizer/optimizer.worker';
 import { renderWorkspace, workspaceElement } from '../features/optimizer/workspace/testing';
+
+/**
+ * El workspace tarda cerca de un segundo en dejar la pagina lista en jsdom y la
+ * suite corre en paralelo, asi que el margen por defecto de `waitFor` (1 s)
+ * dejaba las pruebas al filo. No cambia el producto: es tiempo del entorno.
+ */
+configure({ asyncUtilTimeout: 5_000 });
 
 /**
  * El inventario se puede mockear por test para probar que un cambio despues de
