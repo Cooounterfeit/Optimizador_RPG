@@ -182,6 +182,11 @@ repo, no el proyecto remoto.
 confirmar que Email está habilitado. Después, desde un preview de PR, crear una cuenta y
 comprobar en Table Editor que aparece en `profiles`.
 
+La cuenta queda pendiente hasta que el usuario abra el enlace del correo, porque la confirmación
+está activada. Para poder probar sin depender del correo hace falta un SMTP propio: ver
+`supabase/README.md`, sección 3. El SMTP integrado de Supabase limita los envíos por hora y el
+registro falla con `429 over_email_send_rate_limit`.
+
 ### 2.5 Limpiar
 
 `.temp/` de la CLI ya está en `.gitignore`. No commitear nada de esto.

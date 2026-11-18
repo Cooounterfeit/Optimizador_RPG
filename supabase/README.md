@@ -53,15 +53,37 @@ proyecto real.
 En **Authentication → Sign In / Providers → Email**:
 
 - Deja **Email** activado.
-- **Confirm email**: el Jira pide que el usuario entre apenas se registra (AUT-1). Para eso,
-  desactívalo. Si lo dejas activo, la app avisa «revisa tu correo para confirmarla».
+- **Confirm email**: se deja **activado**. El usuario recibe el enlace, lo abre y recien ahi entra.
+  La app ya lo contempla: `signUp` devuelve `needsConfirmation` y muestra «revisa tu correo», y
+  `detectSessionInUrl` toma la sesion del enlace al volver.
 - **Minimum password length**: 8.
+
+### El correo necesita un SMTP propio antes de una demo
+
+El SMTP integrado de Supabase esta pensado para pruebas y tiene un limite muy bajo de envios por
+hora. Al pasarlo, el registro falla con `429 over_email_send_rate_limit` y el usuario se queda sin
+poder entrar. Paso en staging el 18-nov-2026 con dos intentos seguidos.
+
+Para cualquier presentacion, configura un SMTP real en **Authentication → SMTP Settings**
+(Resend, SendGrid o el de la universidad, todos tienen plan gratuito). Mientras tanto se puede
+subir el limite en **Authentication → Rate Limits**, pero sigue siendo un servicio de prueba: los
+correos pueden no llegar.
+
+Sin esto, el flujo de alta depende de un correo que puede tardar o no llegar, y el registro queda a
+medio camino.
 
 En **Authentication → URL Configuration**:
 
 - **Site URL**: `http://localhost:4200` en desarrollo (`nx serve web` sirve en ese puerto).
-- **Redirect URLs**: agrega `http://localhost:4200/**` y la de producción con `/**`. Sin esto, el
-  enlace de «recuperar contraseña» no vuelve a la app.
+- **Redirect URLs**: sin esto el enlace del correo vuelve al Site URL y termina en una pagina que
+  no existe. Carga cada destino con `/**`:
+  - `http://localhost:4200/**`
+  - `https://optimizadorrpg.vercel.app/**`
+  - `https://optimizadorrpg-*-zenith-squad.vercel.app/**` — comodin para los previews de Vercel,
+    que cambian de dominio en cada rama y en cada deploy.
+
+El comodin se acota al nombre del proyecto porque `https://*.vercel.app/**` autorizaria a cualquier
+proyecto de Vercel a pedir enlaces contra esta app.
 
 ## 4. Conectar la app
 
