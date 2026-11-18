@@ -1,0 +1,49 @@
+{
+  "zenith": "0.1",
+  "exportedAt": "2026-11-06T00:21:11.350166+00:00",
+  "template": {
+    "name": "RPG clasico",
+    "sets": [],
+    "slots": [
+      {
+        "id": "weapon",
+        "name": "Arma"
+      }
+    ],
+    "stats": [
+      {
+        "id": "atk",
+        "name": "Ataque",
+        "unit": "flat"
+      }
+    ],
+    "accent": "#e05a2b",
+    "gameId": "rpg",
+    "derived": [],
+    "category": "RPG",
+    "objectives": [
+      {
+        "id": "dps",
+        "kind": "linear",
+        "name": "Dano",
+        "formula": "atk",
+        "description": "Dano por golpe"
+      }
+    ],
+    "description": "Tres clases con curvas de crecimiento distintas.",
+    "baseProfiles": [
+      {
+        "id": "base",
+        "base": {
+          "atk": 10
+        },
+        "name": "Base"
+      }
+    ],
+    "schemaVersion": "0.1",
+    "constrainableStats": [
+      "atk"
+    ]
+  },
+  "items": []
+}
