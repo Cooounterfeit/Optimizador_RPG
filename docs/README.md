@@ -7,7 +7,9 @@ está el detalle que no cabe allí.
 
 | Documento | Qué responde |
 |---|---|
-| [`arquitectura.md`](./arquitectura.md) | Cómo está construido y por qué el cálculo va al cliente |
+| [`arquitectura.md`](./arquitectura.md) | Cómo está construido: capas, componentes y despliegue |
+| [`modelo-de-datos.md`](./modelo-de-datos.md) | Modelo relacional, normalización y reglas de integridad |
+| [`uml.md`](./uml.md) | Diagrama de clases y secuencia de las dos funcionalidades principales |
 | [`entornos.md`](./entornos.md) | Variables, ambientes y qué es público vs. secreto |
 | [`configurar-despliegue.md`](./configurar-despliegue.md) | Paso a paso de Vercel y Supabase (dashboard) |
 | [`estrategia-de-pruebas.md`](./estrategia-de-pruebas.md) | Qué se prueba, con qué y qué falta |

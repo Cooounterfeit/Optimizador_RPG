@@ -112,10 +112,121 @@ que cumpla el contrato.
 - **Regla de exposición:** la `anon key` viaja al navegador por diseño; lo que protege los
   datos son las políticas RLS de Postgres, no el secreto de la clave.
 
+El modelo relacional completo, con sus relaciones y su justificación de normalización, está en
+[`modelo-de-datos.md`](./modelo-de-datos.md).
+
+## Componentes
+
+Qué se ejecuta dentro del navegador y qué queda del lado del servidor:
+
+```mermaid
+graph TB
+    subgraph Cliente["Navegador del jugador"]
+        direction TB
+        SHELL["AppShell + router<br/>React 18"]
+        FEAT["features/<br/>catalog · optimizer · inventory<br/>sheet · skills · damage · auth"]
+        STORE["Estado de sesión<br/>AuthProvider"]
+        W1["Web Worker: solver"]
+        W2["Web Worker: evaluación"]
+        DEXIE["Dexie / IndexedDB<br/>inventario y estado local"]
+    end
+
+    subgraph Librerias["Librerías compartidas (compiladas dentro del bundle)"]
+        ENGINE["core-engine<br/>solve · evaluar · leveling · skills"]
+        ACCESS["data-access<br/>repositorios y paquetes"]
+        INV["inventory<br/>parseo de GOOD y catálogos"]
+        TYPES["shared-types<br/>contrato Zod"]
+    end
+
+    subgraph Servidor["Servicios administrados"]
+        AUTH["Supabase Auth<br/>GoTrue"]
+        PG[("Postgres<br/>8 tablas · RLS")]
+        STORAGE[("Storage<br/>avatars")]
+    end
+
+    SHELL --> FEAT
+    FEAT --> STORE
+    FEAT --> W1
+    FEAT --> W2
+    W1 --> ENGINE
+    W2 --> ENGINE
+    FEAT --> ACCESS
+    FEAT --> INV
+    ACCESS --> DEXIE
+    ACCESS --> PG
+    STORE --> AUTH
+    ENGINE --> TYPES
+    INV --> TYPES
+    ACCESS --> TYPES
+    FEAT --> STORAGE
+```
+
+| Componente | Tipo | Responsabilidad |
+|---|---|---|
+| `AppShell` + router | cliente | navegación y layout |
+| `features/*` | cliente | una carpeta por dominio funcional |
+| worker del solver | cliente | cálculo pesado fuera del hilo de la interfaz |
+| worker de evaluación | cliente | auditar un número sin interrumpir una búsqueda |
+| `core-engine` | librería | resuelve; no conoce React ni el DOM |
+| `data-access` | librería | persistencia y empaquetado |
+| `inventory` | librería | interpreta formatos de terceros |
+| `shared-types` | librería | contrato validado con Zod |
+| Supabase Auth | servicio | registro, sesión y confirmación por correo |
+| Postgres | servicio | datos compartidos, protegidos por RLS |
+| Storage | servicio | avatares de perfil |
+
 ## Despliegue
 
-El artefacto es estático: `apps/web/dist`. Se sirve desde cualquier CDN. Como es una SPA,
-el servidor debe devolver `index.html` en rutas sin archivo. Las variables `VITE_*` se
-hornean en el build, así que cada entorno construye su propio bundle.
+Dos entornos de ejecución y un artefacto estático. No hay servidor de aplicación propio: el
+cálculo no lo necesita y la API la presta Supabase.
+
+```mermaid
+graph LR
+    subgraph Local["Desarrollo"]
+        DEVPC["nx serve web<br/>localhost:4200"]
+        SBX[("Supabase<br/>proyecto staging")]
+    end
+
+    subgraph GH["GitHub"]
+        REPO[("Repositorio<br/>main protegido")]
+        CI["Actions<br/>lint · test · build"]
+    end
+
+    subgraph Vercel["Vercel"]
+        PROD["Production<br/>optimizadorrpg.vercel.app"]
+        PREV["Preview por rama<br/>optimizadorrpg-git-*-zenith-squad"]
+        CDN["CDN<br/>apps/web/dist"]
+    end
+
+    subgraph SBP["Supabase"]
+        AUTH["Auth"]
+        PGPROD[("Postgres<br/>RLS")]
+        STG[("Storage")]
+    end
+
+    DEVPC --> SBX
+    DEVPC -->|push a rama| REPO
+    REPO -->|pull request| CI
+    CI -->|verde y merge| REPO
+    REPO -->|deploy main| PROD
+    REPO -->|deploy rama| PREV
+    PROD --> CDN
+    PREV --> CDN
+    PROD --> AUTH
+    PROD --> PGPROD
+    PROD --> STG
+    PREV --> SBX
+```
+
+| Entorno | Dónde | Base de datos | Variables |
+|---|---|---|---|
+| Desarrollo | `localhost:4200` | staging | `.env.local` con prefijo `VITE_` |
+| Preview | Vercel, una por rama | staging | scope **Preview** |
+| Producción | `optimizadorrpg.vercel.app` | producción | scope **Production** |
+
+**Por qué ningún preview toca producción:** las variables `VITE_*` se hornean en el build, y
+cada entorno tiene su propio scope. Un preview de una rama escribe en staging, así que probar
+no puede alterar los datos reales. La separación no depende de que alguien recuerde usar el
+entorno correcto: depende de qué variables recibió el build.
 
 Ver `docs/entornos.md` para la matriz de ambientes y `README.md` para el procedimiento.
