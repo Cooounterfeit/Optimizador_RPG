@@ -110,6 +110,8 @@ jobs:
   sonar:
     name: Análisis SonarQube
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -137,7 +139,17 @@ jobs:
         run: node tools/merge-coverage.mjs
 
       # Fijado por SHA y no por tag: un tag puede moverse a otro commit.
+      # Sin token el escaneo falla; se omite en lugar de dejar main en rojo,
+      # avisando en el log para que no pase inadvertido.
       - name: Analizar con SonarQube
+        if: ${{ env.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+
+      - name: Avisar que falta el token
+        if: ${{ env.SONAR_TOKEN == '' }}
+        run: |
+          echo "::warning::SONAR_TOKEN no esta configurado; el analisis de Sonar se omitio."
+          echo "Agregalo en Settings > Secrets and variables > Actions."
+          echo "Y desactiva el analisis automatico en SonarCloud > Administration > Analysis Method."
