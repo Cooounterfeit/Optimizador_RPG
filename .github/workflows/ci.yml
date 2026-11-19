@@ -106,3 +106,36 @@ jobs:
             apps/web-e2e/playwright-report
             apps/web-e2e/test-results
           retention-days: 7
+
+  sonar:
+    name: Análisis SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # El analisis necesita el historial completo para atribuir lineas
+          # nuevas y cambios (blame) al autor correcto.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Cobertura sobre TODOS los proyectos, no solo los afectados: Sonar
+      # compara contra la rama destino y un reporte parcial marcaria como no
+      # cubierto lo que simplemente no se ejecuto.
+      # --skip-nx-cache porque una tarea cacheada no vuelve a escribir el lcov.
+      - name: Pruebas con cobertura
+        run: npx nx run-many -t test --coverage --skip-nx-cache
+
+      - name: Combinar reportes lcov
+        run: node tools/merge-coverage.mjs
+
+      - name: Analizar con SonarQube
+        uses: SonarSource/sonarqube-scan-action@v8.5.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

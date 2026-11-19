@@ -124,6 +124,27 @@ que protege los datos son las políticas RLS, y por eso se prueban una por una. 
 `service_role` es la que nunca puede aparecer en el bundle, y hay una verificación de eso en
 la revisión de despliegue.
 
+## Cobertura medida
+
+Cada proyecto emite su `lcov.info` al correr con `--coverage`, y
+`tools/merge-coverage.mjs` los combina en `coverage/lcov.info` con rutas relativas a la raíz.
+Vitest escribe las rutas relativas a la raíz de cada proyecto, así que sin ese paso Sonar no
+resuelve ningún archivo y la cobertura queda en cero.
+
+Última medición, sobre el código del producto (sin `demo/`):
+
+| Área | Líneas | Cubiertas | % |
+|---|---|---|---|
+| `apps/web` | 7.879 | 7.199 | 91,4 % |
+| `libs/core-engine` | 2.973 | 2.696 | 90,7 % |
+| `libs/data-access` | 856 | 697 | 81,4 % |
+| `libs/inventory` | 327 | 312 | 95,4 % |
+| `libs/shared-types` | 297 | 217 | 73,1 % |
+| **Total** | **12.332** | **11.121** | **90,2 %** |
+
+Los tipos generados desde Supabase quedan excluidos: no se escriben a mano, así que medirlos
+solo hunde el porcentaje.
+
 ## Puertas de calidad
 
 Ningún cambio entra a `main` sin pasar:
@@ -143,7 +164,7 @@ tocó, más sus dependientes.
 
 | Brecha | Estado | Plan |
 |---|---|---|
-| Umbral de cobertura no fijado | Abierto | 70% en `libs/` |
+| Umbral de cobertura no fijado | Abierto, cobertura medida en 90,2 % | 70 % en `libs/` como condición de la puerta |
 | Una spec e2e es inestable en corrida completa | Abierto | Aislar estado entre archivos |
 | Presupuesto de rendimiento declarado, sin medición automática | Abierto | Medir en CI y fallar si excede |
 | Sin pruebas de accesibilidad | Abierto | `@axe-core/playwright` en las specs e2e |
