@@ -130,10 +130,13 @@ jobs:
       # Cobertura sobre TODOS los proyectos, no solo los afectados: Sonar
       # compara contra la rama destino y un reporte parcial marcaria como no
       # cubierto lo que simplemente no se ejecuto.
-      # --skip-nx-cache porque una tarea cacheada no vuelve a escribir el lcov.
+      # Sin --skip-nx-cache a proposito: el target `test` declara
+      # `test-output/vitest/coverage` como output, asi que un cache hit
+      # restaura el lcov igual que lo haria la ejecucion. El flag no cambia
+      # nada hoy (el job no tiene caché), y no hace falta si se agrega.
       # --no-install: nx ya viene en el lockfile, no se descarga nada al vuelo.
       - name: Pruebas con cobertura
-        run: npx --no-install nx run-many -t test --coverage --skip-nx-cache
+        run: npx --no-install nx run-many -t test --coverage
 
       - name: Combinar reportes lcov
         run: node tools/merge-coverage.mjs
