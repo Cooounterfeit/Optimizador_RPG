@@ -123,19 +123,21 @@ jobs:
           cache: npm
 
       - name: Instalar dependencias
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       # Cobertura sobre TODOS los proyectos, no solo los afectados: Sonar
       # compara contra la rama destino y un reporte parcial marcaria como no
       # cubierto lo que simplemente no se ejecuto.
       # --skip-nx-cache porque una tarea cacheada no vuelve a escribir el lcov.
+      # --no-install: nx ya viene en el lockfile, no se descarga nada al vuelo.
       - name: Pruebas con cobertura
-        run: npx nx run-many -t test --coverage --skip-nx-cache
+        run: npx --no-install nx run-many -t test --coverage --skip-nx-cache
 
       - name: Combinar reportes lcov
         run: node tools/merge-coverage.mjs
 
+      # Fijado por SHA y no por tag: un tag puede moverse a otro commit.
       - name: Analizar con SonarQube
-        uses: SonarSource/sonarqube-scan-action@v8.5.0
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
