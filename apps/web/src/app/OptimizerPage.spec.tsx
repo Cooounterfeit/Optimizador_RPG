@@ -229,7 +229,11 @@ const runAndFinish = async (): Promise<void> => {
   await waitFor(() => expect(optimizeDisabled()).toBe(false));
   fireEvent.click(optimizeButton());
   act(() => lastWorker().emit({ type: 'done', result: emptyResult }));
-  await waitFor(() => expect(screen.getByText(gameCopy.cockpit.noFeasible)).toBeTruthy());
+  // El default de waitFor es 1 s, que en CI se agota cuando los 7 proyectos
+  // corren en paralelo. La transicion sigue siendo asincrona: se espera mas.
+  await waitFor(() => expect(screen.getByText(gameCopy.cockpit.noFeasible)).toBeTruthy(), {
+    timeout: 5_000,
+  });
 };
 
 afterEach(() => {
