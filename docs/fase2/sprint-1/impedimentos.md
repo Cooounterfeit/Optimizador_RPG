@@ -32,7 +32,8 @@ que el proyecto de Vercel sirve `apps/web`, no `demo/`.
 **Problema.** SP-02 investigaba cómo manejar cuentas de servicio en Supabase. Sin esa decisión,
 RLS no se podía diseñar, y sin RLS el inventario en la nube quedaba sin modelo de permisos.
 
-**Estado al cierre.** **Abierto.** Se cierra en el Sprint 2 junto con las políticas RLS.
+**Estado al cierre.** **Resuelto.** Jira registra SP-02 como `Done`, aunque no guarda la fecha de
+la transición, así que el cierre no se puede fechar dentro del sprint con precisión.
 
 ## Resumen
 
@@ -41,4 +42,4 @@ RLS no se podía diseñar, y sin RLS el inventario en la nube quedaba sin modelo
 | IMP-01 | Motor duplicado entre prototipo y monorepo | Resuelto |
 | IMP-02 | Migraciones no idempotentes | Resuelto |
 | IMP-03 | Conflicto de `vercel.json` | Resuelto |
-| IMP-04 | Decisión de cuentas de servicio | Abierto, pasa al Sprint 2 |
+| IMP-04 | Decisión de cuentas de servicio | Resuelto (SP-02 `Done`) |

@@ -31,8 +31,9 @@ reconstruye desde el historial de commits y las decisiones quedan documentadas p
 
 ## 18 de octubre — cierre
 
-- Cierre del sprint con 26 de 35 puntos.
-- Se traslada CFG-05, CFG-06 y SP-02 al sprint siguiente.
+- Cierre del sprint con 29 de 35 puntos.
+- **SP-02** figura como `Done` en Jira, sin fecha de transición registrada.
+- Se traslada CFG-05 y CFG-06 al sprint siguiente.
 
 ## Observación sobre la cadencia
 
