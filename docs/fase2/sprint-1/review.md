@@ -63,7 +63,7 @@ migraciones son idempotentes.
 
 | HU | Motivo | Destino |
 |---|---|---|
-| CFG-05, CFG-06 | Necesitan el editor, que depende del contrato recién creado | Sprint 2 |
+| CFG-05, CFG-06 | Necesitan el editor, que depende del contrato recién creado | Sprint 4 |
 
 ## Observaciones de la review
 
