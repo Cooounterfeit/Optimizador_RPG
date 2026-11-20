@@ -24,6 +24,9 @@ Bitácora reconstruida desde las fechas de commit. No existió un daily escrito.
 
 ## 20 de noviembre
 
+- **Editor.** Entra `5c4cbe7` — crear un optimizador desde cero (CFG-05). Es la primera HU de
+  configuración con código en `apps/web`.
+- Estilo del editor: se quitan las rayas largas de textos y comentarios (`5de1b84`).
 - **Ordenamiento de Jira.** Se cierran los sprints 0 a 3, se activa el Sprint 4, se estiman 16 HUs
   que no tenían puntos y se asigna sprint a las 9 que no tenían ninguno.
 - Se cierra SP-01, pendiente desde el sprint de arranque.
