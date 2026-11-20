@@ -18,8 +18,8 @@ import { buildSkeleton, slugify, uniqueGameId } from './skeleton';
  * nada hecho es donde la gente abandona. Esto crea un juego valido pero vacio
  * y lleva derecho al workspace, que es donde se sigue trabajando.
  *
- * El juego nace LOCAL, en este navegador, sin pedir cuenta. Publicarlo —que si
- * exige sesion, porque la politica RLS cuelga de `auth.uid()`— es otra historia
+ * El juego nace LOCAL, en este navegador, sin pedir cuenta. Publicarlo si
+ * exige sesion, porque la politica RLS cuelga de `auth.uid()`, y es otra historia
  * y vive en la epica del hub.
  */
 export function CreateOptimizerPage() {
