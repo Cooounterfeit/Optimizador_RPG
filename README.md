@@ -4,6 +4,11 @@ Plataforma comunitaria de optimizadores de builds para videojuegos. El motor es 
 **solver genérico client-side** (Web Workers, ramificación y poda exacta) que consume
 **configuraciones de juego en JSON**. El servidor (Supabase) guarda y reparte; nunca calcula.
 
+> **Nombre y alcance.** El repositorio nació como **Optimizador RPG**, el proyecto Capstone de la
+> universidad. La documentación de `docs/`, los sprints de Jira y el `demo/` corresponden a esa
+> entrega. El producto que siga fuera de la facultad, **Zenith Optimizer**, puede cambiar de
+> alcance, de interfaz y de arquitectura; no se espera que estos documentos lo reflejen.
+
 ## Cómo empezar
 
 Requisitos: **Git** y **Node con `nvm`** (la versión está fijada en `.nvmrc`).
