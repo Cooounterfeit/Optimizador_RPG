@@ -6,7 +6,7 @@
 
 ## Qué entró a `main` en la ventana
 
-22 commits entre el 2 y el 15 de noviembre. Los hitos:
+17 commits en `main` entre el 2 y el 15 de noviembre (21 contando los de otras ramas). Los hitos:
 
 | Fecha | Commit | Contenido |
 |---|---|---|

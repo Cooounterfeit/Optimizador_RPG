@@ -27,7 +27,8 @@
 ### No funcionó
 
 1. **El sprint mezcla dos cosas.** «Documentación, CI/CD, Docker y demo final» convive con 28 HUs
-   arrastradas de producto. Un sprint con dos objetivos distintos no se puede evaluar.
+   que no son de este sprint: 18 arrastradas de los sprints 1 a 3, 9 sin sprint y SP-01. Un sprint
+   con dos objetivos distintos no se puede evaluar.
 2. **El editor llegó último.** Once HUs de configuración dependían de él y se planificaron después
    de todo lo demás. Eso no es un problema de ritmo: es un problema de orden.
 3. **Documentar al final.** La Fase 2 se escribió después de los sprints y hubo que reconstruir

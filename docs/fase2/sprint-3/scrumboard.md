@@ -30,11 +30,12 @@ retrospectiva del Sprint 2. Se usaron a medias: cuatro HUs quedaron en «En revi
 | Épica | Listas | Revisión | Por hacer |
 |---|---|---|---|
 | Infraestructura (TEC) | 10 | 2 | — |
-| Simulación (SIM) | 6 | 1 | — |
+| Simulación (SIM) | 7 | 1 | — |
 | Inventario (INV) | 4 | — | 1 |
-| Configuración (CFG) | 2 | 1 | 4 |
+| Configuración (CFG) | 2 | 1 | 5 |
 | Comunidad (HUB) | — | — | 4 |
 | Cuentas (AUT) | 2 | — | — |
+| **Total** | **25** | **4** | **10** |
 
 ## Observación
 

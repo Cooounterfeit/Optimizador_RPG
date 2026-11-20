@@ -34,8 +34,13 @@ de noviembre de 2026; el Sprint 4 está activo y sus cifras son de ese mismo dí
 | [4 — Cierre y entrega](./sprint-4/planning.md) | 16-nov → 29-nov | 39 | 162 | 3 | en curso |
 
 > En los sprints 1 a 3, las HUs que no se cerraron se arrastraron al Sprint 4 al cerrar cada
-> sprint. Por eso el Sprint 4 concentra 39 HUs: 11 propias y 28 heredadas. Está explicado en cada
-> `backlog.md` y no se esconde en una nota al pie.
+> sprint: 2 del Sprint 1, 2 del Sprint 2 y 14 del Sprint 3. A esas 18 se sumaron, en el ordenamiento
+> del 20 de noviembre, 9 HUs que no tenían sprint y SP-01, que volvió desde el Sprint 0 para
+> cerrarse. Por eso el Sprint 4 tiene 39 HUs: 11 propias y 28 llegadas de afuera.
+>
+> **Los totales de los cuatro sprints no se suman.** Sumar 13 + 9 + 39 + 39 da 100, pero el
+> proyecto tiene **83 HUs y 332 puntos**: el Sprint 4 incluye trabajo ya contado en los sprints
+> anteriores. El total del proyecto, y no la suma de la columna, es el número a citar.
 
 Jira tiene además un **Sprint 0 — Arranque del repositorio** (02-sep → 16-sep), con una sola HU:
 SP-01, evaluación de monorepos. No se documenta como sprint porque no hubo iteración: fue la
@@ -69,7 +74,7 @@ decisión de arranque, y esa HU se cerró recién en el Sprint 4.
 ## Cómo leer el conjunto
 
 Los sprints 1 y 2 tienen pocos commits y porcentajes altos: fueron sprints de decisiones, donde el
-trabajo no deja rastro en Git. El Sprint 3 tiene 22 commits y el porcentaje más bajo: se
+trabajo no deja rastro en Git. El Sprint 3 tiene 17 commits en `main` y el porcentaje más bajo: se
 comprometió el doble de lo que el equipo venía entregando. El Sprint 4 es el único que arranca con
 el pendiente de los anteriores encima.
 

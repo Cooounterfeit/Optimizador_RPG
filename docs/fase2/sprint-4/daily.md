@@ -6,8 +6,8 @@ Bitácora reconstruida desde las fechas de commit. No existió un daily escrito.
 
 ## 16 de noviembre
 
-- Arranca el sprint con 39 HUs abiertas: 11 propias del cierre y 28 arrastradas de los sprints 2 y
-  3 durante el ordenamiento del 20 de noviembre.
+- Arranca el sprint con 39 HUs abiertas: 11 propias y 28 que llegaron al ordenar Jira el 20 de
+  noviembre (18 arrastradas de los sprints 1 a 3, 9 sin sprint y SP-01 desde el Sprint 0).
 - Se confirma el foco: **el editor de juegos** (atributos, variables, variantes), no las
   funcionalidades sociales.
 

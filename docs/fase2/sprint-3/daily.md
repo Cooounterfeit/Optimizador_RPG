@@ -49,7 +49,7 @@ presentar como acta lo que es una reconstrucción.
 
 ## Observación sobre la cadencia
 
-Ocho de los diez días hábiles tienen al menos un commit, y dos de ellos (7 y 8 de noviembre) son
-fin de semana. Es el sprint con más actividad registrada: 22 commits. Aun así el 60 % de los
-puntos cayó en un solo día, porque el trabajo se integró por funcionalidad completa y no por
-partes demostrables.
+Siete de los diez días hábiles tienen al menos un commit, más el fin de semana del 7 y 8 de
+noviembre. Son **17 commits en `main`** (16 sin contar el merge del PR #10), el sprint con más
+actividad registrada. Aun así, el 60 % de los puntos completados cayó en un solo día, porque el
+trabajo se integró por funcionalidad completa y no por partes demostrables.

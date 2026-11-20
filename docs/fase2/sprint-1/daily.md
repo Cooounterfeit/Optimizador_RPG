@@ -28,6 +28,9 @@ reconstruye desde el historial de commits y las decisiones quedan documentadas p
 
 - Autenticación con registro e inicio de sesión (**AUT-1**, **AUT-2**).
 - Persistencia del inventario en la nube (**INV-8**).
+- **Sin commit que lo respalde.** El historial salta del 13 al 19 de octubre y las rutas que hoy
+  implementan esas HUs se crearon en noviembre. La fecha sale de Jira, no del repositorio; está
+  explicado en el [`burndown.md`](./burndown.md), que dibuja esos 10 puntos como no fechados.
 
 ## 18 de octubre — cierre
 
