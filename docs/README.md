@@ -3,6 +3,14 @@
 Documentación técnica del proyecto. El `README.md` de la raíz es la puerta de entrada; acá
 está el detalle que no cabe allí.
 
+## Alcance
+
+Todo `docs/` corresponde a la **entrega Capstone**, la versión universitaria del proyecto, que se
+presenta como **Optimizador RPG**. Si el producto continúa fuera de la facultad como
+**Zenith Optimizer**, estas páginas no se actualizan para reflejar esa etapa: describen lo que se
+construyó y se decidió durante el Capstone. La versión final del software tendrá su propio
+conjunto de documentos.
+
 ## Contenido
 
 | Documento | Qué responde |

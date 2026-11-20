@@ -3,6 +3,24 @@
 Registro de los cuatro sprints del proyecto, en el orden en que ocurrieron. Cada sprint tiene los
 mismos nueve documentos, para que se puedan comparar sin buscar.
 
+## Alcance: entrega Capstone
+
+Esto documenta la **entrega Capstone**, la versión universitaria que se presenta como
+**Optimizador RPG**. No es la documentación del producto final.
+
+Cuando el proyecto siga fuera de la facultad como **Zenith Optimizer**, buena parte de lo que está
+acá va a quedar desactualizado: nombres, alcance, sprints, decisiones y capturas. Se conserva tal
+como está porque registra lo que ocurrió en esas fechas; reescribirla después la convertiría en una
+ficción. Lo que se construya a partir de la versión final va a tener su propia documentación, en
+otra sección, y no hereda estas cifras.
+
+En concreto, cuando el producto cambie de etapa:
+
+- Estos sprints **no se reabren ni se recalculan**: son el registro del Capstone.
+- Las decisiones de arquitectura de `docs/decisiones/` siguen vigentes solo hasta que un ADR nuevo
+  las reemplace, según la regla de esa carpeta.
+- Las capturas del `demo/` muestran el prototipo del Capstone, no el producto publicado.
+
 **Fuente de los datos:** Jira, proyecto `ZO`. Los sprints 1 a 3 se verificaron contra la API el 20
 de noviembre de 2026; el Sprint 4 está activo y sus cifras son de ese mismo día.
 
