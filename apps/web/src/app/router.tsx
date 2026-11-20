@@ -6,6 +6,7 @@ import { LoginPage } from '../features/auth/LoginPage';
 import { ProfilePage } from '../features/auth/ProfilePage';
 import { RegisterPage } from '../features/auth/RegisterPage';
 import { RedirectIfSignedIn, RequireSession } from '../features/auth/guards';
+import { CreateOptimizerPage } from '../features/editor/CreateOptimizerPage';
 import { OptimizerWorkspace } from '../features/optimizer/workspace/OptimizerWorkspace';
 import { AppLayout } from './AppLayout';
 import { SimplePage } from './SimplePage';
@@ -39,6 +40,7 @@ export const routes = createBrowserRouter([
           </RequireSession>
         ),
       },
+      { path: 'crear', element: <CreateOptimizerPage /> },
       { path: 'optimizer/:id/*', element: <OptimizerWorkspace /> },
       { path: 'calculadora-dano', element: <Navigate to="/" replace /> },
       { path: 'inventario', element: <Navigate to="/" replace /> },

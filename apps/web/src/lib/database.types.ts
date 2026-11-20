@@ -23,6 +23,7 @@ export interface OptimizerRow {
   description: string;
   template: unknown;
   sample_items: unknown;
+  published: boolean;
 }
 
 /** Fila de la vista `optimizer_cards` (migracion 20261005000003). */

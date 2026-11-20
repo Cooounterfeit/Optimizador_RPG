@@ -28,7 +28,7 @@ import { itemIconUrls, characterIconUrls, characterRarityOf } from '../lib/image
 const NO_ITEMS: Item[] = [];
 
 export function OptimizerPage() {
-  const { id, template, sampleItems, inventory, skills } = useOptimizerWorkspace();
+  const { id, template, sampleItems, published, inventory, skills } = useOptimizerWorkspace();
   const inventoryForGame =
     template && inventory.loadedFor === template.gameId ? inventory.items : null;
   const { selection: skillSelection } = skills;
@@ -210,9 +210,18 @@ export function OptimizerPage() {
     <div className="mx-auto max-w-[1280px] px-6 pb-20 pt-6 max-[860px]:px-4">
       <header className="grid gap-6 border-b border-line pb-6 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
         <CoverArt name={template.name} cover={template.cover} className="rounded-[4px] border border-line">
-          <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1.5 rounded-[1px] bg-foreground px-2 py-1 font-mono text-[8.5px] font-semibold uppercase tracking-[0.13em] text-primary-foreground">
+          {/* La chapa decia "Published" siempre, incluso en un borrador que solo
+              existe en este navegador. Ahora el origen del juego es quien lo
+              dice. */}
+          <span
+            className={
+              published
+                ? 'absolute left-2.5 top-2.5 inline-flex items-center gap-1.5 rounded-[1px] bg-foreground px-2 py-1 font-mono text-[8.5px] font-semibold uppercase tracking-[0.13em] text-primary-foreground'
+                : 'absolute left-2.5 top-2.5 inline-flex items-center gap-1.5 rounded-[1px] border border-foreground/50 bg-background/70 px-2 py-1 font-mono text-[8.5px] font-semibold uppercase tracking-[0.13em] text-foreground backdrop-blur-[4px]'
+            }
+          >
             <span className="h-1 w-1 bg-current" aria-hidden="true" />
-            {gameCopy.cockpit.published}
+            {published ? gameCopy.cockpit.published : gameCopy.cockpit.draft}
           </span>
         </CoverArt>
 

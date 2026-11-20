@@ -19,6 +19,7 @@ export const gameCopy = {
   },
   cockpit: {
     published: 'Published',
+    draft: 'Draft',
     character: 'Character',
     characterHint: 'The build is calculated for this profile.',
     changeCharacter: 'Change',

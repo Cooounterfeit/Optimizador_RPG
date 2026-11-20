@@ -112,7 +112,7 @@ export function HomePage() {
               title={copy.catalog.emptyCatalogTitle}
               body={copy.catalog.emptyCatalogBody}
             >
-              <Link to="/login" className={buttonVariants()}>
+              <Link to="/crear" className={buttonVariants()}>
                 {copy.catalog.createFirst}
               </Link>
             </EmptyState>

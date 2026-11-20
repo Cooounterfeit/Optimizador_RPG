@@ -21,6 +21,8 @@ export interface OptimizerWorkspaceValue {
   retry: () => void;
   template: GameTemplate | undefined;
   sampleItems: Item[];
+  /** Si el optimizador esta visible en el catalogo. */
+  published: boolean;
   gameId: string;
   inventory: UseInventoryResult;
   skills: WorkspaceSkills;
@@ -42,6 +44,7 @@ export function OptimizerWorkspaceProvider({ children }: { children: ReactNode }
   const { state, retry } = useGame(id);
   const template = state.status === 'ready' ? state.template : undefined;
   const sampleItems = state.status === 'ready' ? state.sampleItems : [];
+  const published = state.status === 'ready' ? state.published : false;
   const inventory = useInventory(template?.gameId);
   const { selection, save, status, error } = useSkillSelection(template);
 
@@ -51,6 +54,7 @@ export function OptimizerWorkspaceProvider({ children }: { children: ReactNode }
     retry,
     template,
     sampleItems,
+    published,
     gameId: template?.gameId ?? '',
     inventory,
     skills: { selection, save, status, error },

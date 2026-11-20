@@ -52,6 +52,7 @@ const mockGame = (calculator?: DamageCalculator) => {
       status: 'ready',
       template: { damageCalculator: calculator } as GameTemplate,
       sampleItems: [],
+      published: true,
     },
     retry: vi.fn(),
   });
