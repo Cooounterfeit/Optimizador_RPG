@@ -15,8 +15,8 @@ Estado al cierre del sprint, 18 de octubre de 2026. Fuente: Jira, proyecto `ZO`,
 | ZO-30 · AUT-1 | Registro de nuevo usuario | 3 | Listo | `features/auth/RegisterPage.tsx`, `supabase-auth-service.ts` |
 | ZO-31 · AUT-2 | Inicio de sesión | 2 | Listo | `features/auth/LoginPage.tsx`, `guards.tsx` |
 | ZO-39 · INV-8 | Guardar inventario en la nube | 5 | Listo | `libs/data-access` + migraciones de `supabase/` |
-| ZO-11 · CFG-05 | Crear un nuevo juego desde cero | 3 | **Por hacer** | Se traslada al Sprint 2 |
-| ZO-12 · CFG-06 | Ver la configuración completa de un juego | 3 | **Por hacer** | Se traslada al Sprint 2 |
+| ZO-11 · CFG-05 | Crear un nuevo juego desde cero | 3 | **Por hacer** | Arrastrada al Sprint 4 |
+| ZO-12 · CFG-06 | Ver la configuración completa de un juego | 3 | **Por hacer** | Arrastrada al Sprint 4 |
 | ZO-71 · SP-02 | Investigar el uso de Supabase y cuentas de servicio | 3 | Listo | Jira: `Done`. Sin fecha de transición registrada |
 
 ## Resumen
@@ -28,10 +28,11 @@ Estado al cierre del sprint, 18 de octubre de 2026. Fuente: Jira, proyecto `ZO`,
 | Por hacer | 2 | 6 |
 | **Total** | **13** | **35** |
 
-## Traslado al Sprint 2
+## Traslado al sprint siguiente
 
 - **CFG-05 y CFG-06** (6 pts): dependen del editor de plantillas, que necesita primero el
-  esquema de datos ya definido en `shared-types`.
+  esquema de datos ya definido en `shared-types`. En Jira quedaron arrastradas al Sprint 4
+  durante el ordenamiento del 20 de noviembre.
 
 ## Nota sobre el alcance
 
