@@ -130,13 +130,14 @@ const seed = JSON.parse(
 /** `useGame` consulta el repositorio remoto solo si el id tiene forma de uuid. */
 const GAME_ID = '11111111-1111-4111-8111-111111111111';
 
-const record = (template: GameTemplate): OptimizerRecord => ({
+const record = (template: GameTemplate, published = true): OptimizerRecord => ({
   id: GAME_ID,
   name: template.name,
   gameName: template.name,
   description: template.description,
   template,
   sampleItems: seed.items,
+  published,
 });
 
 const emptyResult = {
@@ -221,8 +222,9 @@ const buildFromSeed = (score = 100): BuildResult => ({
 const useTemplate = (
   template: GameTemplate = seed.template,
   items: Item[] = seed.items,
+  published = true,
 ): void => {
-  setOptimizerRepository({ getOptimizer: async () => record(template) });
+  setOptimizerRepository({ getOptimizer: async () => record(template, published) });
   setInventoryRepository(inventoryRepo(items));
   setGameRepository(noopGames);
   setSkillsRepository(skillsRepo());
@@ -308,6 +310,22 @@ describe('OptimizerPage', () => {
 });
 
 describe('OptimizerPage con juego real', () => {
+  it('distingue un borrador de un optimizador publicado en la chapa', async () => {
+    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
+
+    useTemplate(seed.template, seed.items, false);
+    const borrador = renderPage();
+    await screen.findByRole('heading', { name: seed.template.name, level: 1 });
+    expect(screen.getByText(gameCopy.cockpit.draft)).toBeTruthy();
+    expect(screen.queryByText(gameCopy.cockpit.published)).toBeNull();
+    borrador.unmount();
+
+    useTemplate(seed.template, seed.items, true);
+    renderPage();
+    await screen.findByRole('heading', { name: seed.template.name, level: 1 });
+    expect(screen.getByText(gameCopy.cockpit.published)).toBeTruthy();
+  });
+
   it('no deja optimizar hasta que la base guardada del perfil esta lista', async () => {
     vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
     useTemplate();

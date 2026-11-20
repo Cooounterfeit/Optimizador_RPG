@@ -62,7 +62,7 @@ export function TopBar() {
       />
 
       <div className="flex shrink-0 items-center gap-2">
-        <Link to="/login">
+        <Link to="/crear">
           <Button className="max-[720px]:px-[11px]">
             <svg
               width="14"

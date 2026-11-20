@@ -48,6 +48,7 @@ const record = (template: GameTemplate): OptimizerRecord => ({
   description: template.description,
   template,
   sampleItems: seed.items,
+  published: true,
 });
 
 const games: GameRepository = {
