@@ -8,7 +8,7 @@ import { GameTemplateSchema, type GameTemplate } from '@zenith/shared-types';
  * todavia no SIRVE: se puede guardar, abrir y seguir editando, y el optimizador
  * dira que le falta un objetivo en vez de romperse.
  *
- * Esa distincion —valida pero incompleta— es la que permite que crear un juego
+ * Esa distincion, valida pero incompleta, es la que permite que crear un juego
  * sea un formulario de tres campos y no el formulario de cuarenta que seria si
  * hubiera que declararlo todo de una vez.
  *
@@ -41,8 +41,8 @@ export function slugify(name: string): string {
 /**
  * Un id libre entre los ya usados.
  *
- * Nombres repetidos son normales —dos personas pueden optimizar el mismo
- * juego— asi que en vez de rechazar el nombre se numera el id. El nombre
+ * Nombres repetidos son normales, porque dos personas pueden optimizar el
+ * mismo juego, asi que en vez de rechazar el nombre se numera el id. El nombre
  * visible no se toca.
  */
 export function uniqueGameId(base: string, taken: readonly string[]): string {

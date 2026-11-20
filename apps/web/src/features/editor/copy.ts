@@ -1,7 +1,7 @@
 export const editorCopy = {
   create: {
     title: 'New optimizer',
-    lede: 'Name the game you want to optimize. Stats, slots and formulas come next — nothing here is final.',
+    lede: 'Name the game you want to optimize. Stats, slots and formulas come next. Nothing here is final.',
     name: 'Game name',
     nameHint: 'What players call it.',
     description: 'Description',
