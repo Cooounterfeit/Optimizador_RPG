@@ -11,9 +11,9 @@ criterio de aceptación declarado.
 | Métrica | Valor |
 |---|---|
 | Puntos comprometidos | 35 |
-| Puntos completados | 26 |
-| Cumplimiento | **74 %** |
-| HUs cerradas | 10 de 13 |
+| Puntos completados | 29 |
+| Cumplimiento | **83 %** |
+| HUs cerradas | 11 de 13 |
 
 ## Incremento demostrable
 
@@ -64,12 +64,11 @@ migraciones son idempotentes.
 | HU | Motivo | Destino |
 |---|---|---|
 | CFG-05, CFG-06 | Necesitan el editor, que depende del contrato recién creado | Sprint 2 |
-| SP-02 | La investigación de cuentas de servicio no bloqueaba el motor | Sprint 2 |
 
 ## Observaciones de la review
 
-- **El 74 % no es un sprint fallido.** El objetivo declarado era el motor, y el motor está
-  completo. Lo abierto es de producto y de decisión, no de la pieza central.
+- **El 83 % no es un sprint fallido.** El objetivo declarado era el motor, y el motor está
+  completo. Lo abierto es de producto, no de la pieza central.
 - **El prototipo cumplió su función y se congela.** A partir de aquí, toda evidencia se produce
   en el monorepo; `demo/` queda como referencia histórica del PR #2.
 - **Sin tag de release todavía.** El incremento es identificable por fecha, no por etiqueta. Se

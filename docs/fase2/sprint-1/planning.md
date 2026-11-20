@@ -41,5 +41,9 @@ portarlo al monorepo.
 
 ## Resultado
 
-26 de 35 puntos completados (**74 %**). El objetivo se cumplió: el motor quedó portado y
+29 de 35 puntos completados (**83 %**). El objetivo se cumplió: el motor quedó portado y
 probado. Lo que no entró se trasladó al sprint siguiente (ver `backlog.md`).
+
+> La asignación de HUs al sprint en Jira quedó incompleta: de las trece, solo tres estaban
+> asignadas al cierre. Los puntos y estados son los reales de Jira; la pertenencia se corrige
+> en el ordenamiento de Jira.

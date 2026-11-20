@@ -1,6 +1,12 @@
 # Sprint 1 — Backlog
 
-Estado al cierre del sprint, 18 de octubre de 2026. Fuente: Jira, proyecto `ZO`.
+Estado al cierre del sprint, 18 de octubre de 2026. Fuente: Jira, proyecto `ZO`, contrastado con
+el historial de commits.
+
+> **Advertencia de trazabilidad.** De estas trece HUs, Jira solo tenía **tres** asignadas al
+> sprint (ZO-11, ZO-12 y ZO-71). Las diez restantes se completaron en las mismas fechas pero
+> quedaron sin asignar. El estado y los puntos son correctos; la pertenencia al sprint se
+> corrige en el ordenamiento de Jira.
 
 | HU | Título | Pts | Estado | Evidencia |
 |---|---|---|---|---|
@@ -16,14 +22,14 @@ Estado al cierre del sprint, 18 de octubre de 2026. Fuente: Jira, proyecto `ZO`.
 | ZO-39 · INV-8 | Guardar inventario en la nube | 5 | Listo | `libs/data-access` + migraciones de `supabase/` |
 | ZO-11 · CFG-05 | Crear un nuevo juego desde cero | 3 | **Por hacer** | Se traslada al Sprint 2 |
 | ZO-12 · CFG-06 | Ver la configuración completa de un juego | 3 | **Por hacer** | Se traslada al Sprint 2 |
-| ZO-71 · SP-02 | Investigar el uso de Supabase y cuentas de servicio | 3 | **En curso** | Se cierra en el Sprint 2 con la decisión de RLS |
+| ZO-71 · SP-02 | Investigar el uso de Supabase y cuentas de servicio | 3 | Listo | Jira: `Done`. Sin fecha de transición registrada |
 
 ## Resumen
 
 | Estado | HUs | Puntos |
 |---|---|---|
-| Listo | 10 | 26 |
-| En curso | 1 | 3 |
+| Listo | 11 | 29 |
+| En curso | 0 | 0 |
 | Por hacer | 2 | 6 |
 | **Total** | **13** | **35** |
 
@@ -31,7 +37,6 @@ Estado al cierre del sprint, 18 de octubre de 2026. Fuente: Jira, proyecto `ZO`.
 
 - **CFG-05 y CFG-06** (6 pts): dependen del editor de plantillas, que necesita primero el
   esquema de datos ya definido en `shared-types`.
-- **SP-02** (3 pts): la investigación no bloqueaba el motor; se termina cuando entra Supabase.
 
 ## Nota sobre el alcance
 
