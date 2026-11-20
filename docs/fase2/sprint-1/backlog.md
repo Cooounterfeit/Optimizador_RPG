@@ -1,12 +1,7 @@
 # Sprint 1 — Backlog
 
-Estado al cierre del sprint, 18 de octubre de 2026. Fuente: Jira, proyecto `ZO`, contrastado con
-el historial de commits.
-
-> **Advertencia de trazabilidad.** De estas trece HUs, Jira solo tenía **tres** asignadas al
-> sprint (ZO-11, ZO-12 y ZO-71). Las diez restantes se completaron en las mismas fechas pero
-> quedaron sin asignar. El estado y los puntos son correctos; la pertenencia al sprint se
-> corrige en el ordenamiento de Jira.
+Estado al cierre del sprint, 18 de octubre de 2026. Fuente: Jira, proyecto `ZO`, sprint 5
+("Sprint 1 — Prototipo y motor"), verificado contra la API el 20 de noviembre de 2026.
 
 | HU | Título | Pts | Estado | Evidencia |
 |---|---|---|---|---|
