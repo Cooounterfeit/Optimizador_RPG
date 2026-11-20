@@ -6,8 +6,8 @@
 final.
 
 > Este documento describe un sprint **en curso**. Los datos son los que devuelve Jira el 20 de
-> noviembre de 2026. El equipo cierra el sprint el 22 o 23 de noviembre, así que las cifras
-> cambian antes del cierre y no se presentan como definitivas.
+> noviembre de 2026. Jira lo fecha del 16 al 29, pero el equipo lo cierra el 22 o 23 porque la
+> entrega se presenta antes: esa es la ventana que usan el burndown y las cifras de avance.
 
 ## Contexto de partida
 
@@ -33,9 +33,12 @@ aplicación se sostenga sola, y de cerrar la documentación de las cuatro fases.
 | Investigación (SP) | 1 | 3 |
 | **Total** | **39** | **162** |
 
-> El alcance incluye el trabajo arrastrado de los sprints 2 y 3: 28 HUs que no se cerraron. Se
-> mantiene todo en el sprint abierto para que el pendiente sea visible en un solo lugar, en vez de
-> repartirlo en un backlog que nadie mira.
+> El alcance incluye el trabajo que llegó en el ordenamiento del 20 de noviembre: **28 HUs**. De
+> ellas, 18 se arrastraron de los sprints 1 a 3 (2 del Sprint 1, 2 del Sprint 2 y 14 del Sprint 3),
+> 9 no tenían sprint asignado y SP-01 volvió desde el Sprint 0, donde había quedado abierta desde
+> septiembre. Las otras 11 ya estaban en el sprint: 7 de trabajo en curso y 4 creadas para el
+> cierre. Se mantiene todo en el sprint abierto para que el pendiente sea visible en un solo lugar,
+> en vez de repartirlo en un backlog que nadie mira.
 
 ## Qué se está trabajando de verdad
 
@@ -61,7 +64,7 @@ todo lo demás.
 | El juego demo está hardcodeado en el bundle | TEC-22 lo elimina; es la HU que más riesgo tiene |
 | Dos rutas viejas siguen activas (`/inventario`, `/calculadora-dano`) | TEC-23 las redirige a la home |
 | La interfaz del optimizador tiene dos versiones vivas | UI-01 las unifica antes de la entrega |
-| El sprint arrastra 28 HUs que no se van a cerrar | Se dejan visibles como pendiente, no se marcan como hechas |
+| El sprint incluye 28 HUs que no vienen de este sprint | Se dejan visibles como pendiente, no se marcan como hechas |
 
 ## Criterio de aceptación del sprint
 

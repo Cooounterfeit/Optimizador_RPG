@@ -4,9 +4,10 @@
 
 **Origen.** Sprint 3. Se planificaron 182 puntos con una capacidad observada de ~30 por sprint.
 
-**Consecuencia en este sprint.** 28 HUs arrastradas conviven con las 11 propias del cierre. El
-Sprint 4 no puede cumplir su objetivo declarado —documentación, CI/CD y demo final— sin decidir qué
-queda fuera.
+**Consecuencia en este sprint.** 28 HUs llegadas del ordenamiento conviven con las 11 propias del
+cierre: 18 arrastradas de los sprints 1 a 3, 9 que no tenían sprint y SP-01. El Sprint 4 no puede
+cumplir su objetivo declarado —documentación, CI/CD, Docker y demo final— sin decidir qué queda
+fuera.
 
 **Estado.** **Abierto.** No se resuelve moviendo tarjetas: se resuelve cerrando el sprint con una
 lista explícita de lo que no entra.
@@ -39,7 +40,7 @@ veces y las pruebas cubren una sola.
 
 | ID | Impedimento | Estado |
 |---|---|---|
-| IMP-11 | Sprint 3 sobrecomprometido, arrastre de 28 HUs | Abierto |
+| IMP-11 | Sprint 3 sobrecomprometido, 28 HUs llegadas del ordenamiento | Abierto |
 | IMP-12 | Juego demo hardcodeado en el bundle | Abierto, en trabajo |
 | IMP-13 | Dos interfaces de optimizador | Abierto, previsto para UI-01 |
 

@@ -55,7 +55,7 @@
 |---|---|
 | Estimar antes de entrar | Cumplido: las 16 HUs sin puntos se estimaron en el ordenamiento |
 | Verificación inmediata | Parcial: el Sprint 4 arranca con trabajo en curso, no con revisiones viejas |
-| Alcance realista | No se intentó: el Sprint 4 absorbe las 28 HUs pendientes de los sprints 2 y 3 |
+| Alcance realista | No se intentó: el Sprint 4 absorbe 18 HUs arrastradas de los sprints 1 a 3 |
 
 ## Cierre
 

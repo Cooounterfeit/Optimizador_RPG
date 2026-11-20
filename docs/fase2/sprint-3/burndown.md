@@ -10,23 +10,23 @@
 1. Se asigna cada HU cerrada al commit que la evidencia.
 2. Los commits de fin de semana (7 y 8 de noviembre) se imputan al lunes 9, primer día hábil
    siguiente.
-3. La línea ideal reparte 182 puntos entre los **10 días hábiles** (2 al 13 de noviembre).
+3. La línea ideal reparte 182 puntos entre los **9 intervalos** de los 10 días hábiles (2 al 13 de
+   noviembre): 20,2 puntos por día, y llega a cero el 13.
 
 ## Tabla
 
 | Día hábil | Ideal | Real | Se cierran |
 |---|---|---|---|
 | 02 nov | 182,0 | 172 | TEC-04, TEC-05 (−10) |
-| 03 nov | 163,8 | 172 | — |
-| 04 nov | 145,6 | 172 | — |
-| 05 nov | 127,4 | 148 | TEC-02, TEC-13, TEC-19, TEC-14, CFG-19 (−24) |
-| 06 nov | 109,2 | 145 | AUT-3 (−3) |
-| 09 nov | 91,0 | **70** | CFG-15, INV-3, INV-4, TEC-07, INV-5, INV-7, SIM-01, SIM-03, SIM-04, SIM-05, SIM-06, SIM-07, SIM-08 (−75) |
-| 10 nov | 72,8 | 70 | — |
-| 11 nov | 54,6 | 65 | TEC-06 (−5) |
-| 12 nov | 36,4 | 65 | — |
-| 13 nov | 18,2 | 56 | TEC-11, TEC-15, AUT-4 (−9) |
-| 15 nov | 0,0 | **56** | cierre: 14 HUs arrastradas |
+| 03 nov | 161,8 | 172 | — |
+| 04 nov | 141,6 | 172 | — |
+| 05 nov | 121,3 | 148 | TEC-02, TEC-13, TEC-19, TEC-14, CFG-19 (−24) |
+| 06 nov | 101,1 | 145 | AUT-3 (−3) |
+| 09 nov | 80,9 | **70** | CFG-15, INV-3, INV-4, TEC-07, INV-5, INV-7, SIM-01, SIM-03, SIM-04, SIM-05, SIM-06, SIM-07, SIM-08 (−75) |
+| 10 nov | 60,7 | 70 | — |
+| 11 nov | 40,4 | 65 | TEC-06 (−5) |
+| 12 nov | 20,2 | 65 | — |
+| 13 nov | 0,0 | 56 | TEC-11, TEC-15, AUT-4 (−9) |
 
 ## Aritmética del cierre
 

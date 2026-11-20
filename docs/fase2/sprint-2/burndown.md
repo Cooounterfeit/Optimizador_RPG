@@ -10,22 +10,23 @@
 
 1. Se toma la fecha del commit que evidencia cada HU.
 2. Cada día se descuentan los puntos de las HUs cuya evidencia aparece ese día o antes.
-3. La línea ideal reparte 32 puntos entre los **10 días hábiles** del sprint (19 al 30 de octubre).
+3. La línea ideal reparte 32 puntos entre los **10 días hábiles** del sprint (19 al 30 de octubre):
+   3,56 puntos por día, y llega a cero el último día hábil.
 
 ## Tabla
 
 | Día | Ideal restante | Real restante | HUs que cierran |
 |---|---|---|---|
 | 19 oct | 32,0 | 32 | ajuste de e2e, sin cierre de HU |
-| 20 oct | 28,8 | 32 | — |
-| 21 oct | 25,6 | 32 | — |
-| 22 oct | 22,4 | 32 | — |
-| 23 oct | 19,2 | 32 | — |
-| 26 oct | 16,0 | 32 | — |
-| 27 oct | 12,8 | 32 | — |
-| 28 oct | 9,6 | 32 | — |
-| 29 oct | 6,4 | 32 | — |
-| 30 oct | 3,2 | 32 | — |
+| 20 oct | 28,4 | 32 | — |
+| 21 oct | 24,9 | 32 | — |
+| 22 oct | 21,3 | 32 | — |
+| 23 oct | 17,8 | 32 | — |
+| 26 oct | 14,2 | 32 | — |
+| 27 oct | 10,7 | 32 | — |
+| 28 oct | 7,1 | 32 | — |
+| 29 oct | 3,6 | 32 | — |
+| 30 oct | 0,0 | 32 | — |
 | 01 nov | 0,0 | **5** | esquema en el repo, tipos generados y pruebas RLS (−27) |
 
 ## Aritmética del cierre
