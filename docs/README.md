@@ -15,6 +15,7 @@ está el detalle que no cabe allí.
 | [`estrategia-de-pruebas.md`](./estrategia-de-pruebas.md) | Qué se prueba, con qué y qué falta |
 | [`definition-of-ready-done.md`](./definition-of-ready-done.md) | Cuándo una historia empieza y cuándo termina |
 | [`ritmo-de-trabajo.md`](./ritmo-de-trabajo.md) | Cómo trabajó el equipo y cómo leer el historial de Git |
+| [`fase2/`](./fase2/README.md) | Los cuatro sprints: planning, backlog, tablero, burndown, daily, impedimentos, release, review y retrospectiva |
 | [`decisiones/`](./decisiones/) | ADRs: por qué se eligió NX, cliente, Supabase, Docker y Vercel |
 
 ## Decisiones de arquitectura (ADR)

@@ -8,6 +8,10 @@
 > imagen quede versionada y no dependa de una sesión autenticada.
 >
 > Verificado el 20 de noviembre de 2026: 13 HUs, 35 puntos, 11 en Listo y 2 en Por hacer.
+>
+> Las dos abiertas (CFG-05 y CFG-06) se arrastraron al Sprint 4 al cerrar el sprint, así que hoy
+> Jira muestra 11 HUs en el sprint 5. La imagen sigue mostrando las 13 comprometidas, que es lo que
+> documenta un tablero al cierre.
 
 ## Columnas
 
