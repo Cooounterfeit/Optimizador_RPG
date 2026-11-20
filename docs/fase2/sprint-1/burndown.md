@@ -2,10 +2,11 @@
 
 ![Burndown del Sprint 1](./burndown.png)
 
-> **Gráfico reconstruido.** El sprint nunca se activó en Jira mientras se trabajaba, así que no
-> existe historial de puntos por día. La curva se reconstruye a partir de las fechas de commit y
-> del estado final de cada HU. Se declara explícitamente para no presentar como medición lo que
-> es una estimación.
+> **Gráfico reconstruido.** El sprint permaneció en estado `future` en Jira durante todo el trabajo
+> y se cerró recién el 20 de noviembre de 2026, al ordenar el proyecto. Jira no guarda historial de
+> puntos por día con esa secuencia, así que la curva se reconstruye desde las fechas de commit y el
+> estado final de cada HU. Se declara explícitamente para no presentar como medición lo que es una
+> estimación.
 
 ## Método de reconstrucción
 
