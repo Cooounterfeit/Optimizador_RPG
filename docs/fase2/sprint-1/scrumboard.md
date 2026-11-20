@@ -2,13 +2,12 @@
 
 ![Tablero del Sprint 1 al cierre](./scrumboard.png)
 
-> **Reconstrucción, no captura.** Jira no se usó como fuente de verdad durante el sprint: al
-> cierre, el Sprint 1 tenía **3 HUs asignadas** (ZO-11, ZO-12 y ZO-71). Las otras diez se
-> completaron en las mismas fechas pero nunca se asignaron al sprint.
+> **Render, no captura.** Generado a partir de los datos de la API de Jira
+> (`sprint = 5`, "Sprint 1 — Prototipo y motor"), no es una captura de pantalla. Las HUs, los
+> estados y los puntos coinciden con lo que devuelve la consulta; el render existe para que la
+> imagen quede versionada y no dependa de una sesión autenticada.
 >
-> Este tablero reconstruye el estado del trabajo a partir de los commits y del estado de cada HU
-> en Jira. La asignación de las diez HUs al sprint se corrige en el ordenamiento de Jira, y
-> entonces esta imagen se reemplaza por una captura del tablero real.
+> Verificado el 20 de noviembre de 2026: 13 HUs, 35 puntos, 11 en Listo y 2 en Por hacer.
 
 ## Columnas
 
