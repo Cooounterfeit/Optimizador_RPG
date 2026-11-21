@@ -52,5 +52,5 @@ Cuando el sprint cierre el 22 o 23 de noviembre, este documento se reemplaza con
 definitiva. Los indicadores que importan entonces son dos:
 
 1. Cuántas de las 7 HUs en curso llegaron a «Listo», no cuántas se movieron de columna.
-2. Si TEC-22 —eliminar el juego demo hardcodeado— se cerró: es la HU que decide si el producto se
-   sostiene sin la demo.
+2. Si el editor quedó en un estado demostrable. Es lo que se muestra; TEC-22 ya no se espera para
+   la entrega.

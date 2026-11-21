@@ -11,11 +11,15 @@ final.
 
 ## Contexto de partida
 
-El Sprint 3 dejó la aplicación funcionando, pero con 56 puntos de trabajo sin cerrar y un problema
-estructural: parte del producto todavía depende de un juego de demostración escrito a mano.
+El Sprint 3 dejó la aplicación funcionando, pero con 56 puntos de trabajo sin cerrar.
 
-Este sprint no es de funcionalidades nuevas. Es de **quitar lo que sostiene la demo** para que la
-aplicación se sostenga sola, y de cerrar la documentación de las cuatro fases.
+Este sprint no es de funcionalidades nuevas. Es de **cerrar la documentación de las cuatro fases**
+y sostener lo que ya funciona, sin abrir frente nuevo.
+
+> **Decisión del 20 de noviembre: la demo se queda.** El juego de demostración escrito a mano no se
+> elimina hasta que termine la asignatura, porque **es la evidencia** de que el motor resuelve un
+> problema real con datos reales. TEC-22 deja de ser deuda de este sprint y pasa a ser trabajo
+> posterior al Capstone.
 
 ## Alcance comprometido
 
@@ -59,19 +63,19 @@ todo lo demás.
 
 ## Riesgos identificados al inicio
 
-| Riesgo | Mitigación aplicada |
+| Riesgo | Situación |
 |---|---|
-| El juego demo está hardcodeado en el bundle | TEC-22 lo elimina; es la HU que más riesgo tiene |
+| El juego demo está hardcodeado en el bundle | **Aceptado.** Es la evidencia del Capstone; se retira después de la entrega |
 | Dos rutas viejas siguen activas (`/inventario`, `/calculadora-dano`) | TEC-23 las redirige a la home |
 | La interfaz del optimizador tiene dos versiones vivas | UI-01 las unifica antes de la entrega |
 | El sprint incluye 28 HUs que no vienen de este sprint | Se dejan visibles como pendiente, no se marcan como hechas |
 
 ## Criterio de aceptación del sprint
 
-- La aplicación funciona sin ningún juego de demostración en el código.
+- La demo se levanta con un comando y resuelve el juego de ejemplo.
 - Un usuario puede crear un juego desde cero con atributos, variables y variantes.
 - Una sola interfaz de optimizador, no dos.
-- CI en verde, Docker construye y la demo se levanta con un comando.
+- CI en verde y Docker construye la aplicación.
 
 ## Estado al 20 de noviembre
 

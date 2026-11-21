@@ -12,20 +12,20 @@ fuera.
 **Estado.** **Abierto.** No se resuelve moviendo tarjetas: se resuelve cerrando el sprint con una
 lista explícita de lo que no entra.
 
-## IMP-12 — El producto depende de un juego de demostración escrito a mano
+## IMP-12 — El producto depende de un juego demo escrito a mano (aceptado)
 
-**Problema.** Parte de la interfaz y de los datos semilla siguen apoyados en un juego hardcodeado
-en el bundle. Mientras esté ahí, la aplicación no se puede usar con un juego propio sin tocar
-código.
+**Problema.** Parte de la interfaz y de los datos semilla se apoyan en un juego hardcodeado en el
+bundle. La aplicación no se puede usar con un juego propio sin tocar código.
 
-**Impacto.** Es el impedimento que decide si el producto existe. Un optimizador que solo funciona
-con el juego del ejemplo es una demo, no una herramienta.
+**Por qué se acepta.** Para el Capstone eso **no es un defecto: es la evidencia**. La demo
+demuestra que el motor resuelve el problema con un juego real; sin ella habría que presentar el
+motor aislado.
 
-**Mitigación en curso.** TEC-22 (eliminar el juego demo hardcodeado), TEC-23 (redirigir las rutas
-viejas), UI-01 (unificar la interfaz del optimizador) y el editor de juegos, que es lo que ocupa la
-columna «En curso».
+**Qué se hace igual.** TEC-23 (redirigir las rutas viejas) y UI-01 (unificar la interfaz) siguen en
+el sprint: no dependen de sacar la demo y sí mejoran lo que se presenta.
 
-**Estado.** **Abierto**, con trabajo en marcha.
+**Estado.** **Aceptado, no resuelto.** TEC-22 queda para después del Capstone, junto con el registro
+de juegos por el usuario.
 
 ## IMP-13 — Dos interfaces de optimizador vivas a la vez
 
@@ -41,7 +41,8 @@ veces y las pruebas cubren una sola.
 | ID | Impedimento | Estado |
 |---|---|---|
 | IMP-11 | Sprint 3 sobrecomprometido, 28 HUs llegadas del ordenamiento | Abierto |
-| IMP-12 | Juego demo hardcodeado en el bundle | Abierto, en trabajo |
+| IMP-12 | Juego demo hardcodeado en el bundle | Aceptado (post-Capstone) |
 | IMP-13 | Dos interfaces de optimizador | Abierto, previsto para UI-01 |
 
-Ninguno de los tres se puede cerrar con documentación. Los tres son código.
+Ninguno se cierra con documentación: IMP-11 pide un sprint con alcance realista, IMP-12 se acepta
+hasta el Capstone y IMP-13 es código (UI-01).

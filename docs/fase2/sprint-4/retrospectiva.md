@@ -10,7 +10,7 @@
 | Puntos completados | 3 |
 | HUs en curso | 7 |
 | HUs en revisión | 4 |
-| Días hábiles transcurridos | 5 de 10 |
+| Días hábiles transcurridos | 5 de 6 |
 | Impedimentos abiertos | 3 |
 
 ## Lo que ya se puede decir
@@ -45,6 +45,6 @@
 
 ## Lo que este sprint deja al proyecto
 
-Un producto que se sostiene sin la demo es lo único que separa una entrega de una presentación. Al
-20 de noviembre, ese paso está empezado: el editor existe (`5c4cbe7`) y la demo hardcodeada todavía
-no se eliminó. El sprint se juega en TEC-22.
+El paso que separaba una entrega de una presentación era sacar la demo del bundle. Se decidió lo
+contrario, y es correcto: **la demo es la presentación**. Lo que queda abierto es el editor, que es
+lo que permite que la demo deje de ser un caso único.
