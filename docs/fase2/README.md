@@ -60,6 +60,25 @@ decisión de arranque, y esa HU se cerró recién en el Sprint 4.
 | [`review.md`](./sprint-1/review.md) | Qué se demostró y qué no, con el motivo |
 | [`retrospectiva.md`](./sprint-1/retrospectiva.md) | Qué se empieza, qué se deja y qué se sigue |
 
+## Releases por sprint
+
+Cada sprint cerrado tiene un tag anotado en GitHub sobre el último commit de su ventana, con el
+resumen del incremento en el mensaje:
+
+| Sprint | Tag | Commit | Enlace |
+|---|---|---|---|
+| 1 — Prototipo y motor | `sprint-1` | `8c78dd5` | [releases/tag/sprint-1](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-1) |
+| 2 — Catálogo y RLS | `sprint-2` | `17044c6` | [releases/tag/sprint-2](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-2) |
+| 3 — App real e inventario | `sprint-3` | `c98ce2c` | [releases/tag/sprint-3](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-3) |
+| 4 — Cierre y entrega | `sprint-4` | al cerrar | se crea el 22 o 23 de noviembre |
+
+El proyecto no usa versiones semánticas `v1.2.3`: versiona por sprint, que es lo que el listado de
+documentos pide como entregable de Release. Para ver el código exacto que se entregó en el Sprint 1:
+
+```bash
+git checkout sprint-1
+```
+
 ## Reglas que siguen estos documentos
 
 1. **Un dato sin fuente no se escribe.** Los puntos y estados salen de Jira; las evidencias, del

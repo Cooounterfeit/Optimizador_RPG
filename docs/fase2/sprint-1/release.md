@@ -31,12 +31,14 @@ curvas, árbol de habilidades con editor visual, hoja de personaje y persistenci
 |---|---|
 | Commits en `main` | Sí |
 | PRs mergeados | #1, #2 |
-| **Tag de release** | **Pendiente** |
+| **Tag de release** | **`sprint-1`** |
 
-La creación de tags (`v0.1.0` y siguientes) está en el paso de releases del plan de Fase 2. Hasta
-que exista, la referencia de este incremento es el rango de commits del 6 al 18 de octubre, no una
-etiqueta. Se documenta así porque un documento de release que cita un tag inexistente es
-verificablemente falso.
+El tag `sprint-1` (anotado) apunta a `8c78dd5`, el último commit de la ventana del sprint, y lleva
+en su mensaje el resumen del incremento. Se ve en
+`https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-1`.
+
+El proyecto no usa versiones semánticas (`v0.1.0`): usa una etiqueta por sprint, que es lo que el
+listado de documentos pide como entregable de Release.
 
 ## Cómo verificar este incremento
 

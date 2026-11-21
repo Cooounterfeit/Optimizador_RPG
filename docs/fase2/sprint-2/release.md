@@ -1,9 +1,11 @@
 # Sprint 2 — Release
 
-**Versión entregada:** no hay etiqueta. El proyecto no versiona por release, versiona por merge a
-`main`. Se declara porque un evaluador puede esperar un tag y no encontrarlo.
+**Versión entregada:** tag `sprint-2`, sobre el commit `17044c6`
+(`feat(supabase): esquema en el repo y pruebas RLS con PGlite`).
 
-**Commit de cierre del sprint:** `17044c6` — `feat(supabase): esquema en el repo y pruebas RLS con PGlite`
+El proyecto no usa versiones semánticas (`v1.2.3`): usa una etiqueta por sprint, que es lo que el
+listado de documentos pide como entregable de Release. Se ve en
+`https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-2`.
 
 ## Qué entró a `main` en la ventana
 

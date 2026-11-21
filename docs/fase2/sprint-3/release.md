@@ -1,8 +1,11 @@
 # Sprint 3 — Release
 
-**Versión entregada:** sin etiqueta. El proyecto versiona por merge a `main`, no por tag.
+**Versión entregada:** tag `sprint-3`, sobre el commit `c98ce2c` (merge del PR #10,
+`feat/hoja-personaje-selector`).
 
-**Commit de cierre del sprint:** `c98ce2c` — merge del PR #10 (`feat/hoja-personaje-selector`)
+El proyecto no usa versiones semánticas (`v1.2.3`): usa una etiqueta por sprint, que es lo que el
+listado de documentos pide como entregable de Release. Se ve en
+`https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-3`.
 
 ## Qué entró a `main` en la ventana
 
