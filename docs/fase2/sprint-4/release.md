@@ -36,9 +36,13 @@
 
 ## Pendiente al cierre
 
-- Eliminar el juego demo hardcodeado (TEC-22).
 - Unificar la interfaz del optimizador (UI-01).
 - Redirigir las rutas viejas (TEC-23).
+
+## Fuera de alcance hasta el Capstone
+
+- Eliminar el juego demo hardcodeado (TEC-22). **La demo es la evidencia de la entrega**: se retira
+  cuando el proyecto continúe como Zenith Optimizer, no antes.
 
 ## Nota de trazabilidad
 

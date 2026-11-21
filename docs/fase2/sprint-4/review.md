@@ -36,9 +36,12 @@ configuración, y la que destraba las demás.
 | Bloque | HUs | Puntos |
 |---|---|---|
 | Editor de juegos | CFG-01, 02, 03, 04, 05, 06, 07, 08, 09A, 09B, 11 | 42 |
-| Cierre de la demo | TEC-22, TEC-23, UI-01, CFG-21 | 20 |
+| Cierre de la entrega | TEC-23, UI-01, CFG-21 | 15 |
 | Comunidad | HUB-02, HUB-21, HUB-22, HUB-23, HUB-34 | 17 |
 | Suscripciones | SUB-32, SUB-36, SUB-37, SUB-38 | 16 |
+
+TEC-22 no figura: la demo se queda como evidencia hasta el fin de la asignatura, así que su
+eliminación no es un pendiente de la entrega.
 
 ## Métricas al 20 de noviembre
 
@@ -48,7 +51,7 @@ configuración, y la que destraba las demás.
 | Puntos completados | 3 (SP-01, del sprint de arranque) |
 | HUs en curso | 7 |
 | HUs en revisión | 4 |
-| Días hábiles transcurridos | 5 de 10 |
+| Días hábiles transcurridos | 5 de 6 |
 
 ## Observación
 
