@@ -225,8 +225,16 @@ const renderPage = (id: string = GAME_ID) => renderWorkspace(`/optimizer/${id}`)
 const optimizeButton = () => screen.getByRole('button', { name: gameCopy.cockpit.optimize });
 const optimizeDisabled = (): boolean => (optimizeButton() as HTMLButtonElement).disabled;
 
+/**
+ * El boton se habilita cuando terminan de cargar plantilla, inventario y base del
+ * perfil. El default de waitFor es 1 s, que en CI se agota cuando los proyectos
+ * corren en paralelo: la espera es la misma, el limite no.
+ */
+const waitForOptimizeReady = (): Promise<void> =>
+  waitFor(() => expect(optimizeDisabled()).toBe(false), { timeout: 5_000 });
+
 const runAndFinish = async (): Promise<void> => {
-  await waitFor(() => expect(optimizeDisabled()).toBe(false));
+  await waitForOptimizeReady();
   fireEvent.click(optimizeButton());
   act(() => lastWorker().emit({ type: 'done', result: emptyResult }));
   // El default de waitFor es 1 s, que en CI se agota cuando los 7 proyectos
@@ -294,7 +302,7 @@ describe('OptimizerPage con juego real', () => {
       gate.resolve(undefined);
     });
 
-    await waitFor(() => expect(optimizeDisabled()).toBe(false));
+    await waitForOptimizeReady();
     fireEvent.click(optimizeButton());
 
     const request = sentOf('solve').request;
@@ -362,7 +370,7 @@ describe('OptimizerPage con juego real', () => {
     fireEvent.click(screen.getByRole('button', { name: new RegExp(`^${second.name}`) }));
 
     await waitFor(() => expect(screen.queryByText(gameCopy.cockpit.noFeasible)).toBeNull());
-    await waitFor(() => expect(optimizeDisabled()).toBe(false));
+    await waitForOptimizeReady();
     fireEvent.click(optimizeButton());
 
     const request = sentOf('solve').request;
@@ -436,7 +444,7 @@ describe('OptimizerPage con juego real', () => {
     useTemplate();
 
     renderPage();
-    await waitFor(() => expect(optimizeDisabled()).toBe(false));
+    await waitForOptimizeReady();
     fireEvent.click(optimizeButton());
     expect(sentOf('solve').deadlineMs).toBeUndefined();
     act(() => lastWorker().emit({ type: 'done', result: emptyResult }));
@@ -457,7 +465,7 @@ describe('OptimizerPage con juego real', () => {
     useTemplate();
 
     renderPage();
-    await waitFor(() => expect(optimizeDisabled()).toBe(false));
+    await waitForOptimizeReady();
     fireEvent.click(optimizeButton());
     fireEvent.click(screen.getByRole('button', { name: gameCopy.cockpit.stop }));
 
@@ -510,7 +518,7 @@ describe('OptimizerPage · build actual', () => {
     );
 
     renderPage();
-    await waitFor(() => expect(optimizeDisabled()).toBe(false));
+    await waitForOptimizeReady();
     fireEvent.click(optimizeButton());
     act(() => lastWorker().emit({ type: 'done', result: solveWith(100) }));
 
@@ -549,7 +557,7 @@ describe('OptimizerPage · build actual', () => {
 
     expect(await screen.findByText('80')).toBeTruthy();
 
-    await waitFor(() => expect(optimizeDisabled()).toBe(false));
+    await waitForOptimizeReady();
     fireEvent.click(optimizeButton());
     act(() => lastWorker().emit({ type: 'done', result: solveWith(100) }));
 
