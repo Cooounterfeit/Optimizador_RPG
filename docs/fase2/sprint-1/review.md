@@ -71,5 +71,5 @@ migraciones son idempotentes.
   completo. Lo abierto es de producto, no de la pieza central.
 - **El prototipo cumplió su función y se congela.** A partir de aquí, toda evidencia se produce
   en el monorepo; `demo/` queda como referencia histórica del PR #2.
-- **Sin tag de release todavía.** El incremento es identificable por fecha, no por etiqueta. Se
-  corrige en el paso de releases del plan.
+- **Tag `sprint-1` sobre el último commit de la ventana** (`8c78dd5`). El incremento deja de
+  identificarse por fecha y pasa a identificarse por etiqueta.

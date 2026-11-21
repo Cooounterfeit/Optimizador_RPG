@@ -3,7 +3,8 @@
 **Estado:** sprint activo al 20 de noviembre de 2026. Este documento se completa cuando cierre el
 22 o 23 de noviembre.
 
-**Versión entregada:** sin etiqueta. El proyecto versiona por merge a `main`, no por tag.
+**Versión entregada:** sin etiqueta todavía. El sprint está activo y el tag `sprint-4` se crea
+sobre el commit de cierre, el 22 o 23 de noviembre. Los sprints 1 a 3 ya tienen el suyo.
 
 ## Qué entró a `main` desde el 16 de noviembre
 
