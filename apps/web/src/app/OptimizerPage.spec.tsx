@@ -37,7 +37,7 @@ import { renderWorkspace, workspaceElement } from '../features/optimizer/workspa
  * suite corre en paralelo, asi que el margen por defecto de `waitFor` (1 s)
  * dejaba las pruebas al filo. No cambia el producto: es tiempo del entorno.
  */
-configure({ asyncUtilTimeout: 5_000 });
+configure({ asyncUtilTimeout: 15_000 });
 
 /**
  * El inventario se puede mockear por test para probar que un cambio despues de
@@ -251,7 +251,7 @@ const optimizeDisabled = (): boolean => (optimizeButton() as HTMLButtonElement).
  * corren en paralelo: la espera es la misma, el limite no.
  */
 const waitForOptimizeReady = (): Promise<void> =>
-  waitFor(() => expect(optimizeDisabled()).toBe(false), { timeout: 5_000 });
+  waitFor(() => expect(optimizeDisabled()).toBe(false), { timeout: 15_000 });
 
 /**
  * Tras un cambio que invalida el resultado, la pagina lo limpia en un efecto. El
@@ -260,7 +260,7 @@ const waitForOptimizeReady = (): Promise<void> =>
  */
 const waitForResultCleared = (): Promise<void> =>
   waitFor(() => expect(screen.queryByText(gameCopy.cockpit.noFeasible)).toBeNull(), {
-    timeout: 5_000,
+    timeout: 15_000,
   });
 
 const runAndFinish = async (): Promise<void> => {
@@ -270,7 +270,7 @@ const runAndFinish = async (): Promise<void> => {
   // El default de waitFor es 1 s, que en CI se agota cuando los 7 proyectos
   // corren en paralelo. La transicion sigue siendo asincrona: se espera mas.
   await waitFor(() => expect(screen.getByText(gameCopy.cockpit.noFeasible)).toBeTruthy(), {
-    timeout: 5_000,
+    timeout: 15_000,
   });
 };
 
@@ -462,7 +462,7 @@ describe('OptimizerPage con juego real', () => {
     const levelUp = screen.getByRole('button', {
       name: gameCopy.cockpit.levelUpTo(2),
     }) as HTMLButtonElement;
-    await waitFor(() => expect(levelUp.disabled).toBe(false), { timeout: 5_000 });
+    await waitFor(() => expect(levelUp.disabled).toBe(false), { timeout: 15_000 });
     fireEvent.click(levelUp);
 
     await waitFor(() => expect(save).toHaveBeenCalled());
