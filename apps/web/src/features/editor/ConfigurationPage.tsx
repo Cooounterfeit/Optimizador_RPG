@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { validateTemplate, type Issue, type ValidationReport } from '@zenith/core-engine';
 
@@ -42,6 +43,25 @@ export function ConfigurationPage() {
   const [checking, setChecking] = useState(false);
 
   /**
+   * El aviso de "creado" llega en el estado de navegacion desde el formulario
+   * de creacion. Se copia a estado local y se limpia el de la ruta en el acto:
+   * si se quedara ahi, volver a esta pantalla desde otra seccion del workspace
+   * volveria a felicitar al autor por un juego que creo hace media hora.
+   */
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [justCreated] = useState(
+    () => (location.state as { created?: boolean } | null)?.created === true,
+  );
+
+  useEffect(() => {
+    if (!justCreated) return;
+    navigate(location.pathname, { replace: true, state: null });
+    // Solo al montar: depende de la primera lectura del estado, no de la ruta.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
    * Nueve de las 54 comprobaciones del motor solo corren si se le pasa el
    * inventario, y el espacio de busqueda solo se calcula ahi. Pero hay que
    * esperar a que este leido: validar con `[]` mientras carga acusaria de
@@ -78,6 +98,12 @@ export function ConfigurationPage() {
         <h1 className="mb-2 text-2xl font-extrabold tracking-[-0.03em]">{template.name}</h1>
         <p className="max-w-[60ch] text-sm text-muted-foreground">{editorCopy.config.lede}</p>
       </header>
+
+      {justCreated ? (
+        <p className="mb-6 border-l-2 border-l-border-strong bg-card px-4 py-3 text-sm" role="status">
+          {editorCopy.config.created}
+        </p>
+      ) : null}
 
       {/* Lo primero: puede este juego optimizar o no. */}
       <section className="mb-10" aria-labelledby="config-state">

@@ -148,6 +148,21 @@ describe('ConfigurationPage', () => {
     expect(await screen.findByText(/Checked against the 1 items/i)).toBeTruthy();
   });
 
+  it('felicita una sola vez, y solo si se llego desde el formulario de creacion', async () => {
+    mockGame(completa);
+    renderWorkspace({ pathname: '/optimizer/x/configuracion', state: { created: true } });
+
+    expect(await screen.findByText(/Optimizer created/i)).toBeTruthy();
+  });
+
+  it('no felicita al entrar por la ruta normal', async () => {
+    mockGame(completa);
+    open();
+
+    await screen.findByText(/it can run/i);
+    expect(screen.queryByText(/Optimizer created/i)).toBeNull();
+  });
+
   it('avisa cuando no hay piezas, porque esas comprobaciones se saltan', async () => {
     mockGame(completa);
     open();
