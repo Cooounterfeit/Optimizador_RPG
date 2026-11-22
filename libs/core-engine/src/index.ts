@@ -50,3 +50,6 @@ export {
   checkSkillTrees,
 } from './lib/skills.js';
 export type { SkillIndex, SkillProblem } from './lib/skills.js';
+
+export { statReferences, statInUse } from './lib/references.js';
+export type { ReferenceKind, StatReference, StatUsage } from './lib/references.js';
