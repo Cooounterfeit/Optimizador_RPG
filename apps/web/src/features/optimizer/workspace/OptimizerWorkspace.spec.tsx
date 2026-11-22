@@ -115,6 +115,11 @@ const useTemplate = (template: GameTemplate = seed.template): void => {
 
 const rail = () => screen.getByRole('navigation', { name: 'Optimizer' });
 const railLink = (name: string) => within(rail()).getByRole('link', { name });
+const sectionElement = (id: string): HTMLElement => {
+  const element = document.querySelector(`[data-section="${id}"]`);
+  if (!(element instanceof HTMLElement)) throw new Error(`Section ${id} is not mounted.`);
+  return element;
+};
 
 const openWorkspace = async (path = `/optimizer/${OPTIMIZER_ID}`) => {
   renderWorkspace(path);
@@ -141,14 +146,30 @@ describe('OptimizerWorkspace', () => {
   it('lista las secciones disponibles y marca la activa', async () => {
     await openWorkspace();
 
-    expect(within(rail()).getAllByRole('link')).toHaveLength(6);
-    for (const label of ['Optimize', 'Character', 'Inventory', 'Skills', 'Damage']) {
+    expect(within(rail()).getAllByRole('link')).toHaveLength(7);
+    for (const label of ['Overview', 'Optimize', 'Character', 'Inventory', 'Skills', 'Damage']) {
       expect(railLink(label)).toBeTruthy();
     }
 
-    expect(railLink('Optimize').getAttribute('aria-current')).toBe('page');
+    expect(railLink('Overview').getAttribute('aria-current')).toBe('page');
     expect(railLink('Inventory').getAttribute('aria-current')).toBeNull();
     expect(railLink('All optimizers').getAttribute('href')).toBe('/');
+  });
+
+  it('abre en Overview con la ficha del juego y manda a Optimize', async () => {
+    await openWorkspace();
+
+    const overview = within(sectionElement('overview'));
+    expect(
+      overview.getByRole('heading', { name: seed.template.name, level: 1 }),
+    ).toBeTruthy();
+    expect(overview.getByText(seed.template.description)).toBeTruthy();
+    for (const label of ['Stats', 'Slots', 'Sets', 'Objectives', 'Characters']) {
+      expect(overview.getByText(label)).toBeTruthy();
+    }
+    expect(overview.getByRole('link', { name: 'Optimize build' }).getAttribute('href')).toBe(
+      `/optimizer/${OPTIMIZER_ID}/optimize`,
+    );
   });
 
   it('esconde las secciones que la plantilla no declara', async () => {
@@ -156,7 +177,7 @@ describe('OptimizerWorkspace', () => {
 
     await openWorkspace();
 
-    await waitFor(() => expect(within(rail()).getAllByRole('link')).toHaveLength(4));
+    await waitFor(() => expect(within(rail()).getAllByRole('link')).toHaveLength(5));
     expect(within(rail()).queryByRole('link', { name: 'Damage' })).toBeNull();
     expect(within(rail()).queryByRole('link', { name: 'Skills' })).toBeNull();
   });
@@ -189,12 +210,12 @@ describe('OptimizerWorkspace', () => {
     await openWorkspace();
     await waitFor(() => expect(templateLoads).toBe(1));
 
-    for (const label of ['Character', 'Inventory', 'Skills', 'Damage', 'Optimize']) {
+    for (const label of ['Overview', 'Character', 'Inventory', 'Skills', 'Damage', 'Optimize']) {
       fireEvent.click(railLink(label));
     }
 
     expect(templateLoads).toBe(1);
-    expect(screen.queryByText('Loading optimizer…')).toBeNull();
+    await waitFor(() => expect(screen.queryByText('Loading optimizer…')).toBeNull());
   });
 
   it('muestra una seccion desconocida con salida al optimizador', async () => {

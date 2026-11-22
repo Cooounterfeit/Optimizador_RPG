@@ -3,6 +3,7 @@ import type { BaseProfile, Equipment, GameTemplate, Item } from '@zenith/shared-
 import { cn } from '../../lib/cn';
 import { characterIconUrls, characterRarityOf, itemIconUrls } from '../../lib/images';
 import { ItemGlyph } from '../inventory/ItemGlyph';
+import { ItemHoverCard } from '../inventory/ItemHoverCard';
 import { sheetCopy } from './copy';
 
 interface EquipmentDollProps {
@@ -85,7 +86,13 @@ export function EquipmentDoll({
           const item = itemsById.get(equipment[slot.id] ?? '');
           const open = openSlot === slot.id;
           return (
-            <li key={slot.id} className="min-w-0">
+            <ItemHoverCard
+              key={slot.id}
+              as="li"
+              className="min-w-0"
+              template={template}
+              item={item}
+            >
               <button
                 type="button"
                 aria-expanded={open}
@@ -114,7 +121,7 @@ export function EquipmentDoll({
                   </span>
                 </span>
               </button>
-            </li>
+            </ItemHoverCard>
           );
         })}
       </ul>

@@ -5,6 +5,7 @@ import type { GameTemplate, Item, SlotDef } from '@zenith/shared-types';
 import { cn } from '../../lib/cn';
 import { itemIconUrls } from '../../lib/images';
 import { ItemGlyph } from '../inventory/ItemGlyph';
+import { ItemHoverCard } from '../inventory/ItemHoverCard';
 import { sheetCopy } from './copy';
 
 interface SlotPickerProps {
@@ -111,7 +112,7 @@ export function SlotPicker({
             const current = equipment[slot.id] === item.id;
             const elsewhere = usedElsewhere(item.id);
             return (
-              <li key={item.id}>
+              <ItemHoverCard key={item.id} as="li" template={template} item={item}>
                 <button
                   type="button"
                   aria-pressed={current}
@@ -141,7 +142,7 @@ export function SlotPicker({
                     </span>
                   </span>
                 </button>
-              </li>
+              </ItemHoverCard>
             );
           })}
         </ul>

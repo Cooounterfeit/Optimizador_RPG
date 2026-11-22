@@ -5,6 +5,7 @@ import { cn } from '../../lib/cn';
 import { itemIconUrls } from '../../lib/images';
 import { gameCopy } from '../game/copy';
 import { ItemGlyph } from '../inventory/ItemGlyph';
+import { ItemHoverCard } from '../inventory/ItemHoverCard';
 
 interface CurrentBuildPanelProps {
   template: GameTemplate;
@@ -115,7 +116,13 @@ export function CurrentBuildPanel({
 
           <div className="mt-3 grid gap-2 border-t border-line pt-3 sm:grid-cols-2">
             {slots.map(({ slot, item }) => (
-              <div key={slot.id} className="flex min-w-0 items-center gap-2">
+              <ItemHoverCard
+                key={slot.id}
+                as="div"
+                className="flex min-w-0 items-center gap-2"
+                template={template}
+                item={item}
+              >
                 <ItemGlyph
                   name={item?.name ?? slot.name}
                   rarity={item?.rarity}
@@ -130,7 +137,7 @@ export function CurrentBuildPanel({
                     {item?.name ?? gameCopy.cockpit.emptySlot}
                   </p>
                 </div>
-              </div>
+              </ItemHoverCard>
             ))}
           </div>
 

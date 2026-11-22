@@ -4,6 +4,7 @@ import { cn } from '../../lib/cn';
 import { itemIconUrls } from '../../lib/images';
 import { gameCopy } from '../game/copy';
 import { ItemGlyph } from '../inventory/ItemGlyph';
+import { ItemHoverCard } from '../inventory/ItemHoverCard';
 
 interface BuildCardProps {
   template: GameTemplate;
@@ -62,7 +63,13 @@ export function BuildCard({ template, build, best, rank, objective, items, onEqu
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {slots.map(({ slot, item }) => (
-          <div key={slot.id} className="flex min-w-0 items-center gap-2">
+          <ItemHoverCard
+            key={slot.id}
+            as="div"
+            className="flex min-w-0 items-center gap-2"
+            template={template}
+            item={item}
+          >
             <ItemGlyph
               name={item?.name ?? slot.name}
               rarity={item?.rarity}
@@ -75,7 +82,7 @@ export function BuildCard({ template, build, best, rank, objective, items, onEqu
               </p>
               <p className="truncate text-[12px]">{item?.name ?? gameCopy.cockpit.emptySlot}</p>
             </div>
-          </div>
+          </ItemHoverCard>
         ))}
       </div>
 
