@@ -11,6 +11,17 @@ Quien cierra el sprint la mueve a la versión correspondiente.
 
 ### Added
 
+- **Overview como portada del optimizador (`6.3.2`).** Sección nueva en el rail (`/optimizer/:id`)
+  con portada, nombre, descripción, categoría, los cinco contadores y las notas de la plantilla;
+  cierra con el botón a Optimize, que pasa a `/optimizer/:id/optimize` con un encabezado de una
+  línea en vez de la cabecera completa.
+- **Tarjeta de objeto al pasar el cursor (`6.3.3`).** `ItemHoverCard` muestra ranura, nombre,
+  conjunto, rareza, nivel, stats y requisitos de la pieza al pasar el cursor o al recibir foco. Va
+  en portal con `position: fixed` para no quedar recortada por el selector de ranura ni la tabla, y
+  se monta en el resultado, "Mi build", la hoja de personaje y el selector de ranura.
+- **Una sola tarjeta de personaje (`6.3.4`).** `CharacterPanel` reemplaza a `StatsPanel`: retrato,
+  nombre, "Change" como acción propia y el nivel editable como campo numérico que confirma al salir
+  del campo o con Enter, recorta al rango y revierte con Escape.
 - Editor de nodos y compilador de grafo a funciones ejecutables (planificado).
 - Umbral de cobertura en `libs/` y pruebas de accesibilidad en e2e (planificado).
 
