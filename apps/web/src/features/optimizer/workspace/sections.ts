@@ -5,17 +5,25 @@ import type { GameTemplate } from '@zenith/shared-types';
 import { OptimizerPage } from '../../../app/OptimizerPage';
 import {
   IconCharacter,
+  IconConfig,
   IconDamage,
   IconInventory,
   IconOptimize,
   IconSkills,
 } from '../../../components/icons';
 import { DamageCalculatorPage } from '../../damage/DamageCalculatorPage';
+import { ConfigurationPage } from '../../editor/ConfigurationPage';
 import { InventoryPage } from '../../inventory/InventoryPage';
 import { CharacterSheetPage } from '../../sheet/CharacterSheetPage';
 import { SkillTreePage } from '../../skills/SkillTreePage';
 
-export type WorkspaceSectionId = 'optimize' | 'character' | 'inventory' | 'skills' | 'damage';
+export type WorkspaceSectionId =
+  | 'optimize'
+  | 'character'
+  | 'inventory'
+  | 'skills'
+  | 'damage'
+  | 'config';
 
 export interface WorkspaceSection {
   id: WorkspaceSectionId;
@@ -63,6 +71,16 @@ export const WORKSPACE_SECTIONS: WorkspaceSection[] = [
     Icon: IconDamage,
     Component: DamageCalculatorPage,
     isAvailable: (template) => Boolean(template.damageCalculator),
+  },
+  // Al final del rail a proposito: se consulta cuando algo no cuadra, no es
+  // por donde se empieza. Siempre disponible, porque un juego a medio armar
+  // es justo el que mas necesita que le digan que le falta.
+  {
+    id: 'config',
+    path: 'configuracion',
+    label: 'Configuration',
+    Icon: IconConfig,
+    Component: ConfigurationPage,
   },
 ];
 

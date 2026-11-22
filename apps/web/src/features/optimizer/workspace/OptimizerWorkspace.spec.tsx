@@ -142,8 +142,15 @@ describe('OptimizerWorkspace', () => {
   it('lista las secciones disponibles y marca la activa', async () => {
     await openWorkspace();
 
-    expect(within(rail()).getAllByRole('link')).toHaveLength(6);
-    for (const label of ['Optimize', 'Character', 'Inventory', 'Skills', 'Damage']) {
+    expect(within(rail()).getAllByRole('link')).toHaveLength(7);
+    for (const label of [
+      'Optimize',
+      'Character',
+      'Inventory',
+      'Skills',
+      'Damage',
+      'Configuration',
+    ]) {
       expect(railLink(label)).toBeTruthy();
     }
 
@@ -157,7 +164,9 @@ describe('OptimizerWorkspace', () => {
 
     await openWorkspace();
 
-    await waitFor(() => expect(within(rail()).getAllByRole('link')).toHaveLength(4));
+    // Configuration no se esconde nunca: una plantilla incompleta es justo la
+    // que necesita que le digan que le falta.
+    await waitFor(() => expect(within(rail()).getAllByRole('link')).toHaveLength(5));
     expect(within(rail()).queryByRole('link', { name: 'Damage' })).toBeNull();
     expect(within(rail()).queryByRole('link', { name: 'Skills' })).toBeNull();
   });
