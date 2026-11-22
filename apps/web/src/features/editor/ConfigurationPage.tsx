@@ -37,20 +37,29 @@ const SEVERITY_STYLE: Record<Issue['severity'], string> = {
 const nf = new Intl.NumberFormat('en-US');
 
 export function ConfigurationPage() {
-  const { template } = useOptimizerWorkspace();
+  const { template, inventory } = useOptimizerWorkspace();
   const [report, setReport] = useState<ValidationReport | null>(null);
   const [checking, setChecking] = useState(false);
 
+  /**
+   * Nueve de las 54 comprobaciones del motor solo corren si se le pasa el
+   * inventario, y el espacio de busqueda solo se calcula ahi. Pero hay que
+   * esperar a que este leido: validar con `[]` mientras carga acusaria de
+   * vacia cada ranura obligatoria.
+   */
+  const items = inventory.items;
+  const inventoryReady = template !== undefined && inventory.loadedFor === template.gameId;
+
   const check = useCallback(() => {
-    if (!template) return;
+    if (!template || !inventoryReady) return;
     setChecking(true);
     // Un respiro antes de bloquear el hilo: sin esto el boton nunca llega a
     // pintarse en su estado de espera.
     setTimeout(() => {
-      setReport(validateTemplate(template));
+      setReport(validateTemplate(template, items ?? []));
       setChecking(false);
     }, 0);
-  }, [template]);
+  }, [template, inventoryReady, items]);
 
   useEffect(() => {
     check();
@@ -103,7 +112,12 @@ export function ConfigurationPage() {
           >
             {editorCopy.config.reportTitle}
           </h2>
-          <Button type="button" variant="outline" onClick={check} disabled={checking}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={check}
+            disabled={checking || !inventoryReady}
+          >
             {checking ? editorCopy.config.checking : editorCopy.config.recheck}
           </Button>
         </div>
@@ -112,6 +126,12 @@ export function ConfigurationPage() {
           <p className="text-sm text-muted-foreground">{editorCopy.config.checking}</p>
         ) : (
           <>
+            <p className="mb-4 text-[13px] text-muted-foreground">
+              {items && items.length > 0
+                ? editorCopy.config.withItems.replace('{n}', nf.format(items.length))
+                : editorCopy.config.withoutItems}
+            </p>
+
             <dl className="mb-6 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
               {[
                 [editorCopy.config.searchSpace, report.summary.searchSpace],

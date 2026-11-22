@@ -1,8 +1,12 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { GameTemplate } from '@zenith/shared-types';
+import type { InventoryRepository } from '@zenith/data-access';
+import type { GameTemplate, Item } from '@zenith/shared-types';
 
+import { validateTemplate } from '@zenith/core-engine';
+
+import { setInventoryRepository } from '../game/repositories';
 import { useGame } from '../game/useGame';
 import { renderWorkspace } from '../optimizer/workspace/testing';
 
@@ -19,14 +23,16 @@ vi.mock('../game/useGame', () => ({ useGame: vi.fn() }));
  * sabe calcularlo: eso es del motor y ya tiene sus 142 pruebas. Con el doble,
  * estas pruebas son deterministas y baratas.
  */
+const informe = {
+  ok: true,
+  issues: [],
+  selfTests: [],
+  summary: { stats: 1, slots: 1, sets: 0, objectives: 1, monotonicOk: 1, profiles: 1 },
+};
+
 vi.mock('@zenith/core-engine', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@zenith/core-engine')>()),
-  validateTemplate: vi.fn(() => ({
-    ok: true,
-    issues: [],
-    selfTests: [],
-    summary: { stats: 1, slots: 1, sets: 0, objectives: 1, monotonicOk: 1, profiles: 1 },
-  })),
+  validateTemplate: vi.fn(() => informe),
 }));
 
 const vacia = buildSkeleton({ name: 'Juego vacio' }, 'juego-vacio');
@@ -51,10 +57,29 @@ const mockGame = (template: GameTemplate) => {
   });
 };
 
+/**
+ * La pantalla espera a que el inventario este leido antes de validar: hacerlo
+ * con `[]` mientras carga acusaria de vacia cada ranura obligatoria. Sin este
+ * doble, `useInventory` se queda colgado del repositorio real y el informe no
+ * llega nunca.
+ */
+const useItems = (items: Item[] = []) => {
+  setInventoryRepository({
+    addItem: async () => undefined,
+    getAll: async () => [...items],
+    getById: async (id: string) => items.find((item) => item.id === id),
+    updateItem: async () => undefined,
+    removeItem: async () => undefined,
+    searchItems: async () => [...items],
+    removeByGame: async () => undefined,
+  } as InventoryRepository);
+};
+
 const open = () => renderWorkspace('/optimizer/x/configuracion');
 
 beforeEach(() => {
   vi.clearAllMocks();
+  useItems();
 });
 
 describe('ConfigurationPage', () => {
@@ -109,5 +134,24 @@ describe('ConfigurationPage', () => {
 
     fireEvent.click(boton);
     await waitFor(() => expect(screen.getByText('Engine report')).toBeTruthy());
+  });
+
+  it('le pasa el inventario al motor, que es lo que habilita nueve comprobaciones', async () => {
+    const pieza = { id: 'p1', gameId: 'x', slot: 'arma', stats: { atk: 5 } } as unknown as Item;
+    useItems([pieza]);
+    mockGame(completa);
+    open();
+
+    await waitFor(() => expect(vi.mocked(validateTemplate)).toHaveBeenCalled());
+    const [, itemsArg] = vi.mocked(validateTemplate).mock.calls.at(-1) ?? [];
+    expect(itemsArg).toEqual([pieza]);
+    expect(await screen.findByText(/Checked against the 1 items/i)).toBeTruthy();
+  });
+
+  it('avisa cuando no hay piezas, porque esas comprobaciones se saltan', async () => {
+    mockGame(completa);
+    open();
+
+    expect(await screen.findByText(/No items loaded/i)).toBeTruthy();
   });
 });

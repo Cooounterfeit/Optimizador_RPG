@@ -25,6 +25,9 @@ export const editorCopy = {
     recheck: 'Check again',
     checking: 'Checking…',
     noIssues: 'The engine found nothing to report.',
+    withItems: 'Checked against the {n} items in this browser.',
+    withoutItems:
+      'No items loaded, so the checks that need your inventory were skipped, and the search space cannot be sized.',
     selfTests: 'Self tests',
     pass: '[pass]',
     fail: '[fail]',
