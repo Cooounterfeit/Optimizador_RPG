@@ -1,13 +1,12 @@
 import { useState, type FormEvent } from 'react';
 
-import type { StatDef } from '@zenith/shared-types';
-
 import { Button } from '../../components/ui/Button';
-import { errorClass, fieldClass, labelClass } from '../../components/ui/form';
+import { errorClass } from '../../components/ui/form';
 import { useOptimizerWorkspace } from '../optimizer/workspace/OptimizerWorkspaceProvider';
 
 import { editorCopy } from './copy';
 import { nameProblem, type NameProblem } from './name-rules';
+import { StatFields, emptyDraft, statFrom, type StatDraft } from './StatFields';
 import { suggestStatId } from './stat-id';
 
 /**
@@ -49,10 +48,7 @@ export function StatsEditor() {
   const { template, saveTemplate } = useOptimizerWorkspace();
 
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [unit, setUnit] = useState<StatDef['unit']>('flat');
-  const [aggregate, setAggregate] = useState<'sum' | 'multiply'>('sum');
-  const [group, setGroup] = useState('');
+  const [draft, setDraft] = useState<StatDraft>(emptyDraft);
   const [advanced, setAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -61,10 +57,7 @@ export function StatsEditor() {
   if (!template) return null;
 
   const reset = () => {
-    setName('');
-    setUnit('flat');
-    setAggregate('sum');
-    setGroup('');
+    setDraft(emptyDraft());
     setAdvanced(false);
     setError(null);
   };
@@ -75,10 +68,7 @@ export function StatsEditor() {
     setError(null);
     setDone(null);
 
-    const trimmed = name.trim();
-    const problem = nameProblem(trimmed, {
-      taken: template.stats.map((stat) => stat.name),
-    });
+    const problem = nameProblem(draft.name, { taken: template.stats.map((stat) => stat.name) });
     if (problem) {
       setError(NAME_MESSAGE[problem]);
       return;
@@ -90,14 +80,7 @@ export function StatsEditor() {
       ...template.stats.map((stat) => stat.id),
       ...template.derived.map((entry) => entry.id),
     ];
-
-    const stat: StatDef = {
-      id: suggestStatId(trimmed, unit, taken),
-      name: trimmed,
-      unit,
-      ...(aggregate === 'multiply' ? { aggregate: 'multiply' as const } : {}),
-      ...(group.trim() ? { group: group.trim() } : {}),
-    };
+    const stat = statFrom(suggestStatId(draft.name.trim(), draft.unit, taken), draft);
 
     setPending(true);
     try {
@@ -106,11 +89,7 @@ export function StatsEditor() {
       reset();
       setOpen(false);
     } catch (cause) {
-      setError(
-        cause instanceof Error && cause.message
-          ? cause.message
-          : editorCopy.stats.failed,
-      );
+      setError(cause instanceof Error && cause.message ? cause.message : editorCopy.stats.failed);
     } finally {
       setPending(false);
     }
@@ -139,122 +118,21 @@ export function StatsEditor() {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      noValidate
-      className="mt-3 border border-border bg-card px-4 py-4"
-    >
+    <form onSubmit={onSubmit} noValidate className="mt-3 border border-border bg-card px-4 py-4">
       {error ? (
         <p className={errorClass} role="alert">
           {error}
         </p>
       ) : null}
 
-      <label className={labelClass} htmlFor="stat-name">
-        {editorCopy.stats.name}
-      </label>
-      <input
-        id="stat-name"
-        className={fieldClass}
-        type="text"
+      <StatFields
+        idPrefix="stat"
+        draft={draft}
+        onChange={setDraft}
+        advanced={advanced}
+        onToggleAdvanced={() => setAdvanced((value) => !value)}
         autoFocus
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        aria-describedby="stat-name-hint"
       />
-      <p
-        id="stat-name-hint"
-        className="mt-1.5 text-[12px] text-muted-foreground"
-      >
-        {editorCopy.stats.nameHint}
-      </p>
-
-      <fieldset className="mt-4 border-0 p-0">
-        <legend className={labelClass}>{editorCopy.stats.unit}</legend>
-        <div className="flex flex-wrap gap-4">
-          {(
-            [
-              ['flat', editorCopy.stats.unitFlat],
-              ['percent', editorCopy.stats.unitPercent],
-            ] as const
-          ).map(([value, label]) => (
-            <label key={value} className="flex items-center gap-2 text-[13px]">
-              <input
-                type="radio"
-                name="stat-unit"
-                value={value}
-                checked={unit === value}
-                onChange={() => setUnit(value)}
-              />
-              {label}
-            </label>
-          ))}
-        </div>
-        <p className="mt-1.5 text-[12px] text-muted-foreground">
-          {editorCopy.stats.unitHint}
-        </p>
-      </fieldset>
-
-      <button
-        type="button"
-        aria-expanded={advanced}
-        onClick={() => setAdvanced((value) => !value)}
-        className="mt-4 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground underline underline-offset-4 hover:text-foreground"
-      >
-        {editorCopy.stats.more}
-      </button>
-
-      {advanced ? (
-        <div className="mt-3">
-          <fieldset className="border-0 p-0">
-            <legend className={labelClass}>{editorCopy.stats.aggregate}</legend>
-            <div className="flex flex-wrap gap-4">
-              {(
-                [
-                  ['sum', editorCopy.stats.aggregateSum],
-                  ['multiply', editorCopy.stats.aggregateMultiply],
-                ] as const
-              ).map(([value, label]) => (
-                <label
-                  key={value}
-                  className="flex items-center gap-2 text-[13px]"
-                >
-                  <input
-                    type="radio"
-                    name="stat-aggregate"
-                    value={value}
-                    checked={aggregate === value}
-                    onChange={() => setAggregate(value)}
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
-            <p className="mt-1.5 max-w-[60ch] text-[12px] text-muted-foreground">
-              {editorCopy.stats.aggregateHint}
-            </p>
-          </fieldset>
-
-          <label className={`${labelClass} mt-4`} htmlFor="stat-group">
-            {editorCopy.stats.group}
-          </label>
-          <input
-            id="stat-group"
-            className={fieldClass}
-            type="text"
-            maxLength={40}
-            value={group}
-            onChange={(event) => setGroup(event.target.value)}
-            aria-describedby="stat-group-hint"
-          />
-          <p
-            id="stat-group-hint"
-            className="mt-1.5 text-[12px] text-muted-foreground"
-          >
-            {editorCopy.stats.groupHint}
-          </p>
-        </div>
-      ) : null}
 
       <div className="mt-6 flex items-center gap-3">
         <Button type="submit" disabled={pending}>
