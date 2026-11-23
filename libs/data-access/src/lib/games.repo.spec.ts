@@ -80,6 +80,20 @@ describe('games repository', () => {
     await expect(repo.get('g1')).resolves.toMatchObject({ remoteId: 'u-1', shared: false });
   });
 
+  it('desvincula de la cuenta sin borrar el borrador', async () => {
+    await repo.save({ id: 'g1', template: emptyTemplate('g1'), remoteId: 'u-1', shared: true });
+    await repo.unlinkRemote('g1');
+
+    const fila = await repo.get('g1');
+    expect(fila?.template).toEqual(emptyTemplate('g1'));
+    expect(fila?.remoteId).toBeUndefined();
+    expect(fila?.shared).toBeUndefined();
+  });
+
+  it('desvincular algo que no existe no revienta', async () => {
+    await expect(repo.unlinkRemote('fantasma')).resolves.toBeUndefined();
+  });
+
   it('borra solo la cache del optimizador, sin tocar tus datos', async () => {
     await repo.save({ id: 'g1', template: emptyTemplate('g1') });
     await inventory.addItem(

@@ -47,7 +47,8 @@ sin una pantalla que muestre el estado de la plantilla no había dónde colgar e
 | `4b8aefa` | Listar los borradores locales en la portada |
 | `72c4f74` | Borrarlos, con la cuenta de piezas que se van con ellos |
 | `3516e0b` | El menú de los tres puntos: renombrar, duplicar, borrar |
-| (este) | Guardar el optimizador en la cuenta, privado o comunitario |
+| `8eb7884` | Guardar el optimizador en la cuenta, privado o comunitario |
+| (este) | Cerrar el ciclo: la lista dice dónde vive cada borrador y se puede quitar de la cuenta |
 
 ### Tres hallazgos que no se buscaban
 
@@ -163,6 +164,27 @@ el guardado siguiente intentaría actualizar una fila fantasma.
 
 Quién lo ve lo decide el autor, no el sistema: un optimizador a medio hacer en el catálogo
 es tan malo como uno terminado que nadie encuentra.
+
+### Guardar deja rastro en dos sitios, y borrar tiene que saberlo
+
+El guardado en la cuenta abrió un fallo que no existía antes: borrar un borrador limpiaba
+IndexedDB y dejaba la fila de Supabase **inalcanzable para siempre**. El vínculo entre las
+dos copias (`remoteId`) vive en la fila local, así que borrarla primero es borrar el único
+hilo que llevaba a la otra.
+
+El orden de las operaciones es la corrección, y no es intercambiable: **primero la nube,
+después lo local**. Si la nube falla, el borrador sigue aquí con su vínculo intacto y se
+puede reintentar. Al revés, un fallo de red dejaría exactamente la basura que se quería
+evitar. Hay una prueba que fija ese orden simulando una caída de red.
+
+De ahí salen las otras dos piezas: la lista tiene que **decir dónde vive** cada borrador,
+porque la nota "solo en este navegador" dejó de ser cierta el día que apareció el botón de
+guardar; y tiene que existir una forma de **quitarlo de la cuenta sin borrarlo**, porque son
+dos guardados distintos y deshacer uno no tiene por qué llevarse el otro.
+
+`unlinkRemote` es un método propio del repositorio y no un `save` con el campo vacío, porque
+`save` fusiona con `??`: pasarle `remoteId: undefined` conserva el anterior. Eso es lo
+correcto al guardar y justo lo contrario de lo que hace falta al desvincular.
 
 ### El modelo de propiedad
 

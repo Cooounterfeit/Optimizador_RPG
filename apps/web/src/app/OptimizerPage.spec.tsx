@@ -30,7 +30,7 @@ import {
   type OptimizerRecord,
 } from '../features/optimizer/optimizer-repository';
 import type { WorkerIn, WorkerOut } from '../features/optimizer/optimizer.worker';
-import { fakeOptimizerRepository } from '../features/game/testing';
+import { fakeGameRepository, fakeOptimizerRepository } from '../features/game/testing';
 import { renderWorkspace, workspaceElement } from '../features/optimizer/workspace/testing';
 
 /**
@@ -153,13 +153,7 @@ const emptyResult = {
   stats: { evaluated: 12, stoppedBy: 'sin-combinacion' },
 } as unknown as SolveResponse;
 
-const noopGames: GameRepository = {
-  list: async () => [],
-  get: async () => undefined,
-  save: async (game) => ({ ...game, updatedAt: 0 }),
-  remove: async () => undefined,
-  clearLocalData: async () => undefined,
-};
+const noopGames: GameRepository = fakeGameRepository().repo;
 
 const inventoryRepo = (items: Item[]): InventoryRepository => ({
   addItem: async () => undefined,

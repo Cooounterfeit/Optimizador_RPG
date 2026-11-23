@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setGameRepository, setImagesRepository, setInventoryRepository } from '../game/repositories';
 import { ImportPanel } from './ImportPanel';
+import { fakeGameRepository } from '../game/testing';
 
 // jsdom no implementa File.text(); el navegador real si.
 if (typeof File !== 'undefined' && typeof File.prototype.text !== 'function') {
@@ -138,13 +139,7 @@ const memoryInventory = () => {
   return { repository, items };
 };
 
-const noopGames: GameRepository = {
-  list: async () => [],
-  get: async () => undefined,
-  save: async (game) => ({ ...game, updatedAt: 0 }),
-  remove: async () => undefined,
-  clearLocalData: async () => undefined,
-};
+const noopGames: GameRepository = fakeGameRepository().repo;
 
 const memoryImages = () => {
   const map: ImageMap = {};

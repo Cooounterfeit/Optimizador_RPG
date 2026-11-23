@@ -9,7 +9,7 @@ import {
   defaultOptimizerRepository,
   setOptimizerRepository,
 } from '../optimizer/optimizer-repository';
-import { fakeOptimizerRepository } from '../game/testing';
+import { fakeGameRepository, fakeOptimizerRepository } from '../game/testing';
 import { renderWorkspace } from '../optimizer/workspace/testing';
 
 const template: GameTemplate = {
@@ -66,13 +66,7 @@ const flower: Item = {
   stats: { hp: 4780 },
 };
 
-const noopGames: GameRepository = {
-  list: async () => [],
-  get: async () => undefined,
-  save: async (game) => ({ ...game, updatedAt: 0 }),
-  remove: async () => undefined,
-  clearLocalData: async () => undefined,
-};
+const noopGames: GameRepository = fakeGameRepository().repo;
 
 const memoryInventory = (seed: Item[] = []) => {
   const items = new Map(seed.map((entry) => [entry.id, entry]));

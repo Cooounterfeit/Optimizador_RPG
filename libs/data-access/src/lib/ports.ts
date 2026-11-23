@@ -20,6 +20,14 @@ export interface GameRepository {
   list(): Promise<GameRow[]>;
   get(id: string): Promise<GameRow | undefined>;
   save(game: GameInput): Promise<GameRow>;
+  /**
+   * Olvida la copia en la nube sin tocar el borrador.
+   *
+   * Existe como metodo propio porque `save` fusiona con `??`: pasarle
+   * `remoteId: undefined` conserva el anterior, que es justo lo que hace falta
+   * al guardar y justo lo contrario de lo que hace falta aqui.
+   */
+  unlinkRemote(id: string): Promise<void>;
   remove(id: string): Promise<void>;
   /** Borra el inventario, equipo, historial, habilidades e imágenes de un juego. */
   clearLocalData(gameId: string): Promise<void>;

@@ -6,6 +6,7 @@ import { fieldClass } from '../../../components/ui/form';
 import { nameProblem } from '../../editor/name-rules';
 import { slugify, uniqueGameId } from '../../editor/skeleton';
 import { getGameRepository, getInventoryRepository } from '../../game/repositories';
+import { getOptimizerRepository } from '../../optimizer/optimizer-repository';
 import { copy } from '../copy';
 import type { Draft } from '../useDrafts';
 
@@ -17,8 +18,12 @@ import { DraftMenu } from './DraftMenu';
  * Solo aparece si tienes alguno: a quien nunca creo uno no le dice nada y no
  * deberia ocupar sitio.
  *
- * Tres acciones por tarjeta, detras de los tres puntos. Dos de ellas tienen
- * una trampa que conviene dejar escrita:
+ * Desde que hay boton de guardar, un borrador puede vivir en DOS sitios, y la
+ * tarjeta tiene que decir en cual: solo aqui, en tu cuenta, o compartido. Antes
+ * la seccion afirmaba "solo en este navegador" para todos, y eso dejo de ser
+ * cierto el dia que se pudo subir.
+ *
+ * Las acciones tienen cada una su trampa, y conviene dejarlas escritas:
  *
  * RENOMBRAR cambia el nombre visible y NO el id. Es la misma regla que en los
  * atributos: el id viaja dentro de la plantilla y en las claves del inventario,
@@ -28,11 +33,18 @@ import { DraftMenu } from './DraftMenu';
  * copia, es una plantilla nueva, y no es lo que alguien espera al duplicar algo
  * en lo que lleva horas. Queda registrada como copia con `forkedFrom`.
  *
- * BORRAR pregunta con numeros, porque `clearLocalData` se lleva el inventario,
- * el equipo puesto, el historial de niveles y las imagenes, y no hay deshacer.
+ * QUITAR DE LA CUENTA borra la fila de Supabase y conserva el borrador. Son dos
+ * guardados distintos y quitar uno no tiene por que llevarse el otro.
+ *
+ * BORRAR si se lleva las dos cosas, y lo dice antes. Borrar solo lo local
+ * dejaria en la nube una fila que ya nadie puede alcanzar, porque el vinculo
+ * vivia precisamente en la fila local que se acaba de borrar.
  */
 
-type Mode = { id: string; kind: 'rename' } | { id: string; kind: 'delete'; items: number };
+type Mode =
+  | { id: string; kind: 'rename' }
+  | { id: string; kind: 'delete'; items: number }
+  | { id: string; kind: 'unsave' };
 
 export function DraftsRail({ drafts }: { drafts: Draft[] }) {
   const [mode, setMode] = useState<Mode | null>(null);
@@ -98,6 +110,8 @@ export function DraftsRail({ drafts }: { drafts: Draft[] }) {
       const taken = (await games.list()).map((entry) => entry.id);
       const id = uniqueGameId(slugify(name), taken);
 
+      // La copia nace local: no hereda el vinculo con la cuenta del original,
+      // o guardar la copia pisaria el optimizador del que salio.
       await games.save({
         id,
         template: { ...row.template, gameId: id, name },
@@ -116,14 +130,31 @@ export function DraftsRail({ drafts }: { drafts: Draft[] }) {
     }
   };
 
-  const remove = async (id: string) => {
+  const unsave = async (draft: Draft) => {
+    if (!draft.remoteId) return;
+    setPending(true);
+    setError(null);
+    try {
+      await getOptimizerRepository().deleteOptimizer(draft.remoteId);
+      await getGameRepository().unlinkRemote(draft.id);
+      setMode(null);
+    } catch {
+      setError(copy.drafts.unsaveFailed);
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const remove = async (draft: Draft) => {
     setPending(true);
     setError(null);
     try {
       const games = getGameRepository();
-      // Primero lo pesado: si falla a medias, la ficha sigue ahi y se reintenta.
-      await games.clearLocalData(id);
-      await games.remove(id);
+      // La nube primero. Si falla, el borrador sigue aqui con su vinculo y se
+      // puede reintentar; al reves quedaria una fila inalcanzable.
+      if (draft.remoteId) await getOptimizerRepository().deleteOptimizer(draft.remoteId);
+      await games.clearLocalData(draft.id);
+      await games.remove(draft.id);
       setMode(null);
     } catch {
       setError(copy.drafts.deleteFailed);
@@ -131,6 +162,16 @@ export function DraftsRail({ drafts }: { drafts: Draft[] }) {
       setPending(false);
     }
   };
+
+  const cancelar = (
+    <button
+      type="button"
+      onClick={() => setMode(null)}
+      className="text-[13px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
+    >
+      {copy.drafts.cancel}
+    </button>
+  );
 
   return (
     <section className="mb-8 border-b border-line pb-6" aria-labelledby="drafts-title">
@@ -174,15 +215,36 @@ export function DraftsRail({ drafts }: { drafts: Draft[] }) {
                     <Button type="submit" variant="outline" disabled={pending}>
                       {copy.drafts.save}
                     </Button>
-                    <button
-                      type="button"
-                      onClick={() => setMode(null)}
-                      className="text-[13px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
-                    >
-                      {copy.drafts.cancel}
-                    </button>
+                    {cancelar}
                   </div>
                 </form>
+              </li>
+            );
+          }
+
+          if (active?.kind === 'unsave') {
+            return (
+              <li
+                key={draft.id}
+                className="rounded-[2px] border-l-2 border-l-border-strong bg-card px-3 py-3"
+              >
+                <p className="m-0 text-[13px]">
+                  {copy.drafts.unsaveAsk.replace('{name}', draft.name)}
+                </p>
+                <p className="m-0 mt-1 text-[12px] text-muted-foreground">
+                  {draft.shared ? copy.drafts.unsaveShared : copy.drafts.unsavePrivate}
+                </p>
+                <div className="mt-3 flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={pending}
+                    onClick={() => void unsave(draft)}
+                  >
+                    {copy.drafts.unsaveConfirm}
+                  </Button>
+                  {cancelar}
+                </div>
               </li>
             );
           }
@@ -201,22 +263,21 @@ export function DraftsRail({ drafts }: { drafts: Draft[] }) {
                     ? copy.drafts.deleteWithItems.replace('{n}', String(active.items))
                     : copy.drafts.deleteNoItems}
                 </p>
+                {draft.remoteId ? (
+                  <p className="m-0 mt-1 text-[12px] text-muted-foreground">
+                    {draft.shared ? copy.drafts.deleteAlsoShared : copy.drafts.deleteAlsoAccount}
+                  </p>
+                ) : null}
                 <div className="mt-3 flex items-center gap-3">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={pending}
-                    onClick={() => void remove(draft.id)}
+                    onClick={() => void remove(draft)}
                   >
                     {copy.drafts.deleteConfirm}
                   </Button>
-                  <button
-                    type="button"
-                    onClick={() => setMode(null)}
-                    className="text-[13px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
-                  >
-                    {copy.drafts.cancel}
-                  </button>
+                  {cancelar}
                 </div>
               </li>
             );
@@ -234,11 +295,17 @@ export function DraftsRail({ drafts }: { drafts: Draft[] }) {
                 <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">
                   {draft.name}
                 </span>
-                {/* El id cede sitio: es informacion secundaria y un slug largo
-                    dejaba el nombre en "Mi ju...". */}
-                <span className="hidden min-w-0 max-w-[45%] shrink truncate font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground sm:block">
-                  {draft.id}
-                </span>
+                {/* El estado manda sobre el id: donde vive el borrador importa
+                    mas que su slug, y los dos juntos no caben. */}
+                {draft.remoteId ? (
+                  <span className="shrink-0 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                    {draft.shared ? copy.drafts.sharedTag : copy.drafts.inAccount}
+                  </span>
+                ) : (
+                  <span className="hidden min-w-0 max-w-[45%] shrink truncate font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground sm:block">
+                    {draft.id}
+                  </span>
+                )}
               </Link>
               <DraftMenu
                 forName={draft.name}
@@ -253,6 +320,18 @@ export function DraftsRail({ drafts }: { drafts: Draft[] }) {
                     label: copy.drafts.duplicate,
                     onSelect: () => void duplicate(draft),
                   },
+                  ...(draft.remoteId
+                    ? [
+                        {
+                          id: 'unsave',
+                          label: copy.drafts.unsave,
+                          onSelect: () => {
+                            setError(null);
+                            setMode({ id: draft.id, kind: 'unsave' as const });
+                          },
+                        },
+                      ]
+                    : []),
                   {
                     id: 'delete',
                     label: copy.drafts.delete,

@@ -11,7 +11,7 @@ import {
 } from '../optimizer/optimizer-repository';
 import { findBuiltinGame } from './builtin-games';
 import { setGameRepository } from './repositories';
-import { fakeOptimizerRepository } from './testing';
+import { fakeGameRepository, fakeOptimizerRepository } from './testing';
 import { useGame } from './useGame';
 
 vi.mock('./builtin-games', () => ({
@@ -51,13 +51,7 @@ const games = () => {
     updatedAt: 0,
   }));
 
-  const repository: GameRepository = {
-    list: async () => [],
-    get: async () => undefined,
-    save,
-    remove: async () => undefined,
-    clearLocalData: async () => undefined,
-  };
+  const { repo: repository } = fakeGameRepository([], { save });
 
   return { repository, save };
 };

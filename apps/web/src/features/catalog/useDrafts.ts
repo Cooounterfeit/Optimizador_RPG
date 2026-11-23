@@ -23,6 +23,14 @@ export interface Draft {
   id: string;
   name: string;
   updatedAt: number;
+  /**
+   * La fila de Supabase, si el borrador ya se guardo en la cuenta. Viaja hasta
+   * la tarjeta porque sin esto la portada no puede decir la verdad: desde que
+   * hay boton de guardar, "solo en este navegador" dejo de valer para todos.
+   */
+  remoteId?: string;
+  /** Si esa copia esta en el catalogo de la comunidad. */
+  shared: boolean;
 }
 
 export function useDrafts(): Draft[] | null {
@@ -43,6 +51,8 @@ export function useDrafts(): Draft[] | null {
                 id: row.id,
                 name: row.template.name || row.id,
                 updatedAt: row.updatedAt,
+                remoteId: row.remoteId,
+                shared: row.shared === true,
               })),
           );
         })

@@ -44,6 +44,11 @@ export interface OptimizerRepository {
   createOptimizer(draft: OptimizerDraft): Promise<string>;
   /** Pisa la fila existente. Falla si no es tuya: lo decide la RLS. */
   updateOptimizer(id: string, draft: OptimizerDraft): Promise<void>;
+  /**
+   * Saca el optimizador de la nube. El borrador local no se toca: son dos
+   * guardados distintos y quitar uno no tiene por que llevarse el otro.
+   */
+  deleteOptimizer(id: string): Promise<void>;
 }
 
 /**
@@ -132,6 +137,11 @@ export function createSupabaseOptimizerRepository(client: SupabaseClient): Optim
 
       if (error) throw new DataAccessError(error.message, { cause: error });
     },
+
+    async deleteOptimizer(id: string): Promise<void> {
+      const { error } = await client.from('optimizers').delete().eq('id', id);
+      if (error) throw new DataAccessError(error.message, { cause: error });
+    },
   };
 }
 
@@ -147,6 +157,9 @@ export const defaultOptimizerRepository: OptimizerRepository = {
     throw sinNube();
   },
   async updateOptimizer() {
+    throw sinNube();
+  },
+  async deleteOptimizer() {
     throw sinNube();
   },
 };

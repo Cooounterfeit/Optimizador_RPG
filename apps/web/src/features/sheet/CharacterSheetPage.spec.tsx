@@ -17,7 +17,7 @@ import {
 } from '../game/repositories';
 import { setOptimizerRepository } from '../optimizer/optimizer-repository';
 import type { WorkerIn, WorkerOut } from '../optimizer/optimizer.worker';
-import { fakeOptimizerRepository } from '../game/testing';
+import { fakeGameRepository, fakeOptimizerRepository } from '../game/testing';
 import { renderWorkspace } from '../optimizer/workspace/testing';
 import { sheetCopy } from './copy';
 
@@ -109,13 +109,7 @@ const useTemplate = (
     }),
   );
   setInventoryRepository(inventoryRepo(items));
-  setGameRepository({
-    list: async () => [],
-    get: async () => undefined,
-    save: async (game) => ({ ...game, updatedAt: 0 }),
-    remove: async () => undefined,
-    clearLocalData: async () => undefined,
-  });
+  setGameRepository(fakeGameRepository().repo);
   setSkillsRepository({ load: async () => ({}), save: async () => undefined });
   setLevelHistoryRepository({
     list: async () => [],

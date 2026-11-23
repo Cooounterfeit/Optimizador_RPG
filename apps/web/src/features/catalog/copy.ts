@@ -1,7 +1,21 @@
 export const copy = {
   drafts: {
     title: 'Your drafts',
-    note: 'In this browser only',
+    // Dejo de ser cierto para todos cuando aparecio el boton de guardar: un
+    // borrador subido vive en los dos sitios.
+    note: 'In this browser, and in your account once you save one',
+    inAccount: 'In your account',
+    sharedTag: 'Shared',
+    unsave: 'Remove from my account',
+    unsaveAsk: 'Remove {name} from your account?',
+    unsavePrivate: 'The draft stays in this browser. You can save it again whenever you want.',
+    unsaveShared:
+      'It is shared, so it also disappears from the community catalog. The draft stays in this browser.',
+    unsaveConfirm: 'Remove it',
+    unsaveFailed: 'Could not remove it from your account.',
+    deleteAlsoAccount: 'The copy in your account goes with it.',
+    deleteAlsoShared:
+      'It is shared with the community, so it disappears from the catalog for everyone.',
     menu: 'More actions',
     rename: 'Rename',
     duplicate: 'Make a copy',

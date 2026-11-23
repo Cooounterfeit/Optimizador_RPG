@@ -28,6 +28,10 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   sesión y vuelve a donde estabas; sin cuentas configuradas lo dice en vez de fallar. Lo que
   sube es el optimizador, es decir la matemática: los objetos del jugador se quedan en su
   navegador y se importan por JSON o se escriben a mano.
+- **La lista de borradores dice dónde vive cada uno.** Una tarjeta guardada muestra si está
+  en tu cuenta o compartida, y desde el menú se puede quitar de la cuenta conservando el
+  borrador local. La nota de la sección dejó de afirmar que todo vive solo en este navegador,
+  que desde el botón de guardar era falso.
 - **El nombre del optimizador llega a 100 caracteres en la base.** La tabla estaba en 80 y
   el formulario de CFG-05 en 100, así que un nombre de 90 se guardaba en el navegador y
   reventaba al subirlo.
@@ -50,6 +54,11 @@ Quien cierra el sprint la mueve a la versión correspondiente.
 
 
 ### Fixed
+
+- **Borrar un borrador guardado dejaba su fila huérfana en la nube.** Se limpiaba el
+  navegador y el optimizador seguía en Supabase para siempre, inalcanzable desde la interfaz
+  porque el vínculo vivía justo en la fila local recién borrada. Ahora el borrado se lleva las
+  dos copias, lo avisa antes, y si la nube falla no borra nada.
 
 - **Nueve comprobaciones del motor no se ejecutaban desde la aplicación.** La pantalla de
   configuración llamaba a `validateTemplate` sin el inventario, y nueve de las 54

@@ -76,6 +76,18 @@ export function createGameRepository(database: ZenithDatabase = db): GameReposit
       }
     },
 
+    async unlinkRemote(id) {
+      try {
+        const row = await table.get(id);
+        if (!row) return;
+        const { remoteId: _fuera, shared: _tambien, ...resto } = row;
+        await table.put(resto);
+        changes.emit(id);
+      } catch (error) {
+        throw toDataError(error, 'desvincular el optimizador de la cuenta');
+      }
+    },
+
     async remove(id) {
       try {
         await table.delete(id);

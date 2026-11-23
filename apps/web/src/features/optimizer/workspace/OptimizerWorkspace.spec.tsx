@@ -27,7 +27,7 @@ import {
   setOptimizerRepository,
   type OptimizerRecord,
 } from '../optimizer-repository';
-import { fakeOptimizerRepository } from '../../game/testing';
+import { fakeGameRepository, fakeOptimizerRepository } from '../../game/testing';
 import { renderWorkspace } from './testing';
 
 const workspaceRoot = (() => {
@@ -66,13 +66,7 @@ const record = (template: GameTemplate, published = true): OptimizerRecord => ({
   published,
 });
 
-const games: GameRepository = {
-  list: async () => [],
-  get: async () => undefined,
-  save: async (game) => ({ ...game, updatedAt: 0 }),
-  remove: async () => undefined,
-  clearLocalData: async () => undefined,
-};
+const games: GameRepository = fakeGameRepository().repo;
 
 const inventory = (items: Item[]): InventoryRepository => ({
   addItem: async () => undefined,

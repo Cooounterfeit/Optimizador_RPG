@@ -49,6 +49,7 @@ export interface FakeGames {
  */
 export function fakeGameRepository(
   rows: readonly Partial<SavedGame>[] = [],
+  partial: Partial<GameRepository> = {},
 ): FakeGames {
   const saved: SavedGame[] = [];
   const existing = rows.map((row) => ({
@@ -65,6 +66,8 @@ export function fakeGameRepository(
     },
     remove: async () => undefined,
     clearLocalData: async () => undefined,
+    unlinkRemote: async () => undefined,
+    ...partial,
   } as unknown as GameRepository;
   return { repo, saved };
 }
@@ -84,6 +87,7 @@ export function fakeOptimizerRepository(
     getOptimizer: async () => undefined,
     createOptimizer: async () => 'uuid-de-prueba',
     updateOptimizer: async () => undefined,
+    deleteOptimizer: async () => undefined,
     ...partial,
   };
 }

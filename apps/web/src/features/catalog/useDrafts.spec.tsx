@@ -11,7 +11,11 @@ import {
   setGameRepository,
   setInventoryRepository,
 } from '../game/repositories';
-import { fakeInventoryRepository } from '../game/testing';
+import { fakeInventoryRepository, fakeOptimizerRepository } from '../game/testing';
+import {
+  getOptimizerRepository,
+  setOptimizerRepository,
+} from '../optimizer/optimizer-repository';
 
 import { DraftsRail } from './components/DraftsRail';
 import { useDrafts } from './useDrafts';
@@ -23,14 +27,23 @@ interface Fila {
   template: GameTemplate;
   updatedAt: number;
   cloud?: boolean;
+  remoteId?: string;
+  shared?: boolean;
 }
 
 /** Lo que se pidio borrar, para comprobar que se borran las dos cosas. */
 let borrados: { remove: string[]; clear: string[] };
 
+/** Lo que se mando borrar de Supabase, y lo que se desvinculo en local. */
+let enLaNube: string[] = [];
+let desvinculados: string[] = [];
+let fallaLaNube = false;
+
 const repoCon = (filas: Fila[]) => {
   borrados = { remove: [], clear: [] };
   guardados = [];
+  enLaNube = [];
+  desvinculados = [];
   setGameRepository({
     list: async () => filas,
     get: async (id: string) => filas.find((f) => f.id === id),
@@ -43,6 +56,9 @@ const repoCon = (filas: Fila[]) => {
     },
     clearLocalData: async (id: string) => {
       borrados.clear.push(id);
+    },
+    unlinkRemote: async (id: string) => {
+      desvinculados.push(id);
     },
   } as unknown as GameRepository);
 };
@@ -76,6 +92,25 @@ const juego = (id: string, name: string, cloud?: boolean): Fila => ({
   ...(cloud === undefined ? {} : { cloud }),
 });
 
+/** Un borrador que ya se guardo en la cuenta. */
+const guardado = (id: string, name: string, shared = false): Fila => ({
+  ...juego(id, name),
+  remoteId: `u-${id}`,
+  shared,
+});
+
+/** El repositorio remoto, que aqui solo tiene que saber borrar. */
+const nube = () => {
+  setOptimizerRepository(
+    fakeOptimizerRepository({
+      deleteOptimizer: async (id: string) => {
+        if (fallaLaNube) throw new Error('sin red');
+        enLaNube.push(id);
+      },
+    }),
+  );
+};
+
 /** Monta el hook a traves del componente que lo consume. */
 function Sonda() {
   const drafts = useDrafts();
@@ -87,13 +122,18 @@ function Sonda() {
   );
 }
 
+const realNube = getOptimizerRepository();
+
 beforeEach(() => {
+  fallaLaNube = false;
   repoCon([]);
   conPiezas([]);
+  nube();
 });
 
 afterEach(() => {
   setGameRepository(real);
+  setOptimizerRepository(realNube);
 });
 
 describe('useDrafts', () => {
@@ -301,5 +341,126 @@ describe('duplicar', () => {
 
     await waitFor(() => expect(anadidas).toHaveLength(2));
     expect(anadidas.every((entry) => entry.gameId === 'mi-juego-copy')).toBe(true);
+  });
+});
+
+describe('lo que vive tambien en la cuenta', () => {
+  it('la tarjeta dice que esta en tu cuenta', async () => {
+    repoCon([guardado('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    expect(await screen.findByText('In your account')).toBeTruthy();
+  });
+
+  it('y dice cuando ademas esta compartido', async () => {
+    repoCon([guardado('mi-juego', 'Mi juego', true)]);
+    render(<Sonda />);
+
+    expect(await screen.findByText('Shared')).toBeTruthy();
+    expect(screen.queryByText('In your account')).toBeNull();
+  });
+
+  it('un borrador que nunca subio no afirma nada', async () => {
+    repoCon([juego('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    await screen.findByText('Mi juego');
+    expect(screen.queryByText('In your account')).toBeNull();
+    expect(screen.queryByText('Shared')).toBeNull();
+  });
+
+  it('solo lo guardado ofrece quitarse de la cuenta', async () => {
+    repoCon([juego('local', 'Local'), guardado('subido', 'Subido')]);
+    render(<Sonda />);
+
+    await abrirMenu('Local');
+    expect(screen.queryByRole('menuitem', { name: 'Remove from my account' })).toBeNull();
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    await abrirMenu('Subido');
+    expect(
+      await screen.findByRole('menuitem', { name: 'Remove from my account' }),
+    ).toBeTruthy();
+  });
+});
+
+describe('quitar de la cuenta', () => {
+  it('borra la fila remota y conserva el borrador', async () => {
+    repoCon([guardado('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    await abrirMenu('Mi juego');
+    await elegir('Remove from my account');
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove it' }));
+
+    await waitFor(() => expect(enLaNube).toEqual(['u-mi-juego']));
+    expect(desvinculados).toEqual(['mi-juego']);
+    // El borrador local no se toca: son dos guardados distintos.
+    expect(borrados.remove).toEqual([]);
+    expect(borrados.clear).toEqual([]);
+  });
+
+  it('avisa que compartido desaparece del catalogo', async () => {
+    repoCon([guardado('mi-juego', 'Mi juego', true)]);
+    render(<Sonda />);
+
+    await abrirMenu('Mi juego');
+    await elegir('Remove from my account');
+
+    expect(await screen.findByText(/disappears from the community catalog/i)).toBeTruthy();
+  });
+
+  it('cancelar no quita nada', async () => {
+    repoCon([guardado('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    await abrirMenu('Mi juego');
+    await elegir('Remove from my account');
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Remove it' })).toBeNull(),
+    );
+    expect(enLaNube).toEqual([]);
+  });
+});
+
+describe('borrar un borrador que estaba guardado', () => {
+  it('lo dice antes de borrar', async () => {
+    repoCon([guardado('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    await abrirMenu('Mi juego');
+    await elegir('Delete');
+
+    expect(await screen.findByText(/copy in your account goes with it/i)).toBeTruthy();
+  });
+
+  it('se lleva tambien la copia de la nube', async () => {
+    repoCon([guardado('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    await abrirMenu('Mi juego');
+    await elegir('Delete');
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete everything' }));
+
+    await waitFor(() => expect(borrados.remove).toEqual(['mi-juego']));
+    expect(enLaNube).toEqual(['u-mi-juego']);
+  });
+
+  it('si la nube falla, el borrador NO se borra', async () => {
+    // Al reves quedaria una fila que ya nadie puede alcanzar: el vinculo vivia
+    // en la fila local que se acaba de borrar.
+    fallaLaNube = true;
+    repoCon([guardado('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    await abrirMenu('Mi juego');
+    await elegir('Delete');
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete everything' }));
+
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(borrados.remove).toEqual([]);
+    expect(borrados.clear).toEqual([]);
   });
 });
