@@ -5,7 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { OptimizerRow } from '../../lib/database.types';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 
-const COLUMNS = ['id', 'name', 'game_name', 'description', 'template', 'sample_items'].join(',');
+const COLUMNS = ['id', 'name', 'game_name', 'description', 'template', 'sample_items', 'published'].join(',');
 
 /** Optimizador publicado: la plantilla completa mas sus objetos de muestra. */
 export interface OptimizerRecord {
@@ -15,6 +15,8 @@ export interface OptimizerRecord {
   description: string;
   template: GameTemplate;
   sampleItems: Item[];
+  /** Visible en el catalogo. Un borrador propio tambien se puede abrir. */
+  published: boolean;
 }
 
 export interface OptimizerRepository {
@@ -48,6 +50,7 @@ export function mapOptimizerRow(row: OptimizerRow): OptimizerRecord {
     description: row.description,
     template: template.data,
     sampleItems,
+    published: row.published === true,
   };
 }
 

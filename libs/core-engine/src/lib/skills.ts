@@ -19,6 +19,7 @@
  * Todo aqui es puro: sin UI, sin red, sin estado.
  */
 
+import { IDENT_RE } from './ids.js'
 import type { GameTemplate, SkillNode, SkillSelection, SkillTreeDef } from '@zenith/shared-types'
 
 /** Prefijo de las variables de habilidad en las formulas. */
@@ -26,7 +27,7 @@ export const SKILL_VAR_PREFIX = 'skill_'
 export const skillVar = (nodeId: string) => `${SKILL_VAR_PREFIX}${nodeId}`
 
 /** Los ids de nodo se usan como nombre de variable: tienen que ser identificadores. */
-export const NODE_ID_RE = /^[A-Za-z_][A-Za-z0-9_]*$/
+export const NODE_ID_RE = IDENT_RE
 
 export const costOf = (n: SkillNode) => (n.cost ?? 1)
 export const maxRankOf = (n: SkillNode) => Math.max(1, Math.floor(n.maxRank ?? 1))

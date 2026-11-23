@@ -137,13 +137,14 @@ const seed = JSON.parse(
 /** `useGame` consulta el repositorio remoto solo si el id tiene forma de uuid. */
 const GAME_ID = '11111111-1111-4111-8111-111111111111';
 
-const record = (template: GameTemplate): OptimizerRecord => ({
+const record = (template: GameTemplate, published = true): OptimizerRecord => ({
   id: GAME_ID,
   name: template.name,
   gameName: template.name,
   description: template.description,
   template,
   sampleItems: seed.items,
+  published,
 });
 
 const emptyResult = {
@@ -228,8 +229,9 @@ const buildFromSeed = (score = 100): BuildResult => ({
 const useTemplate = (
   template: GameTemplate = seed.template,
   items: Item[] = seed.items,
+  published = true,
 ): void => {
-  setOptimizerRepository({ getOptimizer: async () => record(template) });
+  setOptimizerRepository({ getOptimizer: async () => record(template, published) });
   setInventoryRepository(inventoryRepo(items));
   setGameRepository(noopGames);
   setSkillsRepository(skillsRepo());

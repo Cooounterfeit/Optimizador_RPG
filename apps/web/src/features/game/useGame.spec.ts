@@ -40,6 +40,7 @@ const record = (overrides: Partial<OptimizerRecord> = {}): OptimizerRecord => ({
   description: '',
   template,
   sampleItems: [],
+  published: true,
   ...overrides,
 });
 

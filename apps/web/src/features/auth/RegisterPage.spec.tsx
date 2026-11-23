@@ -18,31 +18,51 @@ const renderRegister = (service = fakeAuthService().service) =>
     </AuthProvider>,
   );
 
-const fill = (values: { name?: string; email?: string; password?: string; confirm?: string }) => {
+const fill = (values: {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirm?: string;
+}) => {
   if (values.name !== undefined)
-    fireEvent.change(screen.getByLabelText('Display name'), { target: { value: values.name } });
+    fireEvent.change(screen.getByLabelText('Display name'), {
+      target: { value: values.name },
+    });
   if (values.email !== undefined)
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: values.email } });
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: values.email },
+    });
   if (values.password !== undefined)
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: values.password } });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: values.password },
+    });
   if (values.confirm !== undefined)
     fireEvent.change(screen.getByLabelText('Confirm password'), {
       target: { value: values.confirm },
     });
 };
 
-const submit = () => fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+const submit = () =>
+  fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
 describe('RegisterPage', () => {
   it('exige el nombre', async () => {
     renderRegister();
     submit();
-    expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Enter a display name.');
+    expect(await screen.findByRole('alert')).toHaveProperty(
+      'textContent',
+      'Enter a display name.',
+    );
   });
 
   it('exige una contrasena de 8 caracteres', async () => {
     renderRegister();
-    fill({ name: 'Ana', email: 'ana@ejemplo.cl', password: 'corta', confirm: 'corta' });
+    fill({
+      name: 'Ana',
+      email: 'ana@ejemplo.cl',
+      password: 'corta',
+      confirm: 'corta',
+    });
     submit();
     expect(await screen.findByText('Use at least 8 characters.')).toBeTruthy();
   });

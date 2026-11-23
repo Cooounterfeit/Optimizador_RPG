@@ -16,7 +16,10 @@ import {
   sectionFromSplat,
   type WorkspaceSectionId,
 } from './sections';
-import { OptimizerWorkspaceProvider, useOptimizerWorkspace } from './OptimizerWorkspaceProvider';
+import {
+  OptimizerWorkspaceProvider,
+  useOptimizerWorkspace,
+} from './OptimizerWorkspaceProvider';
 import { WorkspaceRail } from './WorkspaceRail';
 import { useSectionScrollMemory } from './useSectionScrollMemory';
 
@@ -56,7 +59,8 @@ function WorkspaceBody() {
     getCatalogRepository()
       .list()
       .then((list) => {
-        if (alive) setDemoCard(list.find((optimizer) => optimizer.id === id) ?? null);
+        if (alive)
+          setDemoCard(list.find((optimizer) => optimizer.id === id) ?? null);
       })
       .catch(() => {
         if (alive) setDemoCard(null);
@@ -112,12 +116,16 @@ function WorkspaceSections({
   splat: string;
 }) {
   const active = sectionFromSplat(splat);
-  const [visited, setVisited] = useState<WorkspaceSectionId[]>(() => (active ? [active.id] : []));
+  const [visited, setVisited] = useState<WorkspaceSectionId[]>(() =>
+    active ? [active.id] : [],
+  );
 
   useEffect(() => {
     const section = sectionFromSplat(splat);
     if (!section) return;
-    setVisited((current) => (current.includes(section.id) ? current : [...current, section.id]));
+    setVisited((current) =>
+      current.includes(section.id) ? current : [...current, section.id],
+    );
   }, [splat]);
 
   useSectionScrollMemory(active?.id);
@@ -135,12 +143,18 @@ function WorkspaceSections({
           {active ? null : <UnknownSection id={id} />}
 
           {visited.map((sectionId) => {
-            const section = WORKSPACE_SECTIONS.find((entry) => entry.id === sectionId);
+            const section = WORKSPACE_SECTIONS.find(
+              (entry) => entry.id === sectionId,
+            );
             if (!section) return null;
             const isActive = section.id === active?.id;
 
             return (
-              <div key={`${id}:${section.id}`} data-section={section.id} hidden={!isActive}>
+              <div
+                key={`${id}:${section.id}`}
+                data-section={section.id}
+                hidden={!isActive}
+              >
                 <section.Component />
               </div>
             );
@@ -156,8 +170,14 @@ function WorkspaceSections({
 function UnknownSection({ id }: { id: string }) {
   return (
     <div className="mx-auto max-w-[720px] px-6 py-24">
-      <EmptyState title={copy.pages.notFoundTitle} body={copy.pages.notFoundBody}>
-        <Link to={`/optimizer/${id}`} className={buttonVariants({ variant: 'outline' })}>
+      <EmptyState
+        title={copy.pages.notFoundTitle}
+        body={copy.pages.notFoundBody}
+      >
+        <Link
+          to={`/optimizer/${id}`}
+          className={buttonVariants({ variant: 'outline' })}
+        >
           {gameCopy.backToOptimizer}
         </Link>
       </EmptyState>
@@ -168,16 +188,24 @@ function UnknownSection({ id }: { id: string }) {
 function DemoCard({ card }: { card: CatalogOptimizer }) {
   return (
     <div className="mx-auto max-w-[1280px] px-6 py-10 max-[860px]:px-4">
-      <Link to="/" className="text-xs text-muted-foreground hover:text-foreground">
+      <Link
+        to="/"
+        className="text-xs text-muted-foreground hover:text-foreground"
+      >
         ← {gameCopy.backToAll}
       </Link>
 
       <header className="mt-4 grid gap-6 border-b border-line pb-6 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
-        <CoverArt name={card.gameName} className="rounded-[4px] border border-line" />
+        <CoverArt
+          name={card.gameName}
+          className="rounded-[4px] border border-line"
+        />
         <div className="flex min-w-0 flex-col justify-between">
           <div>
             <p className="label-caps mb-1">{gameCopy.demoEyebrow}</p>
-            <h1 className="m-0 text-2xl font-extrabold tracking-[-0.03em]">{card.name}</h1>
+            <h1 className="m-0 text-2xl font-extrabold tracking-[-0.03em]">
+              {card.name}
+            </h1>
             <p className="mt-2 max-w-[70ch] text-sm text-muted-foreground">
               {card.gameName} · {card.description}
             </p>

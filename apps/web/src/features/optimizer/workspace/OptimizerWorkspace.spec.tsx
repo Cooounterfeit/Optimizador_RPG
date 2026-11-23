@@ -14,6 +14,7 @@ import type {
 } from '@zenith/data-access';
 import type { GameTemplate, Item } from '@zenith/shared-types';
 
+import { gameCopy } from '../../game/copy';
 import {
   setEquipmentRepository,
   setGameRepository,
@@ -22,32 +23,46 @@ import {
   setProfileBaseRepository,
   setSkillsRepository,
 } from '../../game/repositories';
-import { setOptimizerRepository, type OptimizerRecord } from '../optimizer-repository';
+import {
+  setOptimizerRepository,
+  type OptimizerRecord,
+} from '../optimizer-repository';
 import { renderWorkspace } from './testing';
 
 const workspaceRoot = (() => {
   const cwd = process.cwd();
-  const candidates = [cwd, resolve(cwd, '..'), resolve(cwd, '../..'), resolve(cwd, '../../..')];
+  const candidates = [
+    cwd,
+    resolve(cwd, '..'),
+    resolve(cwd, '../..'),
+    resolve(cwd, '../../..'),
+  ];
   const found = candidates.find((candidate) =>
-    existsSync(resolve(candidate, 'apps/web/public/seeds/gacha-demo.zenith.json')),
+    existsSync(
+      resolve(candidate, 'apps/web/public/seeds/gacha-demo.zenith.json'),
+    ),
   );
   if (!found) throw new Error('Workspace root not found');
   return found;
 })();
 
 const seed = JSON.parse(
-  readFileSync(resolve(workspaceRoot, 'apps/web/public/seeds/gacha-demo.zenith.json'), 'utf8'),
+  readFileSync(
+    resolve(workspaceRoot, 'apps/web/public/seeds/gacha-demo.zenith.json'),
+    'utf8',
+  ),
 ) as { template: GameTemplate; items: Item[] };
 
 const OPTIMIZER_ID = '33333333-3333-4333-8333-333333333333';
 
-const record = (template: GameTemplate): OptimizerRecord => ({
+const record = (template: GameTemplate, published = true): OptimizerRecord => ({
   id: OPTIMIZER_ID,
   name: template.name,
   gameName: template.name,
   description: template.description,
   template,
   sampleItems: seed.items,
+  published,
 });
 
 const games: GameRepository = {
@@ -97,12 +112,12 @@ const equipment: EquipmentRepository = {
 /** Cuenta cuantas veces se resuelve la plantilla: navegar no debe volver a pedirla. */
 let templateLoads = 0;
 
-const useTemplate = (template: GameTemplate = seed.template): void => {
+const useTemplate = (template: GameTemplate = seed.template, published = true): void => {
   templateLoads = 0;
   setOptimizerRepository({
     getOptimizer: async () => {
       templateLoads += 1;
-      return record(template);
+      return record(template, published);
     },
   });
   setInventoryRepository(inventory(seed.items));
@@ -146,8 +161,16 @@ describe('OptimizerWorkspace', () => {
   it('lista las secciones disponibles y marca la activa', async () => {
     await openWorkspace();
 
-    expect(within(rail()).getAllByRole('link')).toHaveLength(7);
-    for (const label of ['Overview', 'Optimize', 'Character', 'Inventory', 'Skills', 'Damage']) {
+    expect(within(rail()).getAllByRole('link')).toHaveLength(8);
+    for (const label of [
+      'Overview',
+      'Optimize',
+      'Character',
+      'Inventory',
+      'Skills',
+      'Damage',
+      'Configuration',
+    ]) {
       expect(railLink(label)).toBeTruthy();
     }
 
@@ -172,12 +195,34 @@ describe('OptimizerWorkspace', () => {
     );
   });
 
+  it('distingue un borrador de un optimizador publicado en la chapa de Overview', async () => {
+    useTemplate(seed.template, false);
+
+    const draft = renderWorkspace(`/optimizer/${OPTIMIZER_ID}`);
+    await waitFor(() => expect(rail()).toBeTruthy());
+
+    expect(within(sectionElement('overview')).getByText(gameCopy.cockpit.draft)).toBeTruthy();
+    expect(within(sectionElement('overview')).queryByText(gameCopy.cockpit.published)).toBeNull();
+    draft.unmount();
+
+    useTemplate();
+    await openWorkspace();
+
+    expect(within(sectionElement('overview')).getByText(gameCopy.cockpit.published)).toBeTruthy();
+  });
+
   it('esconde las secciones que la plantilla no declara', async () => {
-    useTemplate({ ...seed.template, damageCalculator: undefined, skillTrees: [] });
+    useTemplate({
+      ...seed.template,
+      damageCalculator: undefined,
+      skillTrees: [],
+    });
 
     await openWorkspace();
 
-    await waitFor(() => expect(within(rail()).getAllByRole('link')).toHaveLength(5));
+    // Configuration no se esconde nunca: una plantilla incompleta es justo la
+    // que necesita que le digan que le falta.
+    await waitFor(() => expect(within(rail()).getAllByRole('link')).toHaveLength(6));
     expect(within(rail()).queryByRole('link', { name: 'Damage' })).toBeNull();
     expect(within(rail()).queryByRole('link', { name: 'Skills' })).toBeNull();
   });
@@ -197,20 +242,36 @@ describe('OptimizerWorkspace', () => {
 
     fireEvent.click(railLink('Inventory'));
     fireEvent.click(await screen.findByRole('tab', { name: 'Catalog' }));
-    expect(screen.getByRole('tab', { name: 'Catalog' }).getAttribute('aria-selected')).toBe('true');
+    expect(
+      screen
+        .getByRole('tab', { name: 'Catalog' })
+        .getAttribute('aria-selected'),
+    ).toBe('true');
 
     fireEvent.click(railLink('Damage'));
     await screen.findByRole('heading', { name: /damage/i, level: 1 });
 
     fireEvent.click(railLink('Inventory'));
-    expect(screen.getByRole('tab', { name: 'Catalog' }).getAttribute('aria-selected')).toBe('true');
+    expect(
+      screen
+        .getByRole('tab', { name: 'Catalog' })
+        .getAttribute('aria-selected'),
+    ).toBe('true');
   });
 
   it('no vuelve a pedir la plantilla al cambiar de seccion', async () => {
     await openWorkspace();
     await waitFor(() => expect(templateLoads).toBe(1));
 
-    for (const label of ['Overview', 'Character', 'Inventory', 'Skills', 'Damage', 'Optimize']) {
+    for (const label of [
+      'Overview',
+      'Character',
+      'Inventory',
+      'Skills',
+      'Damage',
+      'Configuration',
+      'Optimize',
+    ]) {
       fireEvent.click(railLink(label));
     }
 
@@ -222,6 +283,8 @@ describe('OptimizerWorkspace', () => {
     await openWorkspace(`/optimizer/${OPTIMIZER_ID}/loquesea`);
 
     expect(await screen.findByText('Page not found')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Back to optimizer' })).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'Back to optimizer' }),
+    ).toBeTruthy();
   });
 });

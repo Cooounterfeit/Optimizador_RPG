@@ -102,6 +102,7 @@ const useTemplate = (
       description: template.description,
       template,
       sampleItems: items,
+      published: true,
     }),
   });
   setInventoryRepository(inventoryRepo(items));
