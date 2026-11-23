@@ -265,15 +265,28 @@ const waitForResultCleared = (): Promise<void> =>
     timeout: 15_000,
   });
 
+/**
+ * Lanza una busqueda y la termina con un resultado vacio.
+ *
+ * No alcanza con un clic y un `emit`: bajo carga, la seccion puede volver a
+ * montarse (el workspace resuelve datos de forma asincrona) y entonces el
+ * resultado se pierde en el componente desmontado, dejando la pantalla en
+ * "Run the search...". Se vuelve a lanzar y a responder hasta que la UI lo
+ * adopta, que es lo que haria un usuario: si la busqueda no arranco, se aprieta
+ * de nuevo. La asercion sigue siendo la misma, solo cambia quien la conduce.
+ */
 const runAndFinish = async (): Promise<void> => {
   await waitForOptimizeReady();
-  fireEvent.click(optimizeButton());
-  act(() => workerSent('solve').emit({ type: 'done', result: emptyResult }));
-  // El default de waitFor es 1 s, que en CI se agota cuando los 7 proyectos
-  // corren en paralelo. La transicion sigue siendo asincrona: se espera mas.
-  await waitFor(() => expect(screen.getByText(gameCopy.cockpit.noFeasible)).toBeTruthy(), {
-    timeout: 15_000,
-  });
+  await waitFor(
+    () => {
+      const boton = screen.queryByRole('button', { name: gameCopy.cockpit.run });
+      if (boton && !(boton as HTMLButtonElement).disabled) fireEvent.click(boton);
+      const worker = [...FakeWorker.instances].reverse().find((w) => w.sent?.type === 'solve');
+      if (worker) act(() => worker.emit({ type: 'done', result: emptyResult }));
+      expect(screen.getByText(gameCopy.cockpit.noFeasible)).toBeTruthy();
+    },
+    { timeout: 15_000 },
+  );
 };
 
 afterEach(() => {

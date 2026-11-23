@@ -60,6 +60,13 @@ decisión de arranque, y esa HU se cerró recién en el Sprint 4.
 | [`review.md`](./sprint-1/review.md) | Qué se demostró y qué no, con el motivo |
 | [`retrospectiva.md`](./sprint-1/retrospectiva.md) | Qué se empieza, qué se deja y qué se sigue |
 
+## Cadencia
+
+La daily es asíncrona y por escrito, con duración de 2 a 15 minutos y cierre inmediato cuando no
+hay cambios ni bloqueos (ver [ADR 006](../decisiones/006-cadencia-daily.md)). El
+[`registro-cadencia.md`](./registro-cadencia.md) tiene una fila por día hábil, incluidas las que no
+tuvieron actividad, cada una con el commit que la respalda o la declaración de que no lo hay.
+
 ## Releases por sprint
 
 Cada sprint cerrado tiene un tag anotado en GitHub sobre el último commit de su ventana, con el
