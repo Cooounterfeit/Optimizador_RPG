@@ -38,8 +38,8 @@ test('importa el GOOD de Astral Forge y deja el optimizador listo', async ({ pag
   await expect(page.getByText('Imported 12 items.')).toBeVisible();
 
   await railLink(page, 'Optimize').click();
-  await expect(page.getByRole('button', { name: 'Optimize build' })).toBeEnabled();
-  await page.getByRole('button', { name: 'Optimize build' }).click();
+  await expect(page.getByRole('button', { name: 'Run search' })).toBeEnabled();
+  await page.getByRole('button', { name: 'Run search' }).click();
   await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
 });
 

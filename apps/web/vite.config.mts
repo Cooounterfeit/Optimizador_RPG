@@ -67,7 +67,11 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: 'jsdom',
-    testTimeout: 30_000,
+    setupFiles: ['./src/test-setup.ts'],
+    testTimeout: 60_000,
+    // `nx affected` corre lint, tsc y vitest a la vez: con 4 núcleos una prueba
+    // de un segundo puede pasar de los 30 s y caer por timeout, no por una
+    // aserción. El margen es del entorno; ver `test-setup.ts`.
     // Las pruebas nunca tocan el proyecto real: sin variables, todo va a mock.
     env: {
       VITE_USE_MOCKS: '1',

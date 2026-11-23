@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { Constraint, GameTemplate } from '@zenith/shared-types';
 
@@ -22,15 +22,30 @@ describe('ConstraintEditor', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Add constraint' }));
 
-    const kind = screen.getByLabelText('Rule');
-    const value = screen.getByLabelText('Value');
-    fireEvent.change(kind, { target: { value: 'max' } });
-    fireEvent.change(value, { target: { value: '30' } });
+    const max = screen.getByRole('radio', { name: 'Maximum' }) as HTMLInputElement;
+    fireEvent.click(max);
+    expect(max.checked).toBe(true);
 
-    expect((kind as HTMLSelectElement).value).toBe('max');
-    expect((value as HTMLInputElement).value).toBe('30');
+    const value = screen.getByLabelText('Value') as HTMLInputElement;
+    fireEvent.change(value, { target: { value: '30' } });
+    expect(value.value).toBe('30');
 
     fireEvent.click(screen.getByRole('button', { name: 'Remove constraint' }));
-    expect(screen.queryByLabelText('Rule')).toBeNull();
+    expect(screen.queryByRole('radiogroup', { name: 'Rule' })).toBeNull();
+  });
+
+  it('mueve el valor al cambiar de dirección', () => {
+    const onChange = vi.fn();
+    render(
+      <ConstraintEditor
+        template={template}
+        constraints={[{ statId: 'atk', min: 40 }]}
+        onChange={onChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Maximum' }));
+
+    expect(onChange).toHaveBeenCalledWith([{ statId: 'atk', min: undefined, max: 40 }]);
   });
 });
