@@ -22,7 +22,7 @@ atribuciones estimadas: cada afirmación tiene su comando.
 git shortlog -sne
 ```
 
-Salida al commit de cierre del Sprint 4 (`8398162`, 23 de noviembre):
+Salida al cierre del Sprint 4 (tag `sprint-4`, 23 de noviembre). Verificar con `git rev-parse --short sprint-4`:
 
 ```
     78  Matías Molina <matias.molinaplaza@gmail.com>

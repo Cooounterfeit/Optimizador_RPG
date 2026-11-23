@@ -3,7 +3,7 @@
 **Estado:** sprint activo al 23 de noviembre de 2026. Cierra hoy a las 24:00; Jira lo fecha del 16
 al 29.
 
-**Versión entregada:** tag anotado `sprint-4` sobre `8398162` (23 de noviembre), con el resumen del
+**Versión entregada:** tag anotado `sprint-4` del 23 de noviembre, con el resumen del
 incremento en el mensaje. Creado en local al cierre de la ventana de trabajo.
 
 > Los sprints 1 a 3 ya tienen su tag publicado en GitHub. El de este sprint existe en el repositorio
