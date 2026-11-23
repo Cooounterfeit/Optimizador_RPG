@@ -22,7 +22,7 @@ atribuciones estimadas: cada afirmación tiene su comando.
 git shortlog -sne
 ```
 
-Salida al commit de cierre del Sprint 4 (`578b14b`, 23 de noviembre):
+Salida al commit de cierre del Sprint 4 (`8398162`, 23 de noviembre):
 
 ```
     78  Matías Molina <matias.molinaplaza@gmail.com>

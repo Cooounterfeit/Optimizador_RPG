@@ -78,7 +78,7 @@ resumen del incremento en el mensaje:
 | 1 — Prototipo y motor | `sprint-1` | `8c78dd5` | [releases/tag/sprint-1](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-1) |
 | 2 — Catálogo y RLS | `sprint-2` | `17044c6` | [releases/tag/sprint-2](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-2) |
 | 3 — App real e inventario | `sprint-3` | `c98ce2c` | [releases/tag/sprint-3](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-3) |
-| 4 — Cierre y entrega | `sprint-4` | `578b14b` | [releases/tag/sprint-4](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-4) |
+| 4 — Cierre y entrega | `sprint-4` | `8398162` | [releases/tag/sprint-4](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-4) |
 
 El proyecto no usa versiones semánticas `v1.2.3`: versiona por sprint, que es lo que el listado de
 documentos pide como entregable de Release. Para ver el código exacto que se entregó en el Sprint 1:
