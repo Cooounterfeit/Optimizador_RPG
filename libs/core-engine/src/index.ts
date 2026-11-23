@@ -41,6 +41,7 @@ export {
   costOf,
   maxRankOf,
   pointsSpent,
+  withSkillBudget,
   checkSelection,
   canRaise,
   canLower,

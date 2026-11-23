@@ -18,6 +18,7 @@ import { itemIconUrls } from '../../../lib/images';
 import { CharacterPanel } from '../CharacterPanel';
 import { ConstraintEditor } from '../ConstraintEditor';
 import { formatStat } from '../stat-format';
+import { overBudget } from '../skill-points';
 import type { SkillPoints } from '../skill-points';
 
 interface SetupSheetProps {
@@ -81,6 +82,7 @@ export function SetupSheet({
   const objective =
     template.objectives.find((entry) => entry.id === objectiveId) ?? template.objectives[0];
   const nodes = (template.skillTrees ?? []).flatMap((tree) => tree.nodes);
+  const over = overBudget(skillPoints);
   const chosen = Object.entries(skillsSelection ?? {})
     .filter(([, rank]) => rank > 0)
     .map(([nodeId, rank]) => {
@@ -225,6 +227,15 @@ export function SetupSheet({
                     ) : null}
                   </div>
                 )}
+
+                {over ? (
+                  <p
+                    role="status"
+                    className="mt-1.5 text-[11px] text-[oklch(0.78_0.16_25)]"
+                  >
+                    {gameCopy.cockpit.pointsOverBudget(over.spent, over.budget)}
+                  </p>
+                ) : null}
               </>
             ) : null}
           </div>

@@ -6,6 +6,7 @@ import { Button } from '../../../components/ui/Button';
 import { gameCopy } from '../../game/copy';
 import { characterIconUrls } from '../../../lib/images';
 import { ItemGlyph } from '../../inventory/ItemGlyph';
+import { overBudget } from '../skill-points';
 import type { SkillPoints } from '../skill-points';
 import { ConstraintEditor } from '../ConstraintEditor';
 import { surfaceToggle } from './click-surface';
@@ -68,6 +69,7 @@ export function SetupBar({
   const levelKey = template.leveling?.levelKey;
   const level = levelKey && profile ? profile.base[levelKey] : undefined;
   const maxLevel = template.leveling?.max;
+  const over = overBudget(skills);
 
   return (
     <div className="sticky top-16 z-30 -mx-4 bg-background px-4 pt-1">
@@ -144,17 +146,27 @@ export function SetupBar({
             <span className="label-caps">{gameCopy.cockpit.skills}</span>
             <Link
               to={`/optimizer/${id}/habilidades`}
-              className="inline-flex h-7 items-center gap-1.5 rounded-[2px] border border-line bg-background px-2 font-mono text-[11px] transition-colors hover:border-line-strong"
-              title={gameCopy.cockpit.skillsPoints}
+              className={`inline-flex h-7 items-center gap-1.5 rounded-[2px] border bg-background px-2 font-mono text-[11px] transition-colors hover:border-line-strong ${
+                over ? 'border-[oklch(0.6_0.19_25)]' : 'border-line'
+              }`}
+              title={
+                over
+                  ? gameCopy.cockpit.pointsOverBudget(over.spent, over.budget)
+                  : gameCopy.cockpit.skillsPoints
+              }
             >
               <IconSkills className="h-3 w-3 text-muted-foreground" />
               <span className="text-[9.5px] uppercase tracking-[0.05em] text-muted-foreground">
                 {gameCopy.cockpit.skillsPoints}
               </span>
-              <span className="tabular-nums">
+              <span
+                className={`tabular-nums ${over ? 'text-[oklch(0.78_0.16_25)]' : ''}`}
+              >
                 <b className="font-semibold">{skills.spent}</b>
                 {skills.budget === undefined ? null : (
-                  <span className="text-muted-foreground">/{skills.budget}</span>
+                  <span className={over ? undefined : 'text-muted-foreground'}>
+                    /{skills.budget}
+                  </span>
                 )}
               </span>
             </Link>

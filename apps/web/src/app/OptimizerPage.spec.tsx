@@ -592,6 +592,22 @@ describe('OptimizerPage · build actual', () => {
     // La build puesta entra en la lista y la mejor se mide contra ella.
     expect(await screen.findByText('+20')).toBeTruthy();
   });
+
+  it('deriva los puntos de habilidad del nivel del perfil', async () => {
+    const tree = seed.template.skillTrees![0];
+    useTemplate({
+      ...seed.template,
+      skillTrees: [{ ...tree, budget: undefined, budgetAtStart: 0, budgetPerLevel: 1 }],
+    });
+    setProfileBaseRepository(
+      baseRepo({ [seed.template.baseProfiles[0].id]: { nivel: 20 } }),
+    );
+
+    renderPage();
+
+    // Nivel 20 con `min: 1` → 19 puntos, no el presupuesto fijo del arbol.
+    expect(await screen.findByText('/19', undefined, { timeout: 15_000 })).toBeTruthy();
+  });
 });
 
 describe('OptimizerPage · plantilla cargando', () => {
