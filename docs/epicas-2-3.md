@@ -48,7 +48,8 @@ sin una pantalla que muestre el estado de la plantilla no había dónde colgar e
 | `72c4f74` | Borrarlos, con la cuenta de piezas que se van con ellos |
 | `3516e0b` | El menú de los tres puntos: renombrar, duplicar, borrar |
 | `8eb7884` | Guardar el optimizador en la cuenta, privado o comunitario |
-| (este) | Cerrar el ciclo: la lista dice dónde vive cada borrador y se puede quitar de la cuenta |
+| `5f63bb9` | Cerrar el ciclo: la lista dice dónde vive cada borrador y se puede quitar de la cuenta |
+| (este) | El botón de guardar, siempre visible, y la validación como condición |
 
 ### Tres hallazgos que no se buscaban
 
@@ -185,6 +186,30 @@ dos guardados distintos y deshacer uno no tiene por qué llevarse el otro.
 `unlinkRemote` es un método propio del repositorio y no un `save` con el campo vacío, porque
 `save` fusiona con `??`: pasarle `remoteId: undefined` conserva el anterior. Eso es lo
 correcto al guardar y justo lo contrario de lo que hace falta al desvincular.
+
+### Un botón que desaparece no explica nada
+
+El botón de guardar se escondía en dos casos: sin cuentas configuradas, y en cualquier
+situación en la que no se pudiera guardar. Visto desde fuera, el resultado era peor que un
+botón inútil: quien lo buscaba y no lo encontraba concluía que el guardado no existía, o que
+ya había pasado solo.
+
+La regla ahora es que **el botón está siempre**. Cuando no se puede guardar, sigue en
+pantalla, apagado, y debajo dice exactamente por qué. Eso obligó a arreglar algo más de
+fondo: el componente de botón solo quitaba el puntero al deshabilitarse, sin ningún cambio
+visual, así que en toda la aplicación un botón apagado parecía pulsable.
+
+La única excepción es iniciar sesión, que no es un motivo para apagar nada: ahí el botón
+está encendido y lleva a iniciarla, porque es una acción posible y no un muro.
+
+**Guardar exige que la validación esté limpia.** No es una segunda opinión: el panel recibe
+hecho el veredicto que la propia pantalla ya pinta más abajo, los bloques obligatorios vacíos
+y los errores del motor. Un optimizador incompleto que llegara al catálogo sería algo que
+nadie puede ejecutar. Mientras el informe se está calculando tampoco se guarda, porque lo que
+hay en pantalla todavía no corresponde a esta plantilla.
+
+Las razones no se repiten: en un optimizador recién creado los bloques vacíos son
+justamente la causa de los errores del motor, así que se dice una vez.
 
 ### El modelo de propiedad
 

@@ -28,6 +28,12 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   sesión y vuelve a donde estabas; sin cuentas configuradas lo dice en vez de fallar. Lo que
   sube es el optimizador, es decir la matemática: los objetos del jugador se quedan en su
   navegador y se importan por JSON o se escriben a mano.
+- **El botón de guardar está siempre, y dice por qué no se puede.** Antes desaparecía en una
+  instalación sin cuentas configuradas, y quien lo buscaba concluía que el guardado no
+  existía. Ahora aparece en todos los casos y, cuando no se puede guardar, queda apagado con
+  la razón debajo. Guardar exige además que la validación esté limpia: un optimizador con
+  bloques obligatorios vacíos o con errores del motor no sube, porque publicaría algo que
+  nadie puede ejecutar.
 - **La lista de borradores dice dónde vive cada uno.** Una tarjeta guardada muestra si está
   en tu cuenta o compartida, y desde el menú se puede quitar de la cuenta conservando el
   borrador local. La nota de la sección dejó de afirmar que todo vive solo en este navegador,
@@ -55,6 +61,8 @@ Quien cierra el sprint la mueve a la versión correspondiente.
 
 ### Fixed
 
+- **Un botón deshabilitado no se veía deshabilitado.** El componente solo quitaba el puntero,
+  sin ningún cambio visual, así que en toda la aplicación un botón apagado parecía pulsable.
 - **Borrar un borrador guardado dejaba su fila huérfana en la nube.** Se limpiaba el
   navegador y el optimizador seguía en Supabase para siempre, inalcanzable desde la interfaz
   porque el vínculo vivía justo en la fila local recién borrada. Ahora el borrado se lleva las

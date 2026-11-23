@@ -116,7 +116,19 @@ export function ConfigurationPage() {
         */}
         {editable ? (
           <>
-            <SavePanel template={template} />
+            <SavePanel
+              template={template}
+              gate={{
+                // La misma validacion que se pinta mas abajo, no una segunda
+                // opinion: si el informe dice que no puede buscar, no se sube.
+                missing: missing.map((block) => block.label),
+                errors:
+                  report?.issues.filter((issue) => issue.severity === 'error').length ?? 0,
+                // Tambien mientras se revalida: con el informe viejo en
+                // pantalla, lo que diga ya no corresponde a esta plantilla.
+                checking: report === null || checking,
+              }}
+            />
             <p className="m-0 mt-3 max-w-[60ch] text-[12px] text-muted-foreground">
               {editorCopy.config.autosave}
             </p>

@@ -48,6 +48,12 @@ export const editorCopy = {
     savedShared: 'Saved and shared with the community.',
     change: 'Change',
     failed: 'It could not be saved.',
+    // El boton esta siempre en pantalla, asi que cada razon para no poder
+    // guardar tiene que decirse. Un boton que desaparece no explica nada.
+    checking: 'Checking the template.',
+    blockedMissing: 'Still missing: {what}. An optimizer has to be complete before it goes to your account.',
+    blockedErrors:
+      'The report below has errors to fix first. Saving a template the engine rejects would publish something nobody can run.',
   },
   config: {
     created: 'Optimizer created. Now you can configure it.',
