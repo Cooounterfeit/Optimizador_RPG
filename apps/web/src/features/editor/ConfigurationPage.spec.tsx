@@ -1,12 +1,12 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { InventoryRepository } from '@zenith/data-access';
 import type { GameTemplate, Item } from '@zenith/shared-types';
 
 import { validateTemplate } from '@zenith/core-engine';
 
 import { setInventoryRepository } from '../game/repositories';
+import { fakeInventoryRepository } from '../game/testing';
 import { useGame } from '../game/useGame';
 import { renderWorkspace } from '../optimizer/workspace/testing';
 
@@ -77,15 +77,7 @@ const mockGame = (template: GameTemplate) => {
  * llega nunca.
  */
 const useItems = (items: Item[] = []) => {
-  setInventoryRepository({
-    addItem: async () => undefined,
-    getAll: async () => [...items],
-    getById: async (id: string) => items.find((item) => item.id === id),
-    updateItem: async () => undefined,
-    removeItem: async () => undefined,
-    searchItems: async () => [...items],
-    removeByGame: async () => undefined,
-  } as InventoryRepository);
+  setInventoryRepository(fakeInventoryRepository(items));
 };
 
 const open = () => renderWorkspace('/optimizer/x/configuracion');

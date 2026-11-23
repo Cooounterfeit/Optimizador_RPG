@@ -1,7 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { GameRepository, InventoryRepository } from '@zenith/data-access';
 import type { GameTemplate } from '@zenith/shared-types';
 
 import {
@@ -9,6 +8,7 @@ import {
   setGameRepository,
   setInventoryRepository,
 } from '../game/repositories';
+import { fakeGameRepository, fakeInventoryRepository } from '../game/testing';
 import { useGame } from '../game/useGame';
 import { renderWorkspace } from '../optimizer/workspace/testing';
 
@@ -46,28 +46,16 @@ const mockGame = (template: GameTemplate) => {
   });
 };
 
-const guardados: GameTemplate[] = [];
+let juegos = fakeGameRepository();
 
 const fakeRepos = () => {
-  setGameRepository({
-    list: async () => [],
-    get: async () => undefined,
-    save: async (game: { id: string; template: GameTemplate }) => {
-      guardados.push(game.template);
-      return game;
-    },
-    remove: async () => undefined,
-  } as unknown as GameRepository);
-  setInventoryRepository({
-    addItem: async () => undefined,
-    getAll: async () => [],
-    getById: async () => undefined,
-    updateItem: async () => undefined,
-    removeItem: async () => undefined,
-    searchItems: async () => [],
-    removeByGame: async () => undefined,
-  } as unknown as InventoryRepository);
+  juegos = fakeGameRepository();
+  setGameRepository(juegos.repo);
+  setInventoryRepository(fakeInventoryRepository());
 };
+
+/** Las plantillas que se mandaron a guardar, que es lo que se comprueba. */
+const guardados = () => juegos.saved.map((entry) => entry.template);
 
 const abrir = () => renderWorkspace('/optimizer/x/configuracion');
 const escribir = (etiqueta: string, valor: string) =>
@@ -84,7 +72,6 @@ const nuevoAtributo = async (nombre: string) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  guardados.length = 0;
   fakeRepos();
   mockGame(vacia);
 });
@@ -106,9 +93,9 @@ describe('StatsEditor', () => {
     await nuevoAtributo('Fuerza');
     enviar();
 
-    await waitFor(() => expect(guardados).toHaveLength(1));
-    expect(guardados[0].stats).toHaveLength(1);
-    expect(guardados[0].stats[0]).toMatchObject({
+    await waitFor(() => expect(guardados()).toHaveLength(1));
+    expect(guardados()[0].stats).toHaveLength(1);
+    expect(guardados()[0].stats[0]).toMatchObject({
       id: 'fuerza',
       name: 'Fuerza',
       unit: 'flat',
@@ -130,7 +117,7 @@ describe('StatsEditor', () => {
     expect(screen.getByRole('alert').textContent).toContain(
       'Give the attribute a name',
     );
-    expect(guardados).toHaveLength(0);
+    expect(guardados()).toHaveLength(0);
   });
 
   it('corta a los 100 caracteres, que es el limite del criterio', async () => {
@@ -141,7 +128,7 @@ describe('StatsEditor', () => {
     expect((await screen.findByRole('alert')).textContent).toContain(
       'longer than 100',
     );
-    expect(guardados).toHaveLength(0);
+    expect(guardados()).toHaveLength(0);
   });
 
   it('no deja dos atributos con el mismo nombre, sin mirar mayusculas', async () => {
@@ -156,7 +143,7 @@ describe('StatsEditor', () => {
     expect((await screen.findByRole('alert')).textContent).toContain(
       'already an attribute',
     );
-    expect(guardados).toHaveLength(0);
+    expect(guardados()).toHaveLength(0);
   });
 
   it('deriva un id que sirve como variable, nunca con guion', async () => {
@@ -164,8 +151,8 @@ describe('StatsEditor', () => {
     await nuevoAtributo('Ataque critico');
     enviar();
 
-    await waitFor(() => expect(guardados).toHaveLength(1));
-    const { id } = guardados[0].stats[0];
+    await waitFor(() => expect(guardados()).toHaveLength(1));
+    const { id } = guardados()[0].stats[0];
     expect(id).toBe('ataqueCritico');
     expect(id).not.toContain('-');
   });
@@ -176,8 +163,8 @@ describe('StatsEditor', () => {
     fireEvent.click(screen.getByLabelText('Percent'));
     enviar();
 
-    await waitFor(() => expect(guardados).toHaveLength(1));
-    expect(guardados[0].stats[0]).toMatchObject({
+    await waitFor(() => expect(guardados()).toHaveLength(1));
+    expect(guardados()[0].stats[0]).toMatchObject({
       id: 'ataque_',
       unit: 'percent',
     });
@@ -190,8 +177,8 @@ describe('StatsEditor', () => {
     fireEvent.click(screen.getByLabelText('Multiplies'));
     enviar();
 
-    await waitFor(() => expect(guardados).toHaveLength(1));
-    expect(guardados[0].stats[0].aggregate).toBe('multiply');
+    await waitFor(() => expect(guardados()).toHaveLength(1));
+    expect(guardados()[0].stats[0].aggregate).toBe('multiply');
   });
 
   it('no ofrece editar un optimizador del catalogo, porque no se podria guardar', async () => {

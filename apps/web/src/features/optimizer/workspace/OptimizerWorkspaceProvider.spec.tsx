@@ -3,13 +3,16 @@ import { useState } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { GameRepository } from '@zenith/data-access';
 import type { GameTemplate } from '@zenith/shared-types';
 
 import { getGameRepository, setGameRepository } from '../../game/repositories';
+import { fakeGameRepository } from '../../game/testing';
 import { useGame } from '../../game/useGame';
 
-import { OptimizerWorkspaceProvider, useOptimizerWorkspace } from './OptimizerWorkspaceProvider';
+import {
+  OptimizerWorkspaceProvider,
+  useOptimizerWorkspace,
+} from './OptimizerWorkspaceProvider';
 
 vi.mock('../../game/useGame', () => ({ useGame: vi.fn() }));
 
@@ -36,20 +39,6 @@ const mockGame = (template: GameTemplate) => {
   });
 };
 
-const fakeRepo = () => {
-  const guardados: { id: string; template: GameTemplate }[] = [];
-  const repo = {
-    list: async () => [],
-    get: async () => undefined,
-    save: async (game: { id: string; template: GameTemplate }) => {
-      guardados.push(game);
-      return game;
-    },
-    remove: async () => undefined,
-  } as unknown as GameRepository;
-  return { repo, guardados };
-};
-
 /**
  * Un consumidor minimo: lo que se prueba es el contexto, no una pantalla.
  * El boton guarda un cambio y el parrafo delata lo que el contexto expone.
@@ -66,9 +55,11 @@ function Sonda({ cambio }: { cambio?: Partial<GameTemplate> }) {
       <button
         type="button"
         onClick={() => {
-          saveTemplate({ ...plantilla, ...cambio } as GameTemplate).catch((cause: unknown) => {
-            setFallo(cause instanceof Error ? cause.message : 'sin mensaje');
-          });
+          saveTemplate({ ...plantilla, ...cambio } as GameTemplate).catch(
+            (cause: unknown) => {
+              setFallo(cause instanceof Error ? cause.message : 'sin mensaje');
+            },
+          );
         }}
       >
         guardar
@@ -123,19 +114,19 @@ describe('editable', () => {
 
 describe('saveTemplate', () => {
   it('guarda bajo el gameId, que es por donde lo lee el origen local', async () => {
-    const { repo, guardados } = fakeRepo();
+    const { repo, saved } = fakeGameRepository();
     setGameRepository(repo);
     montar('mi-juego', { name: 'Nombre nuevo' });
 
     fireEvent.click(screen.getByRole('button', { name: 'guardar' }));
 
-    await waitFor(() => expect(guardados).toHaveLength(1));
-    expect(guardados[0].id).toBe('mi-juego');
-    expect(guardados[0].template.name).toBe('Nombre nuevo');
+    await waitFor(() => expect(saved).toHaveLength(1));
+    expect(saved[0].id).toBe('mi-juego');
+    expect(saved[0].template.name).toBe('Nombre nuevo');
   });
 
   it('aplica el cambio en el acto, sin volver a cargar', async () => {
-    const { repo } = fakeRepo();
+    const { repo } = fakeGameRepository();
     setGameRepository(repo);
     montar('mi-juego', { name: 'Nombre nuevo' });
 
@@ -143,20 +134,24 @@ describe('saveTemplate', () => {
     fireEvent.click(screen.getByRole('button', { name: 'guardar' }));
 
     // Sin pasar por un estado de carga: el nombre cambia y nada se desmonta.
-    await waitFor(() => expect(screen.getByTestId('nombre').textContent).toBe('Nombre nuevo'));
+    await waitFor(() =>
+      expect(screen.getByTestId('nombre').textContent).toBe('Nombre nuevo'),
+    );
     expect(screen.getByTestId('editable')).toBeTruthy();
   });
 
   it('se niega a guardar algo que no cumple el esquema', async () => {
-    const { repo, guardados } = fakeRepo();
+    const { repo, saved } = fakeGameRepository();
     setGameRepository(repo);
     // `stats` tiene que ser un arreglo. Si esto se guardara, el juego no se
     // podria volver a abrir: `useGame` lo rechazaria al validar.
-    montar('mi-juego', { stats: 'no es un arreglo' } as unknown as Partial<GameTemplate>);
+    montar('mi-juego', {
+      stats: 'no es un arreglo',
+    } as unknown as Partial<GameTemplate>);
 
     fireEvent.click(screen.getByRole('button', { name: 'guardar' }));
 
     expect(await screen.findByTestId('fallo')).toBeTruthy();
-    expect(guardados).toHaveLength(0);
+    expect(saved).toHaveLength(0);
   });
 });

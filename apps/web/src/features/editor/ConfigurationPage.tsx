@@ -313,14 +313,11 @@ export function ConfigurationPage() {
             {/* Un bloque solo se edita si tiene editor Y si lo guardado se va a
                 poder volver a leer. Un optimizador del catalogo no cumple lo
                 segundo, y ofrecer un boton que no persiste seria mentir. */}
-            {Editor ? (
-              editable ? (
-                <Editor />
-              ) : (
-                <p className="mt-3 text-[12px] text-muted-foreground">
-                  {editorCopy.config.readOnly}
-                </p>
-              )
+            {Editor && editable ? <Editor /> : null}
+            {Editor && !editable ? (
+              <p className="mt-3 text-[12px] text-muted-foreground">
+                {editorCopy.config.readOnly}
+              </p>
             ) : null}
           </section>
         );

@@ -3,39 +3,26 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { GameRepository } from '@zenith/data-access';
+import type { GameTemplate } from '@zenith/shared-types';
 
 import { getGameRepository, setGameRepository } from '../game/repositories';
+import { fakeGameRepository } from '../game/testing';
 
 import { CreateOptimizerPage } from './CreateOptimizerPage';
 
 const real = getGameRepository();
 
-/**
- * Repositorio en memoria: lo que importa es que se guarde y con que id.
- *
- * `existentes` acepta un id suelto o un par id/nombre, porque las dos
- * colisiones son distintas: el nombre se le avisa, el id se numera callado.
- */
+/** Un id suelto, o un par id/nombre cuando la prueba mira el choque de nombres. */
 type Existente = string | { id: string; name: string };
 
-const fakeRepo = (existentes: Existente[] = []) => {
-  const guardados: { id: string; template: unknown }[] = [];
-  const filas = existentes.map((entry) =>
-    typeof entry === 'string'
-      ? { id: entry, template: {}, updatedAt: 0 }
-      : { id: entry.id, template: { name: entry.name }, updatedAt: 0 },
+const fakeRepo = (existentes: Existente[] = []) =>
+  fakeGameRepository(
+    existentes.map((entry) =>
+      typeof entry === 'string'
+        ? { id: entry, template: {} as GameTemplate }
+        : { id: entry.id, template: { name: entry.name } as GameTemplate },
+    ),
   );
-  const repo = {
-    list: async () => filas,
-    get: async () => undefined,
-    save: async (game: { id: string; template: unknown }) => {
-      guardados.push(game);
-      return game;
-    },
-    remove: async () => undefined,
-  } as unknown as GameRepository;
-  return { repo, guardados };
-};
 
 /** El destino, que ademas delata a que ruta se llego. */
 function Destino() {
@@ -70,18 +57,18 @@ afterEach(() => {
 
 describe('CreateOptimizerPage', () => {
   it('no guarda nada si falta el nombre', async () => {
-    const { repo, guardados } = fakeRepo();
+    const { repo, saved } = fakeRepo();
     setGameRepository(repo);
     renderPage();
 
     fireEvent.click(screen.getByRole('button', { name: 'Create optimizer' }));
 
     expect(await screen.findByRole('alert')).toBeTruthy();
-    expect(guardados).toHaveLength(0);
+    expect(saved).toHaveLength(0);
   });
 
   it('guarda el juego con un id derivado del nombre y abre su workspace', async () => {
-    const { repo, guardados } = fakeRepo();
+    const { repo, saved } = fakeRepo();
     setGameRepository(repo);
     renderPage();
 
@@ -89,25 +76,25 @@ describe('CreateOptimizerPage', () => {
     escribir('Genre', 'Souls');
     fireEvent.click(screen.getByRole('button', { name: 'Create optimizer' }));
 
-    await waitFor(() => expect(guardados).toHaveLength(1));
-    expect(guardados[0].id).toBe('dragon-oscuro');
+    await waitFor(() => expect(saved).toHaveLength(1));
+    expect(saved[0].id).toBe('dragon-oscuro');
     expect(await screen.findByText('workspace')).toBeTruthy();
   });
 
   it('numera el id cuando ya existe uno igual', async () => {
-    const { repo, guardados } = fakeRepo(['dragon-oscuro']);
+    const { repo, saved } = fakeRepo(['dragon-oscuro']);
     setGameRepository(repo);
     renderPage();
 
     escribir('Game name', 'Dragón Oscuro');
     fireEvent.click(screen.getByRole('button', { name: 'Create optimizer' }));
 
-    await waitFor(() => expect(guardados).toHaveLength(1));
-    expect(guardados[0].id).toBe('dragon-oscuro-2');
+    await waitFor(() => expect(saved).toHaveLength(1));
+    expect(saved[0].id).toBe('dragon-oscuro-2');
   });
 
   it('avisa mientras escribe de los caracteres que el criterio no permite', async () => {
-    const { repo, guardados } = fakeRepo();
+    const { repo, saved } = fakeRepo();
     setGameRepository(repo);
     renderPage();
 
@@ -121,7 +108,7 @@ describe('CreateOptimizerPage', () => {
     // Y no lo deja pasar: un aviso que se puede ignorar no sirve de nada.
     fireEvent.click(screen.getByRole('button', { name: 'Create optimizer' }));
     await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
-    expect(guardados).toHaveLength(0);
+    expect(saved).toHaveLength(0);
   });
 
   it('el aviso se va al corregir el nombre', async () => {
@@ -139,7 +126,7 @@ describe('CreateOptimizerPage', () => {
   });
 
   it('acepta 100 caracteres y rechaza 101, que es el limite del criterio', async () => {
-    const { repo, guardados } = fakeRepo();
+    const { repo, saved } = fakeRepo();
     setGameRepository(repo);
     renderPage();
 
@@ -153,11 +140,11 @@ describe('CreateOptimizerPage', () => {
       expect(screen.queryByText(/cannot be longer/i)).toBeNull(),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Create optimizer' }));
-    await waitFor(() => expect(guardados).toHaveLength(1));
+    await waitFor(() => expect(saved).toHaveLength(1));
   });
 
   it('dice que el nombre ya existe en vez de numerarlo a escondidas', async () => {
-    const { repo, guardados } = fakeRepo([
+    const { repo, saved } = fakeRepo([
       { id: 'elden-ring', name: 'Elden Ring' },
     ]);
     setGameRepository(repo);
@@ -171,7 +158,7 @@ describe('CreateOptimizerPage', () => {
     expect(screen.getByRole('alert').textContent).toContain(
       'already have an optimizer',
     );
-    expect(guardados).toHaveLength(0);
+    expect(saved).toHaveLength(0);
   });
 
   it('lleva a la seccion de configuracion, que es lo que falta por hacer', async () => {

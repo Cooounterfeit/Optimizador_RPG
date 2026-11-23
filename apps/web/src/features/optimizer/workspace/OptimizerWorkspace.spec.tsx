@@ -22,21 +22,34 @@ import {
   setProfileBaseRepository,
   setSkillsRepository,
 } from '../../game/repositories';
-import { setOptimizerRepository, type OptimizerRecord } from '../optimizer-repository';
+import {
+  setOptimizerRepository,
+  type OptimizerRecord,
+} from '../optimizer-repository';
 import { renderWorkspace } from './testing';
 
 const workspaceRoot = (() => {
   const cwd = process.cwd();
-  const candidates = [cwd, resolve(cwd, '..'), resolve(cwd, '../..'), resolve(cwd, '../../..')];
+  const candidates = [
+    cwd,
+    resolve(cwd, '..'),
+    resolve(cwd, '../..'),
+    resolve(cwd, '../../..'),
+  ];
   const found = candidates.find((candidate) =>
-    existsSync(resolve(candidate, 'apps/web/public/seeds/gacha-demo.zenith.json')),
+    existsSync(
+      resolve(candidate, 'apps/web/public/seeds/gacha-demo.zenith.json'),
+    ),
   );
   if (!found) throw new Error('Workspace root not found');
   return found;
 })();
 
 const seed = JSON.parse(
-  readFileSync(resolve(workspaceRoot, 'apps/web/public/seeds/gacha-demo.zenith.json'), 'utf8'),
+  readFileSync(
+    resolve(workspaceRoot, 'apps/web/public/seeds/gacha-demo.zenith.json'),
+    'utf8',
+  ),
 ) as { template: GameTemplate; items: Item[] };
 
 const OPTIMIZER_ID = '33333333-3333-4333-8333-333333333333';
@@ -160,13 +173,19 @@ describe('OptimizerWorkspace', () => {
   });
 
   it('esconde las secciones que la plantilla no declara', async () => {
-    useTemplate({ ...seed.template, damageCalculator: undefined, skillTrees: [] });
+    useTemplate({
+      ...seed.template,
+      damageCalculator: undefined,
+      skillTrees: [],
+    });
 
     await openWorkspace();
 
     // Configuration no se esconde nunca: una plantilla incompleta es justo la
     // que necesita que le digan que le falta.
-    await waitFor(() => expect(within(rail()).getAllByRole('link')).toHaveLength(5));
+    await waitFor(() =>
+      expect(within(rail()).getAllByRole('link')).toHaveLength(5),
+    );
     expect(within(rail()).queryByRole('link', { name: 'Damage' })).toBeNull();
     expect(within(rail()).queryByRole('link', { name: 'Skills' })).toBeNull();
   });
@@ -186,20 +205,34 @@ describe('OptimizerWorkspace', () => {
 
     fireEvent.click(railLink('Inventory'));
     fireEvent.click(await screen.findByRole('tab', { name: 'Catalog' }));
-    expect(screen.getByRole('tab', { name: 'Catalog' }).getAttribute('aria-selected')).toBe('true');
+    expect(
+      screen
+        .getByRole('tab', { name: 'Catalog' })
+        .getAttribute('aria-selected'),
+    ).toBe('true');
 
     fireEvent.click(railLink('Damage'));
     await screen.findByRole('heading', { name: /damage/i, level: 1 });
 
     fireEvent.click(railLink('Inventory'));
-    expect(screen.getByRole('tab', { name: 'Catalog' }).getAttribute('aria-selected')).toBe('true');
+    expect(
+      screen
+        .getByRole('tab', { name: 'Catalog' })
+        .getAttribute('aria-selected'),
+    ).toBe('true');
   });
 
   it('no vuelve a pedir la plantilla al cambiar de seccion', async () => {
     await openWorkspace();
     await waitFor(() => expect(templateLoads).toBe(1));
 
-    for (const label of ['Character', 'Inventory', 'Skills', 'Damage', 'Optimize']) {
+    for (const label of [
+      'Character',
+      'Inventory',
+      'Skills',
+      'Damage',
+      'Optimize',
+    ]) {
       fireEvent.click(railLink(label));
     }
 
@@ -211,6 +244,8 @@ describe('OptimizerWorkspace', () => {
     await openWorkspace(`/optimizer/${OPTIMIZER_ID}/loquesea`);
 
     expect(await screen.findByText('Page not found')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Back to optimizer' })).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'Back to optimizer' }),
+    ).toBeTruthy();
   });
 });
