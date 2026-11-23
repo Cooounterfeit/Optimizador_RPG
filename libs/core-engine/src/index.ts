@@ -53,3 +53,6 @@ export type { SkillIndex, SkillProblem } from './lib/skills.js';
 
 export { statReferences, statInUse } from './lib/references.js';
 export type { ReferenceKind, StatReference, StatUsage } from './lib/references.js';
+
+export { statIdProblem, IDENT_RE } from './lib/ids.js';
+export type { IdProblem } from './lib/ids.js';

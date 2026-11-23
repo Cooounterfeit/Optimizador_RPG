@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { validateTemplate, type Issue, type ValidationReport } from '@zenith/core-engine';
+import {
+  validateTemplate,
+  type Issue,
+  type ValidationReport,
+} from '@zenith/core-engine';
 
 import { Button } from '../../components/ui/Button';
 import { useOptimizerWorkspace } from '../optimizer/workspace/OptimizerWorkspaceProvider';
 
+import { BLOCK_EDITORS } from './block-editors';
 import { CONFIG_BLOCKS, missingRequired } from './blocks';
 import { editorCopy } from './copy';
 
@@ -38,7 +43,7 @@ const SEVERITY_STYLE: Record<Issue['severity'], string> = {
 const nf = new Intl.NumberFormat('en-US');
 
 export function ConfigurationPage() {
-  const { template, inventory } = useOptimizerWorkspace();
+  const { template, inventory, editable } = useOptimizerWorkspace();
   const [report, setReport] = useState<ValidationReport | null>(null);
   const [checking, setChecking] = useState(false);
 
@@ -68,7 +73,8 @@ export function ConfigurationPage() {
    * vacia cada ranura obligatoria.
    */
   const items = inventory.items;
-  const inventoryReady = template !== undefined && inventory.loadedFor === template.gameId;
+  const inventoryReady =
+    template !== undefined && inventory.loadedFor === template.gameId;
 
   const check = useCallback(() => {
     if (!template || !inventoryReady) return;
@@ -95,12 +101,19 @@ export function ConfigurationPage() {
         <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
           {editorCopy.config.eyebrow}
         </p>
-        <h1 className="mb-2 text-2xl font-extrabold tracking-[-0.03em]">{template.name}</h1>
-        <p className="max-w-[60ch] text-sm text-muted-foreground">{editorCopy.config.lede}</p>
+        <h1 className="mb-2 text-2xl font-extrabold tracking-[-0.03em]">
+          {template.name}
+        </h1>
+        <p className="max-w-[60ch] text-sm text-muted-foreground">
+          {editorCopy.config.lede}
+        </p>
       </header>
 
       {justCreated ? (
-        <p className="mb-6 border-l-2 border-l-border-strong bg-card px-4 py-3 text-sm" role="status">
+        <p
+          className="mb-6 border-l-2 border-l-border-strong bg-card px-4 py-3 text-sm"
+          role="status"
+        >
           {editorCopy.config.created}
         </p>
       ) : null}
@@ -116,7 +129,9 @@ export function ConfigurationPage() {
           </p>
         ) : (
           <div className="border border-border-strong bg-card px-4 py-3">
-            <p className="mb-2 text-sm font-semibold">{editorCopy.config.notReady}</p>
+            <p className="mb-2 text-sm font-semibold">
+              {editorCopy.config.notReady}
+            </p>
             <ul className="space-y-1">
               {missing.map((block) => (
                 <li key={block.id} className="text-sm text-muted-foreground">
@@ -149,12 +164,17 @@ export function ConfigurationPage() {
         </div>
 
         {report === null ? (
-          <p className="text-sm text-muted-foreground">{editorCopy.config.checking}</p>
+          <p className="text-sm text-muted-foreground">
+            {editorCopy.config.checking}
+          </p>
         ) : (
           <>
             <p className="mb-4 text-[13px] text-muted-foreground">
               {items && items.length > 0
-                ? editorCopy.config.withItems.replace('{n}', nf.format(items.length))
+                ? editorCopy.config.withItems.replace(
+                    '{n}',
+                    nf.format(items.length),
+                  )
                 : editorCopy.config.withoutItems}
             </p>
 
@@ -168,14 +188,18 @@ export function ConfigurationPage() {
                     {label}
                   </dt>
                   <dd className="font-mono text-lg">
-                    {typeof value === 'number' ? nf.format(value) : editorCopy.config.unknown}
+                    {typeof value === 'number'
+                      ? nf.format(value)
+                      : editorCopy.config.unknown}
                   </dd>
                 </div>
               ))}
             </dl>
 
             {report.issues.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{editorCopy.config.noIssues}</p>
+              <p className="text-sm text-muted-foreground">
+                {editorCopy.config.noIssues}
+              </p>
             ) : (
               <ul className="space-y-2">
                 {SEVERITY_ORDER.flatMap((severity) =>
@@ -191,7 +215,9 @@ export function ConfigurationPage() {
                             {severity}
                           </span>
                           {issue.where ? (
-                            <span className="font-mono text-[11px]">{issue.where}</span>
+                            <span className="font-mono text-[11px]">
+                              {issue.where}
+                            </span>
                           ) : null}
                         </p>
                         <p className="text-sm">{issue.message}</p>
@@ -210,10 +236,14 @@ export function ConfigurationPage() {
                   {report.selfTests.map((test) => (
                     <li key={test.name} className="flex gap-3 text-sm">
                       <span className="font-mono text-[11px]">
-                        {test.passed ? editorCopy.config.pass : editorCopy.config.fail}
+                        {test.passed
+                          ? editorCopy.config.pass
+                          : editorCopy.config.fail}
                       </span>
                       <span>{test.name}</span>
-                      <span className="text-muted-foreground">{test.detail}</span>
+                      <span className="text-muted-foreground">
+                        {test.detail}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -226,20 +256,32 @@ export function ConfigurationPage() {
       {/* Las partes, en el orden del registro. */}
       {CONFIG_BLOCKS.map((block) => {
         const entries = block.entries(template);
+        const Editor = BLOCK_EDITORS[block.id];
         return (
-          <section key={block.id} className="mb-8" aria-labelledby={`block-${block.id}`}>
+          <section
+            key={block.id}
+            className="mb-8"
+            aria-labelledby={`block-${block.id}`}
+          >
             <div className="mb-3 flex flex-wrap items-baseline gap-3 border-b border-border pb-2">
-              <h2 id={`block-${block.id}`} className="text-base font-bold tracking-[-0.02em]">
+              <h2
+                id={`block-${block.id}`}
+                className="text-base font-bold tracking-[-0.02em]"
+              >
                 {block.label}
               </h2>
-              <span className="font-mono text-[10px] text-muted-foreground">{entries.length}</span>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {entries.length}
+              </span>
               {block.required ? (
                 <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground">
                   {editorCopy.config.required}
                 </span>
               ) : null}
             </div>
-            <p className="mb-3 text-[13px] text-muted-foreground">{block.hint}</p>
+            <p className="mb-3 text-[13px] text-muted-foreground">
+              {block.hint}
+            </p>
 
             {entries.length === 0 ? (
               <p className="border border-dashed border-border-strong px-4 py-6 text-center text-[13px] text-muted-foreground">
@@ -248,9 +290,16 @@ export function ConfigurationPage() {
             ) : (
               <ul className="divide-y divide-border border-y border-border">
                 {entries.map((entry) => (
-                  <li key={entry.id} className="flex flex-wrap gap-x-4 gap-y-1 px-1 py-2.5">
-                    <span className="min-w-[160px] text-sm font-medium">{entry.name}</span>
-                    <span className="font-mono text-[11px] text-muted-foreground">{entry.id}</span>
+                  <li
+                    key={entry.id}
+                    className="flex flex-wrap gap-x-4 gap-y-1 px-1 py-2.5"
+                  >
+                    <span className="min-w-[160px] text-sm font-medium">
+                      {entry.name}
+                    </span>
+                    <span className="font-mono text-[11px] text-muted-foreground">
+                      {entry.id}
+                    </span>
                     {entry.detail ? (
                       <span className="font-mono text-[11px] text-muted-foreground">
                         {entry.detail}
@@ -260,6 +309,19 @@ export function ConfigurationPage() {
                 ))}
               </ul>
             )}
+
+            {/* Un bloque solo se edita si tiene editor Y si lo guardado se va a
+                poder volver a leer. Un optimizador del catalogo no cumple lo
+                segundo, y ofrecer un boton que no persiste seria mentir. */}
+            {Editor ? (
+              editable ? (
+                <Editor />
+              ) : (
+                <p className="mt-3 text-[12px] text-muted-foreground">
+                  {editorCopy.config.readOnly}
+                </p>
+              )
+            ) : null}
           </section>
         );
       })}
