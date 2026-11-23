@@ -29,7 +29,10 @@ describe('resolveGame', () => {
     const primero = fuente('primero', true, algo);
     const segundo = fuente('segundo', true, algo);
 
-    await expect(resolveGame('x', [primero, segundo])).resolves.toBe(algo);
+    await expect(resolveGame('x', [primero, segundo])).resolves.toEqual({
+      ...algo,
+      source: 'primero',
+    });
     expect(segundo.load).not.toHaveBeenCalled();
   });
 
@@ -37,7 +40,10 @@ describe('resolveGame', () => {
     const ajeno = fuente('ajeno', false, algo);
     const propio = fuente('propio', true, algo);
 
-    await expect(resolveGame('x', [ajeno, propio])).resolves.toBe(algo);
+    await expect(resolveGame('x', [ajeno, propio])).resolves.toEqual({
+      ...algo,
+      source: 'propio',
+    });
     expect(ajeno.load).not.toHaveBeenCalled();
   });
 
@@ -45,7 +51,10 @@ describe('resolveGame', () => {
     const vacio = fuente('vacio', true, undefined);
     const lleno = fuente('lleno', true, algo);
 
-    await expect(resolveGame('x', [vacio, lleno])).resolves.toBe(algo);
+    await expect(resolveGame('x', [vacio, lleno])).resolves.toEqual({
+      ...algo,
+      source: 'lleno',
+    });
     expect(vacio.load).toHaveBeenCalled();
   });
 

@@ -218,6 +218,11 @@ Tres criterios quedaron fuera y los tres dependen de sesión, o sea de la épica
 el optimizador al usuario autenticado, guardar el estado "Configuración incompleta" y que
 aparezca en la lista sin recargar (hoy se navega al editor).
 
+El tercero estaba **mal clasificado y era un fallo de verdad**: nada en la interfaz
+listaba los borradores locales, así que se creaba un optimizador, se entraba, y al volver
+al menú desaparecía de la vista. Seguía en IndexedDB y solo se llegaba escribiendo la URL
+de memoria. No dependía de sesión: `games.list()` estaba ahí desde siempre. Arreglado.
+
 Sobre el primero conviene ser preciso, porque se decidió dos veces. Se construyó local y
 sin cuenta a propósito, y el equipo confirmó después que los borradores locales se quedan:
 lo que exige sesión no es crear, es **publicar**. El optimizador adquiere autor al subirse,
@@ -253,7 +258,7 @@ en los siete proyectos, más `check:genres`.
 
 | Métrica | Valor |
 |---|---|
-| Pruebas en `apps/web` | 306 |
+| Pruebas en `apps/web` | 311 |
 | Pruebas en `libs/core-engine` | 189 |
 | Cobertura sobre código nuevo | 94.5 % |
 

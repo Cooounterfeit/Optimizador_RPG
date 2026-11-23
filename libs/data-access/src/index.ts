@@ -15,3 +15,5 @@ export * from './lib/settings.repo.js';
 export * from './lib/skills.repo.js';
 export * from './lib/template.js';
 export * from './lib/text.js';
+
+export { onGamesChanged } from './lib/games.repo.js';

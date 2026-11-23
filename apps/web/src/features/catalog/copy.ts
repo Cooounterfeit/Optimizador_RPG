@@ -1,4 +1,8 @@
 export const copy = {
+  drafts: {
+    title: 'Your drafts',
+    note: 'In this browser only',
+  },
   brand: 'Zenith',
   brandSub: 'Optimizer',
   skipToCatalog: 'Skip to optimizers',

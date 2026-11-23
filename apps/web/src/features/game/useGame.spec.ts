@@ -101,7 +101,9 @@ describe('useGame', () => {
     expect(result.current.state.status === 'ready' && result.current.state.template).toEqual(template);
     expect(result.current.state.status === 'ready' && result.current.state.sampleItems).toEqual([]);
     expect(getOptimizer).toHaveBeenCalledWith(OPTIMIZER_ID);
-    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template });
+    // `cloud: true` porque no vino del origen local: es una copia de algo
+    // ajeno y la portada no debe listarla entre los borradores propios.
+    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template, cloud: true });
   });
 
   it('va directo al juego integrado cuando el id no es un uuid', async () => {
@@ -115,7 +117,9 @@ describe('useGame', () => {
 
     await waitFor(() => expect(result.current.state.status).toBe('ready'));
     expect(getOptimizer).not.toHaveBeenCalled();
-    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template });
+    // `cloud: true` porque no vino del origen local: es una copia de algo
+    // ajeno y la portada no debe listarla entre los borradores propios.
+    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template, cloud: true });
   });
 
   it('da error cuando no existe ni en Supabase ni como juego integrado', async () => {

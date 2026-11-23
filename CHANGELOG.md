@@ -50,6 +50,10 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   ids duplicados pero no su forma, y el tokenizador lee `ataque-critico` como una resta.
   Ahora se rechaza al validar, venga del formulario, de un paquete importado o de una
   plantilla escrita a mano.
+- **No había forma de volver a un borrador.** Nada en la interfaz listaba los
+  optimizadores creados en este navegador: se entraba al crearlo y al volver al menú
+  desaparecía de la vista, aunque siguiera guardado. La portada ahora los lista, y
+  distingue los propios de la copia en caché de los del catálogo.
 - **El botón de editar de cada fila se anunciaba como "EditAtaque".** El nombre del atributo
   se concatenaba sin separador en el árbol de accesibilidad. Ahora el nombre accesible es
   explícito.
