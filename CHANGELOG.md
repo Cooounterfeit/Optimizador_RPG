@@ -38,6 +38,11 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   en tu cuenta o compartida, y desde el menú se puede quitar de la cuenta conservando el
   borrador local. La nota de la sección dejó de afirmar que todo vive solo en este navegador,
   que desde el botón de guardar era falso.
+- **Estrenar un juego ya no exige ser administrador.** Crear un optimizador de un juego que
+  no está en el catálogo era imposible de guardar para un usuario normal, porque el insert
+  en `game` es solo de administradores y `optimizers.game_id` es obligatorio. Una función
+  con permisos elevados lo registra en su nombre: exige sesión, reutiliza antes de crear y
+  deja constancia de quién lo creó. El insert directo sigue reservado a administradores.
 - **El nombre del optimizador llega a 100 caracteres en la base.** La tabla estaba en 80 y
   el formulario de CFG-05 en 100, así que un nombre de 90 se guardaba en el navegador y
   reventaba al subirlo.

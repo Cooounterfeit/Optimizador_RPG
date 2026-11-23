@@ -80,79 +80,38 @@ export function toOptimizerWrite(draft: OptimizerDraft, gameId: string): Optimiz
   };
 }
 
-/** Para `ilike`, donde `%` y `_` son comodines y un nombre puede traerlos. */
-const sinComodines = (value: string) => value.replace(/[%_\\]/g, '\\$&');
-
 /**
- * El slug del catalogo: minusculas, sin acentos y separado por guiones. La
- * tabla lo exige con un check, asi que esto no es cosmetica.
- */
-export function gameSlug(name: string): string {
-  const base = name
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 76);
-  return base || 'juego';
-}
-
-/**
- * El juego al que pertenece un optimizador: se busca por nombre y, si no
- * existe, se crea.
+ * El juego al que pertenece un optimizador.
  *
- * Es la misma regla que uso la migracion de relleno al unificar el juego
- * (`lower(btrim(name))`, y el nombre recortado a 80), para que lo que cree la
- * aplicacion y lo que ya existia se comporten igual. `game` tiene un indice
- * unico sobre ese nombre normalizado, asi que dos usuarios guardando a la vez
- * no pueden duplicarlo: el segundo choca y encuentra el del primero.
+ * Lo resuelve Postgres, no el cliente. `game_insert` exige `is_admin()`, asi
+ * que un usuario normal no puede crear juegos: sin esto, quien estrena un juego
+ * que no esta en el catalogo no podria guardar su optimizador, porque
+ * `optimizers.game_id` es not null desde que se unifico el juego.
+ *
+ * `ensure_game` (20261126000002) es `security definer` y abre un camino
+ * estrecho: exige sesion, reutiliza antes de crear con la misma normalizacion
+ * que el indice unico del catalogo, recorta el nombre a lo que admite la
+ * columna y anota quien lo creo. La politica de administrador para el insert
+ * directo se queda intacta.
+ *
+ * Hacerlo en una sola llamada tambien quita la carrera que tenia la version
+ * anterior, que buscaba y despues insertaba desde el navegador.
  */
 export async function resolveGameId(
   client: SupabaseClient,
   nombre: string,
 ): Promise<string> {
-  // `game.name` admite 80 y el nombre del optimizador llega a 100: se recorta,
-  // igual que hizo la migracion.
-  const limpio = nombre.trim().slice(0, 80);
+  const { data, error } = await client.rpc('ensure_game', { p_name: nombre });
 
-  const buscar = async () => {
-    const { data, error } = await client
-      .from('game')
-      .select('id')
-      .ilike('name', sinComodines(limpio))
-      .maybeSingle();
-    if (error) throw new DataAccessError(error.message, { cause: error });
-    return (data as { id: string } | null)?.id;
-  };
-
-  const existente = await buscar();
-  if (existente) return existente;
-
-  // El slug puede estar tomado por un juego de nombre distinto, asi que se
-  // intenta con sufijo antes de rendirse.
-  const base = gameSlug(limpio);
-  for (let intento = 0; intento < 3; intento += 1) {
-    const slug = intento === 0 ? base : `${base}-${intento + 1}`;
-    const { data, error } = await client
-      .from('game')
-      .insert({ slug, name: limpio })
-      .select('id')
-      .single();
-
-    if (!error) return (data as { id: string }).id;
-
-    // Otro lo creo entre la busqueda y el insert: el indice unico lo impidio y
-    // ahora si esta ahi.
-    const porNombre = await buscar();
-    if (porNombre) return porNombre;
+  if (error) throw new DataAccessError(error.message, { cause: error });
+  if (!data) {
+    throw new DataAccessError('No se pudo registrar el juego de este optimizador.');
   }
 
-  throw new DataAccessError('No se pudo registrar el juego de este optimizador.');
+  return data as string;
 }
 
-/** Fila tal como la devuelve la consulta: la tabla + el juego embebido. */
+/** La fila con el juego resuelto por el join de `COLUMNS`. */
 type JoinedOptimizerRow = OptimizerRow & { game: { name: string } | null };
 
 /** Fila de `optimizers` → modelo validado. Nada entra sin pasar por Zod. */

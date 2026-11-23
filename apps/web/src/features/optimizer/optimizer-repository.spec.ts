@@ -8,7 +8,6 @@ import { buildSkeleton } from '../editor/skeleton';
 import {
   createSupabaseOptimizerRepository,
   defaultOptimizerRepository,
-  gameSlug,
   resolveGameId,
   toOptimizerWrite,
 } from './optimizer-repository';
@@ -28,78 +27,45 @@ interface Capturado {
   insert?: Record<string, unknown>;
   update?: Record<string, unknown>;
   id?: string;
-  juegosCreados: Record<string, unknown>[];
-  buscados: string[];
+  /** Las llamadas a `ensure_game`, que es quien resuelve el juego. */
+  juegosPedidos: string[];
 }
 
-const nuevoCapturado = (): Capturado => ({ juegosCreados: [], buscados: [] });
+const nuevoCapturado = (): Capturado => ({ juegosPedidos: [] });
 
 /**
- * Cliente de mentira con las dos tablas que toca el guardado. `game` arranca
- * con los juegos que se le den y acepta altas, para poder probar los dos
- * caminos: el que lo encuentra y el que lo crea.
+ * Cliente de mentira. El juego ya no se busca ni se inserta desde aqui: lo
+ * resuelve Postgres con `ensure_game`, asi que lo unico que hay que comprobar
+ * es que se le pide y con que nombre.
  */
-const clienteFalso = (
-  capturado: Capturado,
-  juegos: { id: string; slug: string; name: string }[] = [],
-  slugsTomados: string[] = [],
-) =>
+const clienteFalso = (capturado: Capturado, falla = false) =>
   ({
-    from: (tabla: string) => {
-      if (tabla === 'game') {
+    rpc: async (fn: string, args: { p_name: string }) => {
+      if (fn !== 'ensure_game') throw new Error(`funcion inesperada: ${fn}`);
+      capturado.juegosPedidos.push(args.p_name);
+      return falla
+        ? { data: null, error: { message: 'hace falta una sesion para registrar un juego' } }
+        : { data: 'g-resuelto', error: null };
+    },
+    from: () => ({
+      insert: (payload: Record<string, unknown>) => {
+        capturado.insert = payload;
         return {
           select: () => ({
-            ilike: (_columna: string, valor: string) => {
-              capturado.buscados.push(valor);
-              const encontrado = juegos.find(
-                (juego) => juego.name.trim().toLowerCase() === valor.trim().toLowerCase(),
-              );
-              return {
-                maybeSingle: async () => ({
-                  data: encontrado ? { id: encontrado.id } : null,
-                  error: null,
-                }),
-              };
-            },
+            single: async () => ({ data: { id: 'uuid-nuevo' }, error: null }),
           }),
-          insert: (fila: { slug: string; name: string }) => {
-            capturado.juegosCreados.push(fila);
-            const chocado =
-              slugsTomados.includes(fila.slug) ||
-              juegos.some((juego) => juego.slug === fila.slug);
-            return {
-              select: () => ({
-                single: async () =>
-                  chocado
-                    ? { data: null, error: { message: 'duplicate key value' } }
-                    : (juegos.push({ id: `g-${fila.slug}`, ...fila }),
-                      { data: { id: `g-${fila.slug}` }, error: null }),
-              }),
-            };
+        };
+      },
+      update: (payload: Record<string, unknown>) => {
+        capturado.update = payload;
+        return {
+          eq: (_columna: string, id: string) => {
+            capturado.id = id;
+            return Promise.resolve({ error: null });
           },
         };
-      }
-
-      return {
-        insert: (payload: Record<string, unknown>) => {
-          capturado.insert = payload;
-          return {
-            select: () => ({
-              single: async () => ({ data: { id: 'uuid-nuevo' }, error: null }),
-            }),
-          };
-        },
-        update: (payload: Record<string, unknown>) => {
-          capturado.update = payload;
-          return {
-            eq: (_columna: string, id: string) => {
-              capturado.id = id;
-              return Promise.resolve({ error: null });
-            },
-          };
-        },
-      };
-    },
+      },
+    }),
   }) as unknown as SupabaseClient;
 
 describe('plantilla a columnas', () => {
@@ -139,51 +105,24 @@ describe('plantilla a columnas', () => {
   });
 });
 
-describe('el slug del catalogo', () => {
-  it('quita acentos y separa con guiones', () => {
-    expect(gameSlug('Camión Fantástico')).toBe('camion-fantastico');
-  });
-
-  it('un nombre sin letras ni numeros no deja el slug vacio', () => {
-    // La tabla exige que el slug cumpla un patron: vacio no pasa el check.
-    expect(gameSlug('!!!')).toBe('juego');
-  });
-});
-
 describe('a que juego pertenece', () => {
-  it('reutiliza el que ya existe, sin mirar mayusculas', () => {
+  it('lo resuelve Postgres, no el navegador', async () => {
+    // `game_insert` exige ser administrador, asi que crear el juego desde aqui
+    // fallaria para casi todo el mundo. Lo hace `ensure_game`.
     const capturado = nuevoCapturado();
-    const client = clienteFalso(capturado, [
-      { id: 'g-existente', slug: 'mi-juego', name: 'MI JUEGO' },
-    ]);
 
-    return expect(resolveGameId(client, 'Mi juego')).resolves.toBe('g-existente');
+    await expect(resolveGameId(clienteFalso(capturado), 'Hollow Vigil')).resolves.toBe(
+      'g-resuelto',
+    );
+    expect(capturado.juegosPedidos).toEqual(['Hollow Vigil']);
   });
 
-  it('lo crea cuando no esta', async () => {
+  it('si la funcion falla, no se inventa un juego', async () => {
     const capturado = nuevoCapturado();
-    const client = clienteFalso(capturado);
 
-    await expect(resolveGameId(client, 'Hollow Vigil')).resolves.toBe('g-hollow-vigil');
-    expect(capturado.juegosCreados[0]).toMatchObject({
-      slug: 'hollow-vigil',
-      name: 'Hollow Vigil',
-    });
-  });
-
-  it('recorta el nombre a lo que la tabla admite', async () => {
-    const capturado = nuevoCapturado();
-    const largo = 'a'.repeat(100);
-    await resolveGameId(clienteFalso(capturado), largo);
-
-    expect((capturado.juegosCreados[0] as { name: string }).name).toHaveLength(80);
-  });
-
-  it('si el slug esta tomado por otro juego, prueba con sufijo', async () => {
-    const capturado = nuevoCapturado();
-    const client = clienteFalso(capturado, [], ['hollow-vigil']);
-
-    await expect(resolveGameId(client, 'Hollow Vigil')).resolves.toBe('g-hollow-vigil-2');
+    await expect(resolveGameId(clienteFalso(capturado, true), 'Hollow Vigil')).rejects.toThrow(
+      /sesion/i,
+    );
   });
 });
 
@@ -196,7 +135,7 @@ describe('guardar en la cuenta', () => {
       'uuid-nuevo',
     );
     expect(capturado.insert).toMatchObject({ name: 'Mi juego', published: false });
-    expect(capturado.insert?.game_id).toBe('g-mi-juego');
+    expect(capturado.insert?.game_id).toBe('g-resuelto');
   });
 
   it('actualizar no reescribe de donde salio ni a que juego pertenece', async () => {
@@ -222,7 +161,7 @@ describe('guardar en la cuenta', () => {
 
     await repo.updateOptimizer('uuid-mio', { template: plantilla, shared: false });
 
-    expect(capturado.juegosCreados).toEqual([]);
+    expect(capturado.juegosPedidos).toEqual([]);
   });
 
   it('el inventario no tiene por donde entrar en el envio', async () => {
