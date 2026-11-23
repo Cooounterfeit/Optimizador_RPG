@@ -50,6 +50,9 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   ids duplicados pero no su forma, y el tokenizador lee `ataque-critico` como una resta.
   Ahora se rechaza al validar, venga del formulario, de un paquete importado o de una
   plantilla escrita a mano.
+- **La pantalla de configuración dice que se guarda sola.** No hay botón de guardar porque
+  cada cambio se escribe al hacerlo, pero nada lo decía donde se está trabajando y quien
+  buscaba el botón asumía que no se había guardado nada.
 - **Menú de acciones en cada borrador.** Los tres puntos, dentro del mismo marco del
   nombre, abren renombrar, duplicar y borrar. Renombrar no toca el id, porque lo usan las
   claves del inventario. Duplicar se lleva también las piezas y queda registrado como copia.

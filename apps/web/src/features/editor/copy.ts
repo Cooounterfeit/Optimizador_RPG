@@ -23,6 +23,8 @@ export const editorCopy = {
     created: 'Optimizer created. Now you can configure it.',
     eyebrow: 'Configuration',
     lede: 'Everything this optimizer is made of, and what the engine says about it.',
+    autosave:
+      'There is no save button: every change is written as you make it, and it stays in this browser. Publishing it for other people comes later.',
     stateTitle: 'State of the template',
     ready: 'This template has everything the solver needs. It can run.',
     notReady: 'The solver cannot run yet. These parts are still empty:',
