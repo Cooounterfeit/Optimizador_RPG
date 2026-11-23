@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Button } from '../../components/ui/Button';
 import { copy } from '../catalog/copy';
@@ -9,11 +9,18 @@ import { errorClass, fieldClass, labelClass } from '../../components/ui/form';
 
 import { AuthShell } from './AuthShell';
 import { useAuth } from './AuthProvider';
+import { safeNext } from './guards';
 import { authErrorMessage } from './error-message';
 
 export function RegisterPage() {
   const { status, signUp } = useAuth();
   const navigate = useNavigate();
+  /**
+   * De donde venia. El login ya lo respetaba y aqui no, asi que crear una
+   * cuenta desde media edicion te dejaba en el perfil, lejos de lo que estabas
+   * haciendo y sin forma obvia de volver.
+   */
+  const [params] = useSearchParams();
 
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -63,7 +70,7 @@ export function RegisterPage() {
         setSent(true);
         return;
       }
-      navigate('/perfil', { replace: true });
+      navigate(safeNext(params.get('next'), '/perfil'), { replace: true });
     } catch (cause) {
       setError(authErrorMessage(cause));
     } finally {

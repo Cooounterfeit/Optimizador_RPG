@@ -10,6 +10,7 @@ import { EmptyState } from '../../catalog/components/EmptyState';
 import { Footer } from '../../catalog/components/Footer';
 import { copy } from '../../catalog/copy';
 import type { CatalogOptimizer } from '../../catalog/types';
+import { SaveButton } from '../../editor/SaveButton';
 import { gameCopy } from '../../game/copy';
 import {
   WORKSPACE_SECTIONS,
@@ -115,6 +116,7 @@ function WorkspaceSections({
   template: GameTemplate;
   splat: string;
 }) {
+  const { editable, inventory } = useOptimizerWorkspace();
   const active = sectionFromSplat(splat);
   const [visited, setVisited] = useState<WorkspaceSectionId[]>(() =>
     active ? [active.id] : [],
@@ -139,7 +141,8 @@ function WorkspaceSections({
       <WorkspaceRail id={id} sections={railSections} activeId={active?.id} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex-1">
+        {/* Hueco para que el boton flotante no tape el final de la pagina. */}
+        <div className={`flex-1 ${editable ? 'pb-20' : ''}`}>
           {active ? null : <UnknownSection id={id} />}
 
           {visited.map((sectionId) => {
@@ -163,6 +166,14 @@ function WorkspaceSections({
 
         <Footer />
       </div>
+
+      {/*
+        Vive aqui y no en la pagina de configuracion para que acompane en todas
+        las secciones: se puede estar en el inventario o en la hoja de personaje
+        y seguir queriendo guardar. Solo en un optimizador propio: en uno del
+        catalogo, la RLS no deja escribir y ofrecerlo seria mentir.
+      */}
+      {editable ? <SaveButton template={template} items={inventory.items ?? []} /> : null}
     </div>
   );
 }

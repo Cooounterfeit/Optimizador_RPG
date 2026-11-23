@@ -51,6 +51,19 @@ export const editorCopy = {
     // El boton esta siempre en pantalla, asi que cada razon para no poder
     // guardar tiene que decirse. Un boton que desaparece no explica nada.
     checking: 'Checking the template.',
+    // El dialogo es la unica pantalla que explica por que no se puede guardar,
+    // porque el boton ya no se apaga: siempre se puede pulsar y siempre
+    // contesta algo.
+    dialogTitle: 'Save this optimizer',
+    needAccountTitle: 'You need an account',
+    needAccount:
+      'To save your optimizer you must sign in, or create an account if you do not have one.',
+    signInAction: 'Sign in',
+    createAccount: 'Create an account',
+    notReadyTitle: 'Not ready to save yet',
+    close: 'Close',
+    savedTitle: 'Saved',
+    done: 'Done',
     blockedMissing: 'Still missing: {what}. An optimizer has to be complete before it goes to your account.',
     blockedErrors:
       'The report below has errors to fix first. Saving a template the engine rejects would publish something nobody can run.',

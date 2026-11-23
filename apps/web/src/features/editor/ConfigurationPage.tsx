@@ -11,7 +11,6 @@ import { Button } from '../../components/ui/Button';
 import { useOptimizerWorkspace } from '../optimizer/workspace/OptimizerWorkspaceProvider';
 
 import { BlockSection } from './BlockSection';
-import { SavePanel } from './SavePanel';
 import { CONFIG_BLOCKS, missingRequired } from './blocks';
 import { editorCopy } from './copy';
 
@@ -110,29 +109,15 @@ export function ConfigurationPage() {
         </p>
 
         {/*
-          Solo en un optimizador propio. En uno abierto del catalogo, ofrecer
-          guardar seria mentir: la RLS no deja escribir en lo ajeno, y hablar de
-          guardado automatico tampoco valdria.
+          El boton de guardar NO esta aqui: vive fijo abajo a la derecha, en
+          `SaveButton`, para que acompane en todas las secciones. Esta nota se
+          queda porque es la que distingue los dos guardados, y sin ella la
+          pantalla no explica por que los cambios ya estan a salvo.
         */}
         {editable ? (
-          <>
-            <SavePanel
-              template={template}
-              gate={{
-                // La misma validacion que se pinta mas abajo, no una segunda
-                // opinion: si el informe dice que no puede buscar, no se sube.
-                missing: missing.map((block) => block.label),
-                errors:
-                  report?.issues.filter((issue) => issue.severity === 'error').length ?? 0,
-                // Tambien mientras se revalida: con el informe viejo en
-                // pantalla, lo que diga ya no corresponde a esta plantilla.
-                checking: report === null || checking,
-              }}
-            />
-            <p className="m-0 mt-3 max-w-[60ch] text-[12px] text-muted-foreground">
-              {editorCopy.config.autosave}
-            </p>
-          </>
+          <p className="m-0 mt-3 max-w-[60ch] text-[12px] text-muted-foreground">
+            {editorCopy.config.autosave}
+          </p>
         ) : null}
       </header>
 

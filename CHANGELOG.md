@@ -28,12 +28,12 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   sesión y vuelve a donde estabas; sin cuentas configuradas lo dice en vez de fallar. Lo que
   sube es el optimizador, es decir la matemática: los objetos del jugador se quedan en su
   navegador y se importan por JSON o se escriben a mano.
-- **El botón de guardar está siempre, y dice por qué no se puede.** Antes desaparecía en una
-  instalación sin cuentas configuradas, y quien lo buscaba concluía que el guardado no
-  existía. Ahora aparece en todos los casos y, cuando no se puede guardar, queda apagado con
-  la razón debajo. Guardar exige además que la validación esté limpia: un optimizador con
-  bloques obligatorios vacíos o con errores del motor no sube, porque publicaría algo que
-  nadie puede ejecutar.
+- **El botón de guardar es flotante y acompaña en todo el optimizador.** Vive fijo abajo a la
+  derecha, se ve en todas las secciones y siempre se puede pulsar. Las reglas se aplican al
+  hacer clic: sin sesión sale un aviso con iniciar sesión o crear una cuenta, y si la
+  plantilla está incompleta o el motor reporta errores, el diálogo dice qué falta.
+- **Crear una cuenta devuelve a donde estabas.** El registro siempre mandaba al perfil,
+  así que registrarse a media edición te dejaba lejos de lo que estabas haciendo.
 - **La lista de borradores dice dónde vive cada uno.** Una tarjeta guardada muestra si está
   en tu cuenta o compartida, y desde el menú se puede quitar de la cuenta conservando el
   borrador local. La nota de la sección dejó de afirmar que todo vive solo en este navegador,

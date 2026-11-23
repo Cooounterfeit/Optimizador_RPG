@@ -35,7 +35,7 @@ export function RedirectIfSignedIn({ children }: { children: ReactNode }) {
 }
 
 /** Solo rutas internas: evita que `next` mande a otro sitio. */
-export function safeNext(value: string | null): string {
-  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';
+export function safeNext(value: string | null, fallback = '/'): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return fallback;
   return value;
 }

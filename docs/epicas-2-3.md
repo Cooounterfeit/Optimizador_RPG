@@ -49,7 +49,8 @@ sin una pantalla que muestre el estado de la plantilla no había dónde colgar e
 | `3516e0b` | El menú de los tres puntos: renombrar, duplicar, borrar |
 | `8eb7884` | Guardar el optimizador en la cuenta, privado o comunitario |
 | `5f63bb9` | Cerrar el ciclo: la lista dice dónde vive cada borrador y se puede quitar de la cuenta |
-| (este) | El botón de guardar, siempre visible, y la validación como condición |
+| `bcf96cd` | El botón de guardar, siempre visible, y la validación como condición |
+| (este) | El botón pasa a flotante, y las reglas se evalúan al hacer clic |
 
 ### Tres hallazgos que no se buscaban
 
@@ -189,27 +190,37 @@ correcto al guardar y justo lo contrario de lo que hace falta al desvincular.
 
 ### Un botón que desaparece no explica nada
 
-El botón de guardar se escondía en dos casos: sin cuentas configuradas, y en cualquier
-situación en la que no se pudiera guardar. Visto desde fuera, el resultado era peor que un
-botón inútil: quien lo buscaba y no lo encontraba concluía que el guardado no existía, o que
-ya había pasado solo.
+El botón de guardar tuvo tres formas antes de quedar bien, y las dos primeras fallaron por
+la misma razón: no estaba donde se le buscaba.
 
-La regla ahora es que **el botón está siempre**. Cuando no se puede guardar, sigue en
-pantalla, apagado, y debajo dice exactamente por qué. Eso obligó a arreglar algo más de
-fondo: el componente de botón solo quitaba el puntero al deshabilitarse, sin ningún cambio
-visual, así que en toda la aplicación un botón apagado parecía pulsable.
+**Escondido.** Vivía en la cabecera de la configuración, así que se iba con el scroll y no
+existía en las demás secciones.
 
-La única excepción es iniciar sesión, que no es un motivo para apagar nada: ahí el botón
-está encendido y lleva a iniciarla, porque es una acción posible y no un muro.
+**Apagado.** Desaparecía cuando no se podía guardar, y eso es peor que un botón inútil:
+quien lo busca y no lo encuentra concluye que el guardado no existe, o que ya pasó solo.
 
-**Guardar exige que la validación esté limpia.** No es una segunda opinión: el panel recibe
-hecho el veredicto que la propia pantalla ya pinta más abajo, los bloques obligatorios vacíos
-y los errores del motor. Un optimizador incompleto que llegara al catálogo sería algo que
-nadie puede ejecutar. Mientras el informe se está calculando tampoco se guarda, porque lo que
-hay en pantalla todavía no corresponde a esta plantilla.
+**Flotante.** Fijo abajo a la derecha, presente en todas las secciones de un optimizador
+propio, y siempre pulsable. Nunca se apaga.
 
-Las razones no se repiten: en un optimizador recién creado los bloques vacíos son
-justamente la causa de los errores del motor, así que se dice una vez.
+Que no se apague cambia dónde viven las reglas: **se evalúan al hacer clic**, no en cada
+render. Eso sale gratis además de ser más honesto, porque `validateTemplate` recorre la
+plantilla entera y no tiene por qué correr mientras alguien escribe el nombre de una
+estadística. El orden de las comprobaciones va de la más barata a la más cara y de la más
+accionable a la menos: cuenta, bloques vacíos y sólo entonces el motor.
+
+El diálogo es ahora la única pantalla que explica por qué no se puede guardar. Sin sesión
+ofrece iniciarla **o crear una cuenta**, que obligó a arreglar algo de paso: el registro
+ignoraba el destino de vuelta y siempre mandaba al perfil, así que registrarse a media
+edición te dejaba lejos de lo que estabas haciendo.
+
+Dos hallazgos que esto destapó, los dos anteriores a este trabajo:
+
+- El componente de botón sólo quitaba el puntero al deshabilitarse, sin ningún cambio
+  visual. En toda la aplicación un botón apagado parecía pulsable.
+- El tema **no define `--color-card`**, y `bg-card` se usa en once sitios. Ninguno pinta
+  nada. No se nota porque detrás hay página casi negra; se notó en el diálogo, que es el
+  primer sitio con contenido debajo. El diálogo usa `bg-surface`; los otros diez siguen
+  como estaban, a la espera de decidir si el token se añade.
 
 ### El modelo de propiedad
 
