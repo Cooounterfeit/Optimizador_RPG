@@ -11,6 +11,9 @@ const COLUMNS = [
   'description',
   'template',
   'sample_items',
+  // Se leia `row.published` sin pedirlo, asi que TODO optimizador de la nube
+  // se reportaba como no publicado.
+  'published',
   'game:game_id(name)',
 ].join(',');
 
@@ -61,22 +64,92 @@ export interface OptimizerRepository {
 /**
  * Plantilla a columnas.
  *
- * `name` y `game_name` salen los dos del nombre de la plantilla porque el
- * editor pide un nombre y no dos. La tabla los separa para un futuro en que un
- * juego tenga varios optimizadores; hasta que ese caso exista, duplicarlo es
- * mas honesto que inventarse un valor distinto.
+ * El juego ya no viaja como texto: `game_id` apunta al catalogo, y quien lo
+ * resuelve es `resolveGameId`, porque puede implicar crearlo.
  */
-export function toOptimizerWrite(draft: OptimizerDraft): OptimizerWrite {
+export function toOptimizerWrite(draft: OptimizerDraft, gameId: string): OptimizerWrite {
   const { template, shared, forkedFrom } = draft;
   return {
     name: template.name,
-    game_name: template.name,
+    game_id: gameId,
     description: template.description,
     template,
     sample_items: [],
     published: shared,
     ...(forkedFrom ? { forked_from: forkedFrom } : {}),
   };
+}
+
+/** Para `ilike`, donde `%` y `_` son comodines y un nombre puede traerlos. */
+const sinComodines = (value: string) => value.replace(/[%_\\]/g, '\\$&');
+
+/**
+ * El slug del catalogo: minusculas, sin acentos y separado por guiones. La
+ * tabla lo exige con un check, asi que esto no es cosmetica.
+ */
+export function gameSlug(name: string): string {
+  const base = name
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 76);
+  return base || 'juego';
+}
+
+/**
+ * El juego al que pertenece un optimizador: se busca por nombre y, si no
+ * existe, se crea.
+ *
+ * Es la misma regla que uso la migracion de relleno al unificar el juego
+ * (`lower(btrim(name))`, y el nombre recortado a 80), para que lo que cree la
+ * aplicacion y lo que ya existia se comporten igual. `game` tiene un indice
+ * unico sobre ese nombre normalizado, asi que dos usuarios guardando a la vez
+ * no pueden duplicarlo: el segundo choca y encuentra el del primero.
+ */
+export async function resolveGameId(
+  client: SupabaseClient,
+  nombre: string,
+): Promise<string> {
+  // `game.name` admite 80 y el nombre del optimizador llega a 100: se recorta,
+  // igual que hizo la migracion.
+  const limpio = nombre.trim().slice(0, 80);
+
+  const buscar = async () => {
+    const { data, error } = await client
+      .from('game')
+      .select('id')
+      .ilike('name', sinComodines(limpio))
+      .maybeSingle();
+    if (error) throw new DataAccessError(error.message, { cause: error });
+    return (data as { id: string } | null)?.id;
+  };
+
+  const existente = await buscar();
+  if (existente) return existente;
+
+  // El slug puede estar tomado por un juego de nombre distinto, asi que se
+  // intenta con sufijo antes de rendirse.
+  const base = gameSlug(limpio);
+  for (let intento = 0; intento < 3; intento += 1) {
+    const slug = intento === 0 ? base : `${base}-${intento + 1}`;
+    const { data, error } = await client
+      .from('game')
+      .insert({ slug, name: limpio })
+      .select('id')
+      .single();
+
+    if (!error) return (data as { id: string }).id;
+
+    // Otro lo creo entre la busqueda y el insert: el indice unico lo impidio y
+    // ahora si esta ahi.
+    const porNombre = await buscar();
+    if (porNombre) return porNombre;
+  }
+
+  throw new DataAccessError('No se pudo registrar el juego de este optimizador.');
 }
 
 /** Fila tal como la devuelve la consulta: la tabla + el juego embebido. */
@@ -135,9 +208,10 @@ export function createSupabaseOptimizerRepository(client: SupabaseClient): Optim
     },
 
     async createOptimizer(draft: OptimizerDraft): Promise<string> {
+      const gameId = await resolveGameId(client, draft.template.name);
       const { data, error } = await client
         .from('optimizers')
-        .insert(toOptimizerWrite(draft))
+        .insert(toOptimizerWrite(draft, gameId))
         .select('id')
         .single();
 
@@ -146,9 +220,14 @@ export function createSupabaseOptimizerRepository(client: SupabaseClient): Optim
     },
 
     async updateOptimizer(id: string, draft: OptimizerDraft): Promise<void> {
-      // `forked_from` no se reescribe: de donde salio algo no cambia porque se
-      // vuelva a guardar.
-      const { forked_from: _ignored, ...columns } = toOptimizerWrite(draft);
+      // Ni `forked_from` ni `game_id` se reescriben. De donde salio algo no
+      // cambia porque se vuelva a guardar, y renombrar tu optimizador no
+      // deberia moverlo a otro juego ni dejar uno huerfano en el catalogo.
+      const {
+        forked_from: _origen,
+        game_id: _juego,
+        ...columns
+      } = toOptimizerWrite(draft, '');
       const { error } = await client.from('optimizers').update(columns).eq('id', id);
 
       if (error) throw new DataAccessError(error.message, { cause: error });

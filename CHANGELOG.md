@@ -61,6 +61,10 @@ Quien cierra el sprint la mueve a la versión correspondiente.
 
 ### Fixed
 
+- **Un optimizador de la nube siempre se reportaba como no publicado.** La consulta dejó de
+  pedir `published` al normalizar el catálogo de juegos, pero el mapeo seguía leyéndolo, así
+  que salía `false` para todos.
+
 - **Un botón deshabilitado no se veía deshabilitado.** El componente solo quitaba el puntero,
   sin ningún cambio visual, así que en toda la aplicación un botón apagado parecía pulsable.
 - **Borrar un borrador guardado dejaba su fila huérfana en la nube.** Se limpiaba el

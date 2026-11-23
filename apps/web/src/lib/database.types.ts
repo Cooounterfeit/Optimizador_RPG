@@ -36,7 +36,12 @@ export interface OptimizerRow {
  */
 export interface OptimizerWrite {
   name: string;
-  game_name: string;
+  /**
+   * El juego del catalogo al que pertenece. Es `not null` desde que
+   * `20261124000001_unificar_juego` elimino `game_name`: el nombre del juego
+   * dejo de ser texto libre en cada optimizador y pasa a vivir una sola vez.
+   */
+  game_id: string;
   description: string;
   template: unknown;
   sample_items: unknown;
