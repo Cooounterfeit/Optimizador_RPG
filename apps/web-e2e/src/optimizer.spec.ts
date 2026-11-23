@@ -73,6 +73,13 @@ test('calcula la mejor build con el inventario del juego sintético', async ({ p
   await expect(page.getByText('Equipment', { exact: true })).toBeVisible();
   await expect(page.getByText(/pieces? differ/).first()).toBeVisible();
 
+  // La barra abre y cierra la hoja tambien desde el espacio no interactivo.
+  await expect(page.getByRole('button', { name: 'Show setup' })).toBeVisible();
+  await page.getByText('Nova', { exact: true }).first().click();
+  await expect(page.getByRole('button', { name: 'Hide setup' })).toBeVisible();
+  await page.getByText('Nova', { exact: true }).first().click();
+  await expect(page.getByRole('button', { name: 'Show setup' })).toBeVisible();
+
   // Correr cierra la hoja: se vuelve a abrir para editar las condiciones.
   await openSetup(page);
   await page.getByRole('button', { name: 'Add constraint' }).click();

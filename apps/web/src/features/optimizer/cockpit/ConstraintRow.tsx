@@ -104,6 +104,7 @@ export function ConstraintRow({
 
   return (
     <div
+      data-no-toggle
       data-constraint-row
       className="grid h-7 w-auto shrink-0 grid-cols-[auto_32px_40px_auto_14px] items-center gap-1.5 rounded-[2px] border border-line bg-background px-2"
     >

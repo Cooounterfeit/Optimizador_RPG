@@ -33,7 +33,7 @@ export function ConstraintEditor({
   };
 
   return (
-    <div className="flex min-w-0 items-center gap-1.5">
+    <div data-no-toggle className="flex min-w-0 items-center gap-1.5">
       <div ref={stripRef} className="flex min-w-0 items-center gap-1.5 overflow-x-auto pb-1">
         {constraints.map((constraint, index) => (
           <ConstraintRow
