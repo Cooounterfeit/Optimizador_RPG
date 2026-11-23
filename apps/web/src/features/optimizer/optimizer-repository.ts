@@ -11,6 +11,9 @@ const COLUMNS = [
   'description',
   'template',
   'sample_items',
+  // Se leia `row.published` sin pedirlo, asi que TODO optimizador de la nube
+  // se reportaba como no publicado.
+  'published',
   'game:game_id(name)',
 ].join(',');
 
@@ -61,16 +64,14 @@ export interface OptimizerRepository {
 /**
  * Plantilla a columnas.
  *
- * `name` y `game_name` salen los dos del nombre de la plantilla porque el
- * editor pide un nombre y no dos. La tabla los separa para un futuro en que un
- * juego tenga varios optimizadores; hasta que ese caso exista, duplicarlo es
- * mas honesto que inventarse un valor distinto.
+ * El juego ya no viaja como texto: `game_id` apunta al catalogo, y quien lo
+ * resuelve es `resolveGameId`, porque puede implicar crearlo.
  */
-export function toOptimizerWrite(draft: OptimizerDraft): OptimizerWrite {
+export function toOptimizerWrite(draft: OptimizerDraft, gameId: string): OptimizerWrite {
   const { template, shared, forkedFrom } = draft;
   return {
     name: template.name,
-    game_name: template.name,
+    game_id: gameId,
     description: template.description,
     template,
     sample_items: [],
@@ -79,7 +80,38 @@ export function toOptimizerWrite(draft: OptimizerDraft): OptimizerWrite {
   };
 }
 
-/** Fila tal como la devuelve la consulta: la tabla + el juego embebido. */
+/**
+ * El juego al que pertenece un optimizador.
+ *
+ * Lo resuelve Postgres, no el cliente. `game_insert` exige `is_admin()`, asi
+ * que un usuario normal no puede crear juegos: sin esto, quien estrena un juego
+ * que no esta en el catalogo no podria guardar su optimizador, porque
+ * `optimizers.game_id` es not null desde que se unifico el juego.
+ *
+ * `ensure_game` (20261126000002) es `security definer` y abre un camino
+ * estrecho: exige sesion, reutiliza antes de crear con la misma normalizacion
+ * que el indice unico del catalogo, recorta el nombre a lo que admite la
+ * columna y anota quien lo creo. La politica de administrador para el insert
+ * directo se queda intacta.
+ *
+ * Hacerlo en una sola llamada tambien quita la carrera que tenia la version
+ * anterior, que buscaba y despues insertaba desde el navegador.
+ */
+export async function resolveGameId(
+  client: SupabaseClient,
+  nombre: string,
+): Promise<string> {
+  const { data, error } = await client.rpc('ensure_game', { p_name: nombre });
+
+  if (error) throw new DataAccessError(error.message, { cause: error });
+  if (!data) {
+    throw new DataAccessError('No se pudo registrar el juego de este optimizador.');
+  }
+
+  return data as string;
+}
+
+/** La fila con el juego resuelto por el join de `COLUMNS`. */
 type JoinedOptimizerRow = OptimizerRow & { game: { name: string } | null };
 
 /** Fila de `optimizers` → modelo validado. Nada entra sin pasar por Zod. */
@@ -135,9 +167,10 @@ export function createSupabaseOptimizerRepository(client: SupabaseClient): Optim
     },
 
     async createOptimizer(draft: OptimizerDraft): Promise<string> {
+      const gameId = await resolveGameId(client, draft.template.name);
       const { data, error } = await client
         .from('optimizers')
-        .insert(toOptimizerWrite(draft))
+        .insert(toOptimizerWrite(draft, gameId))
         .select('id')
         .single();
 
@@ -146,9 +179,14 @@ export function createSupabaseOptimizerRepository(client: SupabaseClient): Optim
     },
 
     async updateOptimizer(id: string, draft: OptimizerDraft): Promise<void> {
-      // `forked_from` no se reescribe: de donde salio algo no cambia porque se
-      // vuelva a guardar.
-      const { forked_from: _ignored, ...columns } = toOptimizerWrite(draft);
+      // Ni `forked_from` ni `game_id` se reescriben. De donde salio algo no
+      // cambia porque se vuelva a guardar, y renombrar tu optimizador no
+      // deberia moverlo a otro juego ni dejar uno huerfano en el catalogo.
+      const {
+        forked_from: _origen,
+        game_id: _juego,
+        ...columns
+      } = toOptimizerWrite(draft, '');
       const { error } = await client.from('optimizers').update(columns).eq('id', id);
 
       if (error) throw new DataAccessError(error.message, { cause: error });

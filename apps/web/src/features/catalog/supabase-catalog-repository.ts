@@ -8,7 +8,7 @@ const COLUMNS = [
   'name',
   'description',
   'game_name',
-  'category',
+  'genres',
   'cover',
   'score',
   'votes_count',
@@ -35,7 +35,7 @@ export function mapCard(row: OptimizerCardRow): CatalogOptimizer {
     score: row.score,
     votesCount: row.votes_count,
     createdAt: row.created_at,
-    category: row.category ?? undefined,
+    genres: row.genres ?? [],
     cover: row.cover ?? undefined,
     published: true,
   };

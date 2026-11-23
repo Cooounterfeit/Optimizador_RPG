@@ -15,7 +15,8 @@ export interface CatalogOptimizer {
   score: number;
   votesCount: number;
   createdAt: string;
-  category?: string;
+  /** Generos del juego, del catalogo. Puede venir vacio. */
+  genres: string[];
   cover?: string;
   published: boolean;
 }

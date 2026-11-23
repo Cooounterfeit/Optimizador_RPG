@@ -42,7 +42,7 @@ const demoCard: CatalogOptimizer = {
   score: 160,
   votesCount: 0,
   createdAt: '2026-11-06T00:00:00.000Z',
-  category: 'Gacha',
+  genres: ['Gacha'],
   published: true,
 };
 

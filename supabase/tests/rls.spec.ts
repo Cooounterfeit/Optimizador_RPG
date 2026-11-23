@@ -765,7 +765,16 @@ describe('privilegios: un objeto nuevo no nace abierto', () => {
                or has_function_privilege('authenticated', p.oid, 'EXECUTE'))
         order by p.proname`,
     );
-    expect(r.rows.map((f) => f.proname)).toEqual(['can_write_cloud', 'is_admin']);
+    // `ensure_game` entra en la lista a proposito (20261126000002): es la unica
+    // via por la que un usuario sin rol de admin puede estrenar un juego en el
+    // catalogo, y existe porque `optimizers.game_id` es not null desde que se
+    // unifico el juego. La funcion no abre `game` entera: exige sesion,
+    // reutiliza antes de crear y normaliza el nombre igual que el indice unico.
+    expect(r.rows.map((f) => f.proname)).toEqual([
+      'can_write_cloud',
+      'ensure_game',
+      'is_admin',
+    ]);
   });
 });
 
@@ -850,5 +859,59 @@ describe('subscription_gifts y stripe_events: las escribe el servidor', () => {
       admin(`insert into public.stripe_events (event_id, type) values ('evt_1', 'checkout.session.completed')`);
     await recibir();
     expect(await recibir().catch((e: Error) => e)).toBeInstanceOf(Error);
+  });
+});
+
+describe('ensure_game: estrenar juego sin ser admin', () => {
+  const AUTOR = '00000000-0000-0000-0000-0000000000e1';
+  const OTRO = '00000000-0000-0000-0000-0000000000e2';
+
+  beforeAll(async () => {
+    await admin(`insert into auth.users (id, email) values ($1, 'autor@ejemplo.cl')`, [AUTOR]);
+    await admin(`insert into auth.users (id, email) values ($1, 'otro@ejemplo.cl')`, [OTRO]);
+  });
+
+  it('un anonimo no puede', async () => {
+    const r = await como(null, `select public.ensure_game('Intruso') as id`);
+    expect(r.error).toBeTruthy();
+  });
+
+  it('un usuario con sesion registra el juego y recibe su id', async () => {
+    const r = await como(AUTOR, `select public.ensure_game('Hollow Vigil') as id`);
+    expect(r.error).toBeUndefined();
+    expect(r.rows[0].id).toBeTruthy();
+  });
+
+  it('el insert directo le sigue estando prohibido', async () => {
+    // La funcion abre un camino estrecho, no la tabla entera.
+    const r = await como(AUTOR, `insert into public.game (slug, name) values ('a-pelo', 'A pelo')`);
+    expect(denegado(r)).toBe(true);
+  });
+
+  it('dos veces el mismo nombre devuelve el mismo juego', async () => {
+    const a = await como(AUTOR, `select public.ensure_game('Repetido') as id`);
+    const b = await como(OTRO, `select public.ensure_game('  rEpEtIdO ') as id`);
+    expect(b.rows[0].id).toBe(a.rows[0].id);
+  });
+
+  it('no deja crear un juego sin nombre', async () => {
+    const r = await como(AUTOR, `select public.ensure_game('   ') as id`);
+    expect(r.error).toBeTruthy();
+  });
+
+  it('el slug pierde los acentos y queda con la forma que exige la tabla', async () => {
+    await como(AUTOR, `select public.ensure_game('Camión Fantástico') as id`);
+    const r = await admin(
+      `select slug from public.game where lower(btrim(name)) = 'camión fantástico'`,
+    );
+    expect(r.rows[0].slug).toBe('camion-fantastico');
+  });
+
+  it('guarda quien lo creo', async () => {
+    await como(AUTOR, `select public.ensure_game('Con Autor') as id`);
+    const r = await admin(
+      `select created_by from public.game where lower(btrim(name)) = 'con autor'`,
+    );
+    expect(r.rows[0].created_by).toBe(AUTOR);
   });
 });

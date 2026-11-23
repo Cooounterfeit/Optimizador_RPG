@@ -33,9 +33,13 @@ export function OptimizerCard({ optimizer, rank, index = 0 }: OptimizerCardProps
           </span>
         ) : null}
 
-        {optimizer.category ? (
+        {/*
+          Un juego puede tener varios generos, y en esta esquina no caben. Se
+          muestran los dos primeros: mas que eso se lee como una lista rota.
+        */}
+        {optimizer.genres.length > 0 ? (
           <span className="absolute right-2.5 top-2.5 z-[1] font-mono text-[9px] tracking-[0.08em] text-white/60">
-            {optimizer.category}
+            {optimizer.genres.slice(0, 2).join(' · ')}
           </span>
         ) : null}
       </CoverArt>

@@ -1,13 +1,13 @@
 import { cn } from '../../../lib/cn';
 import { copy } from '../copy';
-import type { CatalogFilterState, CategoryFacet, SortKey } from '../filters';
+import type { CatalogFilterState, GenreFacet, SortKey } from '../filters';
 import { SortControl } from './SortControl';
 
 interface FilterRailProps {
-  facets: CategoryFacet[];
+  facets: GenreFacet[];
   total: number;
   state: CatalogFilterState;
-  onCategory: (category: string) => void;
+  onGenre: (genre: string) => void;
   onSort: (sort: SortKey) => void;
   onTopOnly: (value: boolean) => void;
 }
@@ -16,11 +16,11 @@ export function FilterRail({
   facets,
   total,
   state,
-  onCategory,
+  onGenre,
   onSort,
   onTopOnly,
 }: FilterRailProps) {
-  const categories = [{ name: 'all', count: total }, ...facets];
+  const generos = [{ name: 'all', count: total }, ...facets];
 
   return (
     <aside className="rail rail-left" aria-labelledby="filters-title">
@@ -33,8 +33,8 @@ export function FilterRail({
         </h2>
 
         <div className="filter-list flex flex-col gap-0.5" role="group" aria-labelledby="filters-title">
-          {categories.map(({ name, count }) => {
-            const active = state.category === name;
+          {generos.map(({ name, count }) => {
+            const active = state.genre === name;
             const label = name === 'all' ? copy.filters.all : name;
 
             return (
@@ -42,7 +42,7 @@ export function FilterRail({
                 key={name}
                 type="button"
                 aria-pressed={active}
-                onClick={() => onCategory(name)}
+                onClick={() => onGenre(name)}
                 className={cn(
                   'flex w-full items-center gap-2 rounded-[2px] px-2 py-2 text-left text-[13px] transition-colors',
                   active

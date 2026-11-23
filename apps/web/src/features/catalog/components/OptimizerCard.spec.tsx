@@ -14,7 +14,7 @@ const optimizer: CatalogOptimizer = {
   score: 312,
   votesCount: 68,
   createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-  category: 'Action RPG',
+  genres: ['Action RPG'],
   published: true,
 };
 

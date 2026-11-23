@@ -19,7 +19,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 312,
     votesCount: 68,
     createdAt: daysAgo(3),
-    category: 'Action RPG',
+    genres: ['Action RPG'],
     published: true,
   },
   {
@@ -31,7 +31,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 288,
     votesCount: 54,
     createdAt: daysAgo(11),
-    category: 'Action RPG',
+    genres: ['Action RPG'],
     published: true,
   },
   {
@@ -43,7 +43,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 244,
     votesCount: 49,
     createdAt: daysAgo(6),
-    category: 'Gacha',
+    genres: ['Gacha'],
     published: true,
   },
   {
@@ -55,7 +55,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 196,
     votesCount: 41,
     createdAt: daysAgo(2),
-    category: 'ARPG',
+    genres: ['ARPG'],
     published: true,
   },
   {
@@ -67,7 +67,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 168,
     votesCount: 33,
     createdAt: daysAgo(9),
-    category: 'Looter shooter',
+    genres: ['Looter shooter'],
     published: true,
   },
   {
@@ -79,7 +79,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 142,
     votesCount: 30,
     createdAt: daysAgo(1),
-    category: 'Action RPG',
+    genres: ['Action RPG'],
     published: true,
   },
   {
@@ -91,7 +91,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 121,
     votesCount: 26,
     createdAt: daysAgo(18),
-    category: 'Gacha',
+    genres: ['Gacha'],
     published: true,
   },
   {
@@ -103,7 +103,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 98,
     votesCount: 21,
     createdAt: daysAgo(4),
-    category: 'Gacha',
+    genres: ['Gacha'],
     published: true,
   },
   {
@@ -115,7 +115,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 64,
     votesCount: 17,
     createdAt: daysAgo(21),
-    category: 'ARPG',
+    genres: ['ARPG'],
     published: true,
   },
   {
@@ -127,7 +127,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 45,
     votesCount: 12,
     createdAt: daysAgo(7),
-    category: 'ARPG',
+    genres: ['ARPG'],
     published: true,
   },
   {
@@ -139,7 +139,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 23,
     votesCount: 9,
     createdAt: daysAgo(13),
-    category: 'Looter shooter',
+    genres: ['Looter shooter'],
     published: true,
   },
   {
@@ -151,7 +151,7 @@ export const catalogFixtures: CatalogOptimizer[] = [
     score: 8,
     votesCount: 4,
     createdAt: daysAgo(24),
-    category: 'Action RPG',
+    genres: ['Action RPG'],
     published: true,
   },
 ];

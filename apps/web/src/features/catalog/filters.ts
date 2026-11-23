@@ -5,36 +5,49 @@ export type SortKey = 'top' | 'new' | 'az';
 /** Un optimizador necesita al menos este puntaje para pasar "Top rated only". */
 export const TOP_RATED_MIN_SCORE = 50;
 
+/** Lo que se muestra cuando el juego no tiene ningun genero asignado. */
 export const UNCATEGORIZED = 'Uncategorized';
 
 export interface CatalogFilterState {
-  category: string;
+  /** Un genero concreto, o `all`. */
+  genre: string;
   query: string;
   sort: SortKey;
   topOnly: boolean;
 }
 
 export const initialFilterState: CatalogFilterState = {
-  category: 'all',
+  genre: 'all',
   query: '',
   sort: 'top',
   topOnly: false,
 };
 
-export interface CategoryFacet {
+export interface GenreFacet {
   name: string;
   count: number;
 }
 
-const categoryOf = (optimizer: CatalogOptimizer): string =>
-  optimizer.category?.trim() || UNCATEGORIZED;
+/**
+ * Los generos de un optimizador, o el cajon de los que no tienen ninguno.
+ *
+ * Antes esto era una sola categoria de texto libre. Ahora el juego puede tener
+ * varios generos del catalogo, y eso cambia las dos cuentas de abajo: un
+ * optimizador suma en cada uno de sus generos, asi que las facetas ya no suman
+ * el total de la lista.
+ */
+const genresOf = (optimizer: CatalogOptimizer): string[] => {
+  const limpios = optimizer.genres.map((genre) => genre.trim()).filter(Boolean);
+  return limpios.length > 0 ? limpios : [UNCATEGORIZED];
+};
 
-export function categoryFacets(list: CatalogOptimizer[]): CategoryFacet[] {
+export function genreFacets(list: CatalogOptimizer[]): GenreFacet[] {
   const counts = new Map<string, number>();
 
   for (const optimizer of list) {
-    const category = categoryOf(optimizer);
-    counts.set(category, (counts.get(category) ?? 0) + 1);
+    for (const genre of genresOf(optimizer)) {
+      counts.set(genre, (counts.get(genre) ?? 0) + 1);
+    }
   }
 
   return [...counts.entries()]
@@ -49,7 +62,8 @@ export function filterOptimizers(
   const query = state.query.trim().toLowerCase();
 
   return list
-    .filter((optimizer) => state.category === 'all' || categoryOf(optimizer) === state.category)
+    // Basta con que tenga el genero elegido entre los suyos.
+    .filter((optimizer) => state.genre === 'all' || genresOf(optimizer).includes(state.genre))
     .filter((optimizer) => !state.topOnly || optimizer.score >= TOP_RATED_MIN_SCORE)
     .filter((optimizer) => {
       if (!query) return true;
