@@ -229,7 +229,7 @@ test('hoja de personaje: viste una ranura, avisa el requisito y sigue puesta al 
   await expect(sheet.getByRole('button', { name: 'Weapon: Astral Edge' })).toBeVisible();
 
   await sheet.getByRole('tab', { name: 'Level & history' }).click();
-  await expect(sheet.getByText('Level history')).toBeVisible();
+  await expect(sheet.getByText('Level history', { exact: true })).toBeVisible();
 
   // El nivel se fija libremente y la base se deriva: sube y baja sin pasar por el historial.
   await sheet.getByLabel('Set level').selectOption('20');

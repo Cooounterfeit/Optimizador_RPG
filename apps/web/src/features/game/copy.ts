@@ -105,6 +105,8 @@ export const gameCopy = {
     skills: 'Skills',
     skillsPoints: 'pts',
     freePoints: (count: number) => `${count} free pt${count === 1 ? '' : 's'}`,
+    pointsOverBudget: (spent: number, budget: number) =>
+      `Selection uses ${spent} points but only ${budget} are available. The search will use ${budget}.`,
     editSkills: 'Edit',
     noSkills: 'No skills selected.',
     noLimit: '0 = no limit',

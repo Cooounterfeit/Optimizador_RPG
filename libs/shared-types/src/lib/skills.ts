@@ -51,8 +51,22 @@ export const SkillTreeDefSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().optional(),
-  /** Puntos totales disponibles en este arbol. Sin valor = sin limite. */
+  /**
+   * Puntos totales disponibles en este arbol. Sin valor = sin limite.
+   *
+   * Si tambien hay `budgetAtStart`/`budgetPerLevel`, este valor sigue siendo el
+   * TOPE DURO: el presupuesto efectivo es
+   * `min(budget, budgetAtStart + budgetPerLevel * (nivel - leveling.min))`.
+   */
   budget: z.number().optional(),
+  /**
+   * Puntos que da el arbol en el nivel minimo del juego (`leveling.min`).
+   * Junto con `budgetPerLevel` convierte el presupuesto fijo en "puntos por
+   * nivel". Opcional: sin estos campos el arbol funciona como siempre.
+   */
+  budgetAtStart: z.number().optional(),
+  /** Puntos extra por cada nivel por encima de `leveling.min`. */
+  budgetPerLevel: z.number().optional(),
   /**
    * Si es true, un requisito solo cuenta cuando esa habilidad esta COMPLETA
    * (con todos sus rangos), como en un MMO. Por defecto basta con

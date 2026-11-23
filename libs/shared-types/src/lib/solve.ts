@@ -30,6 +30,15 @@ export const SolveRequestSchema = z.object({
   topN: z.number(),
   /** Habilidades elegidas. Sus efectos se suman como una pieza fija mas. */
   skills: SkillSelectionSchema.optional(),
+  /**
+   * Si el motor elige tambien la asignacion de habilidades.
+   *
+   * Por defecto `false`: la seleccion de `skills` se usa tal como vino y el
+   * resultado es identico al de siempre. Solo `solveJoint` (4b) lo consume, y
+   * solo tiene sentido cuando algun arbol declara presupuesto (fijo o por
+   * nivel): sin limite no hay asignacion que optimizar.
+   */
+  optimizeSkills: z.boolean().optional(),
 });
 
 export type SolveRequest = z.infer<typeof SolveRequestSchema>;
@@ -47,6 +56,11 @@ export const BuildResultSchema = z.object({
       tiers: z.array(z.string()),
     }),
   ),
+  /**
+   * Asignacion de habilidades que eligio el motor, para que la UI la muestre y
+   * la aplique. Ausente cuando las habilidades fueron una entrada fija.
+   */
+  skills: SkillSelectionSchema.optional(),
 });
 
 export type BuildResult = z.infer<typeof BuildResultSchema>;
@@ -113,6 +127,20 @@ export const SolveStatsSchema = z.object({
    * nada, la decision ya fue suya.
    */
   stoppedBy: z.enum(['tiempo', 'usuario']).optional(),
+  /**
+   * Cuentas de la busqueda conjunta de objetos y habilidades (`solveJoint`).
+   * Ausente cuando solo se buscaron objetos.
+   *
+   *  'exhaustivo' → se probaron todas las asignaciones validas: optimo conjunto.
+   *  'haz'        → arbol grande: mejor encontrado, sin promesa de optimo.
+   */
+  joint: z
+    .object({
+      mode: z.enum(['exhaustivo', 'haz']),
+      allocations: z.number(),
+      rounds: z.number(),
+    })
+    .optional(),
 });
 
 export type SolveStats = z.infer<typeof SolveStatsSchema>;

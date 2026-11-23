@@ -24,3 +24,11 @@ export function skillPoints(
   const budget = trees.reduce((total, tree) => total + (tree.budget ?? 0), 0);
   return { spent, budget, free: Math.max(0, budget - spent) };
 }
+
+/** La seleccion se pasa del presupuesto: devuelve las dos cifras para avisar. */
+export const overBudget = (
+  points: SkillPoints | undefined,
+): { spent: number; budget: number } | null =>
+  points && points.budget !== undefined && points.spent > points.budget
+    ? { spent: points.spent, budget: points.budget }
+    : null;
