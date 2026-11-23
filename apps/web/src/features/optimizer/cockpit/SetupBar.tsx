@@ -1,5 +1,3 @@
-import type { MouseEvent } from 'react';
-
 import type { BaseProfile, Constraint, GameTemplate } from '@zenith/shared-types';
 import { Link } from 'react-router-dom';
 
@@ -10,6 +8,7 @@ import { characterIconUrls } from '../../../lib/images';
 import { ItemGlyph } from '../../inventory/ItemGlyph';
 import type { SkillPoints } from '../skill-points';
 import { ConstraintEditor } from '../ConstraintEditor';
+import { surfaceToggle } from './click-surface';
 
 interface SetupBarProps {
   id: string;
@@ -37,20 +36,6 @@ const numberInput =
 
 const select =
   'h-7 max-w-[190px] rounded-[2px] border border-line bg-background px-2 text-[12.5px] font-semibold text-foreground outline-none transition-colors focus:border-line-strong disabled:opacity-60';
-
-/**
- * La barra entera abre y cierra la hoja, menos lo que ya es un control: un clic
- * en un `select`, un input o el boton de Run no debe mover la hoja. Los grupos
- * de condiciones se marcan con `data-no-toggle` para que ni su borde ni su
- * espacio muerto cuenten como superficie.
- */
-const isControl = (target: EventTarget | null): boolean =>
-  Boolean(
-    target instanceof Element &&
-      target.closest(
-        'a, button, input, select, textarea, label, [role="radiogroup"], [data-no-toggle]',
-      ),
-  );
 
 /**
  * Barra de setup: personaje, objetivo, condiciones, habilidades, cantidad de
@@ -84,17 +69,11 @@ export function SetupBar({
   const level = levelKey && profile ? profile.base[levelKey] : undefined;
   const maxLevel = template.leveling?.max;
 
-  const toggleFromSurface = (event: MouseEvent<HTMLDivElement>) => {
-    if (isControl(event.target)) return;
-    if (window.getSelection()?.toString()) return;
-    onToggleSheet();
-  };
-
   return (
     <div className="sticky top-16 z-30 -mx-4 bg-background px-4 pt-1">
       <div
-        onClick={toggleFromSurface}
-        className={`flex min-h-[60px] cursor-pointer flex-wrap items-center gap-x-5 gap-y-2 border border-line bg-surface px-3.5 py-2 ${
+        onClick={(event) => surfaceToggle(event.target, onToggleSheet)}
+        className={`flex min-h-[60px] cursor-pointer flex-wrap items-center gap-x-5 gap-y-2 border border-line bg-surface px-3.5 py-2 transition-colors hover:bg-raised ${
           sheetOpen ? 'rounded-t-[4px] border-b-transparent' : 'rounded-[4px]'
         }`}
       >

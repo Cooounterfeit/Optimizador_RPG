@@ -139,6 +139,12 @@ test('equipa una build, la lista la marca y sigue equipada al recargar', async (
   // La fila de la build equipada queda marcada en su lugar.
   await expect(page.getByText('Equipped', { exact: true })).toBeVisible();
 
+  // Y la build puesta se puede elegir en la comparacion.
+  await page.getByRole('button', { name: 'Compare builds' }).click();
+  await expect(
+    page.getByLabel('Build A').locator('option', { hasText: 'Equipped' }),
+  ).toHaveCount(1);
+
   await page.reload();
 
   // Sin corrida, la lista muestra la build puesta y su puntaje.
