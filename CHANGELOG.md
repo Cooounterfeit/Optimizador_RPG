@@ -22,12 +22,31 @@ Quien cierra el sprint la mueve a la versión correspondiente.
 - **Una sola tarjeta de personaje (`6.3.4`).** `CharacterPanel` reemplaza a `StatsPanel`: retrato,
   nombre, "Change" como acción propia y el nivel editable como campo numérico que confirma al salir
   del campo o con Enter, recorta al rango y revierte con Escape.
+- **Crear un optimizador desde cero** (CFG-05). Un formulario de tres campos crea un juego
+  vacío pero válido, sin pedir cuenta, y lleva directo a su configuración.
+- **Ver y validar la configuración de un juego** (CFG-06). Primera pantalla que consume
+  `validateTemplate`: muestra qué partes faltan, el informe del motor y los auto-tests.
+- **Crear un atributo base** (CFG-01). Nombre y unidad obligatorios; acumulación y grupo
+  opcionales. El identificador se deriva del nombre y se muestra en el listado.
+- **Listar los atributos** (CFG-02). Búsqueda parcial por nombre, orden alfabético por
+  defecto con vuelta al orden de la plantilla, y en cuántos sitios se usa cada uno.
 - Editor de nodos y compilador de grafo a funciones ejecutables (planificado).
 - Umbral de cobertura en `libs/` y pruebas de accesibilidad en e2e (planificado).
 
 
 ### Fixed
 
+- **Nueve comprobaciones del motor no se ejecutaban desde la aplicación.** La pantalla de
+  configuración llamaba a `validateTemplate` sin el inventario, y nueve de las 54
+  comprobaciones solo corren con él. El espacio de búsqueda, que se calcula en ese mismo
+  bloque, salía siempre como `n/a`.
+- **Un id de estadística con guion rompía las fórmulas sin avisar.** El validador miraba
+  ids duplicados pero no su forma, y el tokenizador lee `ataque-critico` como una resta.
+  Ahora se rechaza al validar, venga del formulario, de un paquete importado o de una
+  plantilla escrita a mano.
+- **La copia local de las plantillas era de solo escritura.** Se guardaba en IndexedDB todo
+  lo que se cargaba, pero nadie la leía. Un juego creado en el editor no se podía abrir sin
+  publicarlo.
 - **Producción servía el prototipo archivado.** El proyecto de Vercel estaba configurado para
   construir `demo/`. Ahora construye `apps/web` (`npx nx build web` → `apps/web/dist`): la URL
   de producción responde con la versión final. Verificado el título, el SPA fallback, el cache
