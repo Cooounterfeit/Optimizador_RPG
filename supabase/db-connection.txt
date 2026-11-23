@@ -1,0 +1,15 @@
+Zenith Optimizer - conexion local (DBeaver / pgAdmin / cualquier cliente JDBC)
+
+Motor:     PostgreSQL 17
+Host:      127.0.0.1
+Puerto:    54322
+Database:  postgres
+Usuario:   postgres
+Password:  postgres
+
+URL JDBC:  jdbc:postgresql://127.0.0.1:54322/postgres
+
+Este Postgres es el stack local de supabase start. Los datos viven en un
+volumen de Docker y se recrean con supabase db reset (aplica las 3 migraciones
+del repo). Editar por GUI aqui NO cambia supabase/migrations: para un cambio
+permanente se agrega una migracion nueva y se aplica con supabase db push.

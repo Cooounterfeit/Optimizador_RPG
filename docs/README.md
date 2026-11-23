@@ -40,6 +40,12 @@ Un ADR no se edita para reflejar la realidad actual: si una decisión cambia, se
 nuevo que la reemplaza y se marca el anterior como **sustituido**. Así queda el porqué, no
 solo el qué.
 
+Decisiones de proceso, fuera del alcance de arquitectura:
+
+| ADR | Decisión |
+|---|---|
+| [006](./decisiones/006-cadencia-daily.md) | Cadencia de la daily: asíncrona, 2 a 15 minutos |
+
 ## Otras fuentes
 
 - **README de cada librería:** contrato público de `core-engine`, `data-access`,

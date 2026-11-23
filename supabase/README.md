@@ -12,6 +12,50 @@ comunidad (optimizadores, votos, favoritos, reportes) para las HUB.
    los usuarios. Producción está en **US West (Oregon)** (`us-west-2`).
 2. Guarda la contraseña de la base de datos en un lugar seguro. La app no la usa.
 
+## 1bis. Entorno local (Docker) y cómo ver la base
+
+`supabase/config.toml` está versionado: `supabase start` levanta Postgres 17, Auth, Storage y
+Studio con las migraciones de `supabase/migrations/` aplicadas. Los datos viven en un volumen de
+Docker; `supabase db reset` los recrea desde cero.
+
+```bash
+supabase start      # primera vez: descarga imagenes (~3 GB)
+supabase status     # puertos, claves y URLs
+supabase db reset    # reaplica las migraciones sobre una base limpia
+supabase stop
+```
+
+| Herramienta | Uso | Dónde |
+|---|---|---|
+| **Studio** | Ver tablas, filas, políticas RLS y SQL Editor | <http://127.0.0.1:54323> |
+| **DBeaver / pgAdmin** | Modelo, ERD, edición de datos | `127.0.0.1:54322`, usuario `postgres`, clave `postgres` |
+| **Mailpit** | Correos de registro/login sin SMTP real | <http://127.0.0.1:54324> |
+
+`supabase/db-connection.txt` tiene la cadena de conexión lista para copiar.
+
+Para que la app use el stack local, `apps/web/.env.local` apunta a
+`http://127.0.0.1:54321` con la anon key que imprime `supabase status -o env`.
+
+### Regla del GUI: mirar sí, cambiar no
+
+El esquema vive en `supabase/migrations/` y nada más. Un cambio hecho en Studio o en DBeaver
+**no llega al repositorio** y deja los tests de RLS validando un esquema que ya no es el real.
+El flujo es: diseñar y explorar en local → escribir el cambio como migración nueva →
+`supabase db reset` para comprobarlo → `supabase db push` contra el proyecto remoto.
+
+### SQL Developer y Data Modeler no sirven para esta base
+
+Ambos son herramientas de **Oracle**. SQL Developer 22.2 conecta a Oracle, MySQL, SQL Server,
+Sybase y DB2; Data Modeler 22.2 importa de Oracle, SQL Server y DB2 y exporta DDL solo para esos
+motores. **PostgreSQL no está entre ellos**, y Oracle no distribuye los drivers de terceros. Para
+esta base se usa Studio (local), DBeaver o pgAdmin.
+
+### `esquema_completo.sql`
+
+`supabase/esquema_completo.sql` es una copia **generada** de todas las migraciones en un solo
+archivo, para pegar en el SQL Editor de un proyecto nuevo. No se edita a mano: si cambia una
+migración, se regenera.
+
 ## 2. Aplicar las migraciones
 
 En el panel del proyecto, abre **SQL Editor → New query** y ejecuta, en este orden:
@@ -19,6 +63,26 @@ En el panel del proyecto, abre **SQL Editor → New query** y ejecuta, en este o
 1. `migrations/20261005000001_esquema_inicial.sql`: tablas, permisos y reglas de seguridad (RLS).
 2. `migrations/20261005000002_avatares.sql`: el bucket público `avatars` para las fotos de perfil.
 3. `migrations/20261005000003_optimizer_cards.sql`: la vista liviana del catálogo para el hub.
+4. `migrations/20261122000001_integridad_rendimiento.sql`: auditoría de reportes, recálculo de
+   puntaje por sentencia, `cover` como columna generada e índices que faltaban.
+5. `migrations/20261123000001_catalogo_juegos.sql`: catálogo de juegos y géneros
+   (`game`, `genre`, `game_genre` y `game_alias`) más `optimizers.game_id`.
+6. `migrations/20261124000001_unificar_juego.sql`: el nombre del juego sale del catálogo
+   (`optimizers.game_name` desaparece y la vista lo resuelve con un join).
+7. `migrations/20261125000001_privilegios_por_defecto.sql`: un objeto nuevo de `public` ya no
+   nace con permisos para `anon`/`authenticated`, y se cierran los dos que habían quedado
+   abiertos.
+8. `migrations/20261125000002_vista_con_generos.sql`: `optimizer_cards` expone `game_id` y
+   `genres text[]`; `optimizers.category` desaparece.
+9. `migrations/20261125000003_gifts_y_stripe_events.sql`: `subscription_gifts` (meses regalados)
+   y `stripe_events` (idempotencia del webhook).
+
+`supabase/seed.sql` siembra el vocabulario de géneros y el juego sintético `Astral Forge`.
+Está activado en `config.toml` (`[db.seed] enabled = true`), así que corre en cada
+`db reset`.
+
+Una migración aplicada **no se edita**: un cambio nuevo es un archivo nuevo con fecha mayor.
+Editar una aplicada hace que el repo y la base ya construida diverjan.
 
 Con la [CLI de Supabase](https://supabase.com/docs/guides/cli) también sirve `supabase link --project-ref <id>`
 y luego `supabase db push`.
