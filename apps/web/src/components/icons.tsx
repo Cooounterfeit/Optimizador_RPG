@@ -21,6 +21,17 @@ const shape = {
   'aria-hidden': true,
 } as const;
 
+/** Overview: ficha del juego, portada y renglones. */
+export function IconOverview({ className }: IconProps) {
+  return (
+    <svg {...shape} className={className}>
+      <rect x="3" y="2.5" width="14" height="15" />
+      <rect x="5.5" y="5" width="4" height="4" fill="currentColor" stroke="none" />
+      <path d="M11.5 5.5h3M11.5 8h3M5.5 12h9M5.5 14.5h6" />
+    </svg>
+  );
+}
+
 /** Ajustes: tres controles deslizantes. Configurar la corrida. */
 export function IconOptimize({ className }: IconProps) {
   return (

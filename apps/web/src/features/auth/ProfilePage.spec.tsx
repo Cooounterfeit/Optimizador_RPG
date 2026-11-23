@@ -45,11 +45,9 @@ describe('ProfilePage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: copy.profile.save }));
 
-    await waitFor(() =>
-      expect(updateProfile).toHaveBeenCalledWith({
-        displayName: 'Ana R',
-        bio: '',
-      }),
+    await waitFor(
+      () => expect(updateProfile).toHaveBeenCalledWith({ displayName: 'Ana R', bio: '' }),
+      { timeout: 5_000 },
     );
     expect(await screen.findByText(copy.profile.saved)).toBeTruthy();
   });

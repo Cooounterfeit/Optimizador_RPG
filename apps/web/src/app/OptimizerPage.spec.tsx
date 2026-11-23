@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, configure, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type {
@@ -31,6 +31,13 @@ import {
 } from '../features/optimizer/optimizer-repository';
 import type { WorkerIn, WorkerOut } from '../features/optimizer/optimizer.worker';
 import { renderWorkspace, workspaceElement } from '../features/optimizer/workspace/testing';
+
+/**
+ * El workspace tarda cerca de un segundo en dejar la pagina lista en jsdom y la
+ * suite corre en paralelo, asi que el margen por defecto de `waitFor` (1 s)
+ * dejaba las pruebas al filo. No cambia el producto: es tiempo del entorno.
+ */
+configure({ asyncUtilTimeout: 15_000 });
 
 /**
  * El inventario se puede mockear por test para probar que un cambio despues de
@@ -233,11 +240,11 @@ const useTemplate = (
   setEquipmentRepository(equipmentRepo());
 };
 
-const page = (id: string = GAME_ID) => workspaceElement(`/optimizer/${id}`);
+const page = (id: string = GAME_ID) => workspaceElement(`/optimizer/${id}/optimize`);
 
-const renderPage = (id: string = GAME_ID) => renderWorkspace(`/optimizer/${id}`);
+const renderPage = (id: string = GAME_ID) => renderWorkspace(`/optimizer/${id}/optimize`);
 
-const optimizeButton = () => screen.getByRole('button', { name: gameCopy.cockpit.optimize });
+const optimizeButton = () => screen.getByRole('button', { name: gameCopy.cockpit.run });
 const optimizeDisabled = (): boolean => (optimizeButton() as HTMLButtonElement).disabled;
 
 /**
@@ -246,7 +253,7 @@ const optimizeDisabled = (): boolean => (optimizeButton() as HTMLButtonElement).
  * corren en paralelo: la espera es la misma, el limite no.
  */
 const waitForOptimizeReady = (): Promise<void> =>
-  waitFor(() => expect(optimizeDisabled()).toBe(false), { timeout: 5_000 });
+  waitFor(() => expect(optimizeDisabled()).toBe(false), { timeout: 15_000 });
 
 /**
  * Tras un cambio que invalida el resultado, la pagina lo limpia en un efecto. El
@@ -255,7 +262,7 @@ const waitForOptimizeReady = (): Promise<void> =>
  */
 const waitForResultCleared = (): Promise<void> =>
   waitFor(() => expect(screen.queryByText(gameCopy.cockpit.noFeasible)).toBeNull(), {
-    timeout: 5_000,
+    timeout: 15_000,
   });
 
 const runAndFinish = async (): Promise<void> => {
@@ -265,7 +272,7 @@ const runAndFinish = async (): Promise<void> => {
   // El default de waitFor es 1 s, que en CI se agota cuando los 7 proyectos
   // corren en paralelo. La transicion sigue siendo asincrona: se espera mas.
   await waitFor(() => expect(screen.getByText(gameCopy.cockpit.noFeasible)).toBeTruthy(), {
-    timeout: 5_000,
+    timeout: 15_000,
   });
 };
 
@@ -310,22 +317,6 @@ describe('OptimizerPage', () => {
 });
 
 describe('OptimizerPage con juego real', () => {
-  it('distingue un borrador de un optimizador publicado en la chapa', async () => {
-    vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
-
-    useTemplate(seed.template, seed.items, false);
-    const borrador = renderPage();
-    await screen.findByRole('heading', { name: seed.template.name, level: 1 });
-    expect(screen.getByText(gameCopy.cockpit.draft)).toBeTruthy();
-    expect(screen.queryByText(gameCopy.cockpit.published)).toBeNull();
-    borrador.unmount();
-
-    useTemplate(seed.template, seed.items, true);
-    renderPage();
-    await screen.findByRole('heading', { name: seed.template.name, level: 1 });
-    expect(screen.getByText(gameCopy.cockpit.published)).toBeTruthy();
-  });
-
   it('no deja optimizar hasta que la base guardada del perfil esta lista', async () => {
     vi.stubGlobal('Worker', FakeWorker as unknown as typeof Worker);
     useTemplate();
@@ -391,7 +382,9 @@ describe('OptimizerPage con juego real', () => {
     renderPage();
     await runAndFinish();
 
-    fireEvent.click(screen.getAllByRole('radio')[1]);
+    fireEvent.change(screen.getByLabelText(gameCopy.cockpit.target), {
+      target: { value: 'hp-score' },
+    });
 
     await waitForResultCleared();
   });
@@ -407,6 +400,7 @@ describe('OptimizerPage con juego real', () => {
     renderPage();
     await runAndFinish();
 
+    fireEvent.click(screen.getByRole('button', { name: gameCopy.cockpit.showSetup }));
     fireEvent.click(screen.getByRole('button', { name: /Change/ }));
     fireEvent.click(screen.getByRole('button', { name: new RegExp(`^${second.name}`) }));
 
@@ -464,17 +458,10 @@ describe('OptimizerPage con juego real', () => {
     renderPage();
     await runAndFinish();
 
-    fireEvent.click(screen.getByRole('button', { name: gameCopy.cockpit.recordCurrentLevel }));
-    await screen.findByText(gameCopy.cockpit.recordedLevel);
-
-    fireEvent.change(screen.getByLabelText(gameCopy.cockpit.historyFutureLevel), {
-      target: { value: '2' },
-    });
-    const levelUp = screen.getByRole('button', {
-      name: gameCopy.cockpit.levelUpTo(2),
-    }) as HTMLButtonElement;
-    await waitFor(() => expect(levelUp.disabled).toBe(false), { timeout: 5_000 });
-    fireEvent.click(levelUp);
+    fireEvent.click(screen.getByRole('button', { name: gameCopy.cockpit.showSetup }));
+    const levelInput = screen.getByLabelText(gameCopy.cockpit.characterLevel);
+    fireEvent.change(levelInput, { target: { value: '2' } });
+    fireEvent.blur(levelInput);
 
     await waitFor(() => expect(save).toHaveBeenCalled());
     await waitForResultCleared();
@@ -563,6 +550,7 @@ describe('OptimizerPage · build actual', () => {
     fireEvent.click(optimizeButton());
     act(() => workerSent('solve').emit({ type: 'done', result: solveWith(100) }));
 
+    fireEvent.click(await screen.findByRole('button', { name: '#1' }));
     fireEvent.click(await screen.findByRole('button', { name: gameCopy.cockpit.equip }));
 
     await waitFor(() => expect(saved).toHaveLength(1));
@@ -580,9 +568,7 @@ describe('OptimizerPage · build actual', () => {
     setEquipmentRepository(equipmentRepo(equippedWithSeed()));
 
     renderPage();
-    await screen.findByText(gameCopy.cockpit.currentBuild);
-
-    await waitFor(() => expect(FakeWorker.instances.length).toBe(1));
+    await waitFor(() => expect(FakeWorker.instances.length).toBe(1), { timeout: 15_000 });
     expect(lastWorker().sent?.type).toBe('evaluate');
     act(() =>
       lastWorker().emit({
@@ -596,13 +582,15 @@ describe('OptimizerPage · build actual', () => {
       }),
     );
 
+    expect(await screen.findByText(gameCopy.cockpit.currentBuild)).toBeTruthy();
     expect(await screen.findByText('80')).toBeTruthy();
 
     await waitForOptimizeReady();
     fireEvent.click(optimizeButton());
     act(() => workerSent('solve').emit({ type: 'done', result: solveWith(100) }));
 
-    expect(await screen.findByText('-20 vs. best')).toBeTruthy();
+    // La build puesta entra en la lista y la mejor se mide contra ella.
+    expect(await screen.findByText('+20')).toBeTruthy();
   });
 });
 

@@ -6,7 +6,13 @@ export const rail = (page: Page) => page.getByRole('navigation', { name: 'Optimi
 export const railLink = (page: Page, name: string) =>
   rail(page).getByRole('link', { name, exact: true });
 
-export type SectionId = 'optimize' | 'character' | 'inventory' | 'skills' | 'damage';
+export type SectionId =
+  | 'overview'
+  | 'optimize'
+  | 'character'
+  | 'inventory'
+  | 'skills'
+  | 'damage';
 
 /**
  * Las secciones visitadas siguen montadas (ocultas) para no perder su estado.
