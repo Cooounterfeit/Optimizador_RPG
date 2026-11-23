@@ -22,6 +22,9 @@ Quien cierra el sprint la mueve a la versión correspondiente.
 - **Editar un atributo** (CFG-03). El formulario se abre en la propia fila, con los datos
   puestos. Cambiar cómo acumula una estadística que ya se usa pide confirmación, porque
   altera todos los resultados sin producir ningún error.
+- **Eliminar un atributo** (CFG-04). Si no lo usa nadie se borra directo. Si lo usa algo, se
+  enseña qué desaparece por completo y qué solo pierde ese valor, y hay que confirmarlo. El
+  borrado encadena: si cae un valor derivado, también cae el objetivo que lo usaba.
 - Editor de nodos y compilador de grafo a funciones ejecutables (planificado).
 - Umbral de cobertura en `libs/` y pruebas de accesibilidad en e2e (planificado).
 

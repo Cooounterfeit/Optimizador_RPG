@@ -56,3 +56,5 @@ export type { ReferenceKind, StatReference, StatUsage } from './lib/references.j
 
 export { statIdProblem, IDENT_RE } from './lib/ids.js';
 export type { IdProblem } from './lib/ids.js';
+
+export { removeStat, cascadeOf } from './lib/remove-stat.js';

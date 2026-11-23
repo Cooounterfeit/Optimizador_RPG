@@ -42,7 +42,7 @@ const MESSAGE: Record<NameProblem, string> = {
 
 interface StatEditRowProps {
   id: string;
-  onDone: () => void;
+  onDone: (message?: string) => void;
 }
 
 export function StatEditRow({ id, onDone }: StatEditRowProps) {
@@ -67,7 +67,7 @@ export function StatEditRow({ id, onDone }: StatEditRowProps) {
           entry.id === id ? statFrom(id, draft) : entry,
         ),
       });
-      onDone();
+      onDone(editorCopy.stats.updated);
     } catch (cause) {
       setError(cause instanceof Error && cause.message ? cause.message : editorCopy.stats.failed);
       setPending(false);
@@ -140,7 +140,7 @@ export function StatEditRow({ id, onDone }: StatEditRowProps) {
         </Button>
         <button
           type="button"
-          onClick={onDone}
+          onClick={() => onDone()}
           className="text-[13px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
         >
           {editorCopy.stats.cancel}
