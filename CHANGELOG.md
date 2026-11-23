@@ -30,6 +30,9 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   opcionales. El identificador se deriva del nombre y se muestra en el listado.
 - **Listar los atributos** (CFG-02). Búsqueda parcial por nombre, orden alfabético por
   defecto con vuelta al orden de la plantilla, y en cuántos sitios se usa cada uno.
+- **Editar un atributo** (CFG-03). El formulario se abre en la propia fila, con los datos
+  puestos. Cambiar cómo acumula una estadística que ya se usa pide confirmación, porque
+  altera todos los resultados sin producir ningún error.
 - Editor de nodos y compilador de grafo a funciones ejecutables (planificado).
 - Umbral de cobertura en `libs/` y pruebas de accesibilidad en e2e (planificado).
 
@@ -44,6 +47,9 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   ids duplicados pero no su forma, y el tokenizador lee `ataque-critico` como una resta.
   Ahora se rechaza al validar, venga del formulario, de un paquete importado o de una
   plantilla escrita a mano.
+- **El botón de editar de cada fila se anunciaba como "EditAtaque".** El nombre del atributo
+  se concatenaba sin separador en el árbol de accesibilidad. Ahora el nombre accesible es
+  explícito.
 - **La copia local de las plantillas era de solo escritura.** Se guardaba en IndexedDB todo
   lo que se cargaba, pero nadie la leía. Un juego creado en el editor no se podía abrir sin
   publicarlo.

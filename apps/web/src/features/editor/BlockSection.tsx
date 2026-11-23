@@ -36,8 +36,10 @@ interface BlockSectionProps {
 export function BlockSection({ block, template, editable }: BlockSectionProps) {
   const [query, setQuery] = useState('');
   const [order, setOrder] = useState<Order>('name');
+  const [editing, setEditing] = useState<string | null>(null);
 
-  const Editor = BLOCK_EDITORS[block.id];
+  const { Create, Edit } = BLOCK_EDITORS[block.id] ?? {};
+  const canEdit = editable && Edit !== undefined;
 
   /**
    * Las entradas cuestan: las de estadisticas preguntan al motor quien usa
@@ -121,30 +123,56 @@ export function BlockSection({ block, template, editable }: BlockSectionProps) {
         </p>
       ) : (
         <ul className="divide-y divide-border border-y border-border">
-          {shown.map((entry) => (
-            <li key={entry.id} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-1 py-2.5">
-              <span className="min-w-[160px] text-sm font-medium">{entry.name}</span>
-              <span className="font-mono text-[11px] text-muted-foreground">{entry.id}</span>
-              {entry.detail ? (
-                <span className="font-mono text-[11px] text-muted-foreground">{entry.detail}</span>
-              ) : null}
-              {entry.usedIn === undefined ? null : (
-                <span className="ms-auto font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                  {entry.usedIn > 0
-                    ? editorCopy.config.usedIn.replace('{n}', String(entry.usedIn))
-                    : editorCopy.config.unused}
+          {shown.map((entry) =>
+            Edit && editing === entry.id ? (
+              <li key={entry.id} className="py-2">
+                <Edit id={entry.id} onDone={() => setEditing(null)} />
+              </li>
+            ) : (
+              <li
+                key={entry.id}
+                className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-1 py-2.5"
+              >
+                <span className="min-w-[160px] text-sm font-medium">{entry.name}</span>
+                <span className="font-mono text-[11px] text-muted-foreground">{entry.id}</span>
+                {entry.detail ? (
+                  <span className="font-mono text-[11px] text-muted-foreground">
+                    {entry.detail}
+                  </span>
+                ) : null}
+                <span className="ms-auto flex items-baseline gap-4">
+                  {entry.usedIn === undefined ? null : (
+                    <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                      {entry.usedIn > 0
+                        ? editorCopy.config.usedIn.replace('{n}', String(entry.usedIn))
+                        : editorCopy.config.unused}
+                    </span>
+                  )}
+                  {canEdit ? (
+                    <button
+                      type="button"
+                      // Con el nombre dentro: hay un boton por fila, y "Edit" a
+                      // secas no distingue cual. El texto visible se queda corto
+                      // a proposito, el nombre completo va al arbol accesible.
+                      aria-label={`${editorCopy.stats.edit} ${entry.name}`}
+                      onClick={() => setEditing(entry.id)}
+                      className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                    >
+                      {editorCopy.stats.edit}
+                    </button>
+                  ) : null}
                 </span>
-              )}
-            </li>
-          ))}
+              </li>
+            ),
+          )}
         </ul>
       )}
 
       {/* Un bloque solo se edita si tiene editor Y si lo guardado se va a poder
           volver a leer. Un optimizador del catalogo no cumple lo segundo, y
           ofrecer un boton que no persiste seria mentir. */}
-      {Editor && editable ? <Editor /> : null}
-      {Editor && !editable ? (
+      {Create && editable ? <Create /> : null}
+      {Create && !editable ? (
         <p className="mt-3 text-[12px] text-muted-foreground">{editorCopy.config.readOnly}</p>
       ) : null}
     </section>

@@ -19,7 +19,7 @@ La épica 3 llega hasta CFG-05. La épica 2 es el hub, que empieza cuando la 3 c
 |---|---|---|
 | CFG-01 Crear un atributo base | Hecha | `features/editor/StatsEditor.tsx` |
 | CFG-02 Ver el listado de atributos | Hecha | `features/editor/BlockSection.tsx` |
-| CFG-03 Editar un atributo | Pendiente | |
+| CFG-03 Editar un atributo | Hecha | `features/editor/StatEditRow.tsx` |
 | CFG-04 Eliminar un atributo | Pendiente | |
 | CFG-05 Crear un juego desde cero | Hecha | `features/editor/CreateOptimizerPage.tsx` |
 
@@ -40,6 +40,8 @@ sin una pantalla que muestre el estado de la plantilla no había dónde colgar e
 | `a1a6097` | Quitar duplicación antes de que se triplicara |
 | `2f16ea7` | Lo que marcaría el análisis estático |
 | `b5d69a2` | CFG-02. Búsqueda, orden y estado de uso |
+| `6934864` | Esta bitácora y las entradas de changelog que faltaban |
+| (este) | CFG-03. Editar en la fila, con aviso al cambiar la acumulación |
 
 ### Tres hallazgos que no se buscaban
 
@@ -83,6 +85,20 @@ menciona. El formulario la pide igual, porque no hay alternativa.
 Es si dos piezas con +30 dan 60 o dan 1,69. Equivocarse no produce un error: produce
 números malos en silencio. Obligar a crear primero y corregir después es peor que un campo
 plegado con su valor habitual puesto.
+
+### El id tampoco se edita
+
+Renombrar lo visible es gratis: las fórmulas referencian por `id`, así que el
+criterio de CFG-03 sobre no romper referencias se cumple solo, por un motivo
+distinto del que la historia supone. Cambiar el `id` sí rompería, y hacerlo bien
+exige reescribir las fórmulas, o sea el serializador de árbol a texto que todavía
+no existe. Queda para cuando exista.
+
+Donde el criterio pide avisar al reducir el rango, el riesgo equivalente en este
+modelo es cambiar **cómo acumula** una estadística que ya se usa: dos piezas con
++30 pasan de dar 60 a dar 1,69, y eso cambia todos los resultados sin un solo
+error. Ese es el aviso que se da, con el número de sitios afectados, contando
+también las piezas del inventario, y con confirmación explícita.
 
 ### El id se genera y no se muestra en el formulario
 
@@ -133,6 +149,14 @@ Lo que no se implementó, por historia. Nada de esto es un olvido.
 | Ordenar por esas fechas | Depende de lo anterior. En su lugar se ofrece volver al orden de la plantilla |
 | Refresco automático ante cambios en la BD | Es tiempo real de Supabase. Para un juego local no hay base de datos que escuchar |
 
+### CFG-03
+
+| Criterio | Por qué no |
+|---|---|
+| Valor mínimo y valor máximo precargados | No existen en el modelo |
+| Advertencia por reducir el rango | Depende de lo anterior. En su lugar se avisa al cambiar la acumulación, que es el riesgo equivalente |
+| Fecha de última modificación | No existe por atributo |
+
 ### CFG-05
 
 Tres criterios quedaron fuera y los tres dependen de sesión, o sea de la épica 2: asociar
@@ -170,7 +194,7 @@ en los siete proyectos, más `check:genres`.
 
 | Métrica | Valor |
 |---|---|
-| Pruebas en `apps/web` | 286 |
+| Pruebas en `apps/web` | 295 |
 | Pruebas en `libs/core-engine` | 174 |
 | Cobertura sobre código nuevo | 94.5 % |
 

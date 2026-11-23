@@ -73,6 +73,13 @@ export const editorCopy = {
     submit: 'Create attribute',
     pending: 'Creating…',
     created: 'Attribute created.',
+    updated: 'Attribute updated.',
+    edit: 'Edit',
+    editing: 'Editing',
+    save: 'Save changes',
+    saveAnyway: 'Save anyway',
+    aggregateWarning:
+      'This changes how the stat combines across gear, and {n} things already use it. Every result will change. Save anyway?',
     nameRequired: 'Give the attribute a name.',
     nameTooLong: 'The name cannot be longer than 100 characters.',
     nameTaken: 'There is already an attribute with that name.',
