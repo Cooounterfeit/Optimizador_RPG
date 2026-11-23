@@ -11,6 +11,7 @@ import {
 } from '../optimizer/optimizer-repository';
 import { findBuiltinGame } from './builtin-games';
 import { setGameRepository } from './repositories';
+import { fakeGameRepository, fakeOptimizerRepository } from './testing';
 import { useGame } from './useGame';
 
 vi.mock('./builtin-games', () => ({
@@ -50,13 +51,7 @@ const games = () => {
     updatedAt: 0,
   }));
 
-  const repository: GameRepository = {
-    list: async () => [],
-    get: async () => undefined,
-    save,
-    remove: async () => undefined,
-    clearLocalData: async () => undefined,
-  };
+  const { repo: repository } = fakeGameRepository([], { save });
 
   return { repository, save };
 };
@@ -91,7 +86,7 @@ afterEach(() => {
 describe('useGame', () => {
   it('lee la plantilla de Supabase y la cachea por gameId', async () => {
     const getOptimizer = vi.fn(async () => record());
-    setOptimizerRepository({ getOptimizer });
+    setOptimizerRepository(fakeOptimizerRepository({ getOptimizer }));
     const gameRepo = games();
     setGameRepository(gameRepo.repository);
 
@@ -101,12 +96,14 @@ describe('useGame', () => {
     expect(result.current.state.status === 'ready' && result.current.state.template).toEqual(template);
     expect(result.current.state.status === 'ready' && result.current.state.sampleItems).toEqual([]);
     expect(getOptimizer).toHaveBeenCalledWith(OPTIMIZER_ID);
-    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template });
+    // `cloud: true` porque no vino del origen local: es una copia de algo
+    // ajeno y la portada no debe listarla entre los borradores propios.
+    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template, cloud: true });
   });
 
   it('va directo al juego integrado cuando el id no es un uuid', async () => {
     const getOptimizer = vi.fn(async () => record());
-    setOptimizerRepository({ getOptimizer });
+    setOptimizerRepository(fakeOptimizerRepository({ getOptimizer }));
     const gameRepo = games();
     setGameRepository(gameRepo.repository);
     vi.mocked(findBuiltinGame).mockReturnValue(builtin());
@@ -115,11 +112,13 @@ describe('useGame', () => {
 
     await waitFor(() => expect(result.current.state.status).toBe('ready'));
     expect(getOptimizer).not.toHaveBeenCalled();
-    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template });
+    // `cloud: true` porque no vino del origen local: es una copia de algo
+    // ajeno y la portada no debe listarla entre los borradores propios.
+    expect(gameRepo.save).toHaveBeenCalledWith({ id: 'gacha-demo', template, cloud: true });
   });
 
   it('da error cuando no existe ni en Supabase ni como juego integrado', async () => {
-    setOptimizerRepository({ getOptimizer: async () => undefined });
+    setOptimizerRepository(fakeOptimizerRepository({ getOptimizer: async () => undefined }));
     setGameRepository(games().repository);
     vi.mocked(findBuiltinGame).mockReturnValue(undefined);
 

@@ -30,6 +30,7 @@ import {
   type OptimizerRecord,
 } from '../features/optimizer/optimizer-repository';
 import type { WorkerIn, WorkerOut } from '../features/optimizer/optimizer.worker';
+import { fakeGameRepository, fakeOptimizerRepository } from '../features/game/testing';
 import { renderWorkspace, workspaceElement } from '../features/optimizer/workspace/testing';
 
 /**
@@ -152,13 +153,7 @@ const emptyResult = {
   stats: { evaluated: 12, stoppedBy: 'sin-combinacion' },
 } as unknown as SolveResponse;
 
-const noopGames: GameRepository = {
-  list: async () => [],
-  get: async () => undefined,
-  save: async (game) => ({ ...game, updatedAt: 0 }),
-  remove: async () => undefined,
-  clearLocalData: async () => undefined,
-};
+const noopGames: GameRepository = fakeGameRepository().repo;
 
 const inventoryRepo = (items: Item[]): InventoryRepository => ({
   addItem: async () => undefined,
@@ -231,7 +226,9 @@ const useTemplate = (
   items: Item[] = seed.items,
   published = true,
 ): void => {
-  setOptimizerRepository({ getOptimizer: async () => record(template, published) });
+  setOptimizerRepository(
+    fakeOptimizerRepository({ getOptimizer: async () => record(template, published) }),
+  );
   setInventoryRepository(inventoryRepo(items));
   setGameRepository(noopGames);
   setSkillsRepository(skillsRepo());
@@ -625,7 +622,9 @@ describe('OptimizerPage · build actual', () => {
 
 describe('OptimizerPage · plantilla cargando', () => {
   it('no rompe mientras la plantilla todavia esta cargando', () => {
-    setOptimizerRepository({ getOptimizer: () => new Promise<never>(() => undefined) });
+    setOptimizerRepository(
+      fakeOptimizerRepository({ getOptimizer: () => new Promise<never>(() => undefined) }),
+    );
     setGameRepository(noopGames);
     setInventoryRepository(inventoryRepo([]));
     setSkillsRepository(skillsRepo());

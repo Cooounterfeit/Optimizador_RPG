@@ -52,10 +52,10 @@ export {
 } from './lib/skills.js';
 export type { SkillIndex, SkillProblem } from './lib/skills.js';
 
-// `statReferences` NO se exporta todavia a proposito: su consumidor es CFG-04 y
-// aun no existe. Publicar una API que no llama nadie invita a que alguien la
-// use mal antes de que este decidido como se usa. Las pruebas la importan
-// directo del archivo, asi que no pierde cobertura. Se exporta con CFG-04.
+export { statReferences, statInUse } from './lib/references.js';
+export type { ReferenceKind, StatReference, StatUsage } from './lib/references.js';
 
 export { statIdProblem, IDENT_RE } from './lib/ids.js';
 export type { IdProblem } from './lib/ids.js';
+
+export { removeStat, cascadeOf } from './lib/remove-stat.js';

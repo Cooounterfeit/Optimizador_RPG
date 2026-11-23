@@ -113,3 +113,14 @@ export function IconConfig({ className }: IconProps) {
     </svg>
   );
 }
+
+/** Mas acciones: tres puntos verticales. Abre el menu de una tarjeta. */
+export function IconMore({ className }: IconProps) {
+  return (
+    <svg {...shape} className={className}>
+      <circle cx="10" cy="4.5" r="1.25" fill="currentColor" stroke="none" />
+      <circle cx="10" cy="10" r="1.25" fill="currentColor" stroke="none" />
+      <circle cx="10" cy="15.5" r="1.25" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}

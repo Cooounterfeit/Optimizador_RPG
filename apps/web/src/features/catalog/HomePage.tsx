@@ -5,6 +5,7 @@ import { Button, buttonVariants } from '../../components/ui/Button';
 
 import { getCatalogRepository } from './catalog-repository';
 import { CatalogGrid } from './components/CatalogGrid';
+import { DraftsRail } from './components/DraftsRail';
 import { EmptyState } from './components/EmptyState';
 import { FilterRail } from './components/FilterRail';
 import { HeroBanner } from './components/HeroBanner';
@@ -18,6 +19,7 @@ import {
   type CatalogFilterState,
 } from './filters';
 import type { CatalogOptimizer } from './types';
+import { useDrafts } from './useDrafts';
 
 export function HomePage() {
   const [params, setParams] = useSearchParams();
@@ -27,6 +29,7 @@ export function HomePage() {
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<CatalogFilterState>(initialFilterState);
+  const drafts = useDrafts();
 
   useEffect(() => {
     let alive = true;
@@ -79,6 +82,8 @@ export function HomePage() {
         />
 
         <section id="catalog" className="catalog" aria-labelledby="catalog-title">
+          {drafts ? <DraftsRail drafts={drafts} /> : null}
+
           <div className="mb-6 flex flex-wrap items-baseline justify-between gap-4 border-b border-line pb-3">
             <h2 className="m-0 text-lg font-bold tracking-[-0.025em]" id="catalog-title">
               {copy.catalog.title}

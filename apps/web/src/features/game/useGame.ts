@@ -48,11 +48,18 @@ export function useGame(id: string): UseGameResult {
       const found = await resolveGame(id);
       if (!found) throw new Error(gameCopy.errors.notFound);
 
-      const { sampleItems, published } = found;
+      const { sampleItems, published, source } = found;
       const parsed = GameTemplateSchema.safeParse(found.template);
       if (!parsed.success) throw new Error(gameCopy.errors.invalid);
 
-      await getGameRepository().save({ id: parsed.data.gameId, template: parsed.data });
+      // `cloud` distingue un borrador propio de la copia de algo ajeno. Sin
+      // esto, la portada listaria como tuyo cualquier optimizador del catalogo
+      // que hubieras abierto una vez, porque aqui se cachean todos.
+      await getGameRepository().save({
+        id: parsed.data.gameId,
+        template: parsed.data,
+        cloud: source !== 'local',
+      });
       return { template: parsed.data, sampleItems, published };
     };
 

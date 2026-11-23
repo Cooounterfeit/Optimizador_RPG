@@ -17,6 +17,7 @@ import {
 } from '../game/repositories';
 import { setOptimizerRepository } from '../optimizer/optimizer-repository';
 import type { WorkerIn, WorkerOut } from '../optimizer/optimizer.worker';
+import { fakeGameRepository, fakeOptimizerRepository } from '../game/testing';
 import { renderWorkspace } from '../optimizer/workspace/testing';
 import { sheetCopy } from './copy';
 
@@ -94,25 +95,21 @@ const useTemplate = (
   items: Item[] = seed.items,
   equipment: Equipment = {},
 ): void => {
-  setOptimizerRepository({
-    getOptimizer: async () => ({
-      id: GAME_ID,
-      name: template.name,
-      gameName: template.name,
-      description: template.description,
-      template,
-      sampleItems: items,
-      published: true,
+  setOptimizerRepository(
+    fakeOptimizerRepository({
+      getOptimizer: async () => ({
+        id: GAME_ID,
+        name: template.name,
+        gameName: template.name,
+        description: template.description,
+        template,
+        sampleItems: items,
+        published: true,
+      }),
     }),
-  });
+  );
   setInventoryRepository(inventoryRepo(items));
-  setGameRepository({
-    list: async () => [],
-    get: async () => undefined,
-    save: async (game) => ({ ...game, updatedAt: 0 }),
-    remove: async () => undefined,
-    clearLocalData: async () => undefined,
-  });
+  setGameRepository(fakeGameRepository().repo);
   setSkillsRepository({ load: async () => ({}), save: async () => undefined });
   setLevelHistoryRepository({
     list: async () => [],

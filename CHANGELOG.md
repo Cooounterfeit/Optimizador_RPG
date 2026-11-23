@@ -22,12 +22,81 @@ Quien cierra el sprint la mueve a la versión correspondiente.
 - **Una sola tarjeta de personaje (`6.3.4`).** `CharacterPanel` reemplaza a `StatsPanel`: retrato,
   nombre, "Change" como acción propia y el nivel editable como campo numérico que confirma al salir
   del campo o con Enter, recorta al rango y revierte con Escape.
+- **Guardar el optimizador en tu cuenta.** Un botón en la configuración sube la plantilla
+  a Supabase bajo tu usuario, y al guardar eliges si queda privada o compartida con la
+  comunidad, decisión que se puede cambiar después. Sin sesión el botón lleva a iniciar
+  sesión y vuelve a donde estabas; sin cuentas configuradas lo dice en vez de fallar. Lo que
+  sube es el optimizador, es decir la matemática: los objetos del jugador se quedan en su
+  navegador y se importan por JSON o se escriben a mano.
+- **El botón de guardar es flotante y acompaña en todo el optimizador.** Vive fijo abajo a la
+  derecha, se ve en todas las secciones y siempre se puede pulsar. Las reglas se aplican al
+  hacer clic: sin sesión sale un aviso con iniciar sesión o crear una cuenta, y si la
+  plantilla está incompleta o el motor reporta errores, el diálogo dice qué falta.
+- **Crear una cuenta devuelve a donde estabas.** El registro siempre mandaba al perfil,
+  así que registrarse a media edición te dejaba lejos de lo que estabas haciendo.
+- **La lista de borradores dice dónde vive cada uno.** Una tarjeta guardada muestra si está
+  en tu cuenta o compartida, y desde el menú se puede quitar de la cuenta conservando el
+  borrador local. La nota de la sección dejó de afirmar que todo vive solo en este navegador,
+  que desde el botón de guardar era falso.
+- **El nombre del optimizador llega a 100 caracteres en la base.** La tabla estaba en 80 y
+  el formulario de CFG-05 en 100, así que un nombre de 90 se guardaba en el navegador y
+  reventaba al subirlo.
+- **Crear un optimizador desde cero** (CFG-05). Un formulario de tres campos crea un juego
+  vacío pero válido, sin pedir cuenta, y lleva directo a su configuración.
+- **Ver y validar la configuración de un juego** (CFG-06). Primera pantalla que consume
+  `validateTemplate`: muestra qué partes faltan, el informe del motor y los auto-tests.
+- **Crear un atributo base** (CFG-01). Nombre y unidad obligatorios; acumulación y grupo
+  opcionales. El identificador se deriva del nombre y se muestra en el listado.
+- **Listar los atributos** (CFG-02). Búsqueda parcial por nombre, orden alfabético por
+  defecto con vuelta al orden de la plantilla, y en cuántos sitios se usa cada uno.
+- **Editar un atributo** (CFG-03). El formulario se abre en la propia fila, con los datos
+  puestos. Cambiar cómo acumula una estadística que ya se usa pide confirmación, porque
+  altera todos los resultados sin producir ningún error.
+- **Eliminar un atributo** (CFG-04). Si no lo usa nadie se borra directo. Si lo usa algo, se
+  enseña qué desaparece por completo y qué solo pierde ese valor, y hay que confirmarlo. El
+  borrado encadena: si cae un valor derivado, también cae el objetivo que lo usaba.
 - Editor de nodos y compilador de grafo a funciones ejecutables (planificado).
 - Umbral de cobertura en `libs/` y pruebas de accesibilidad en e2e (planificado).
 
 
 ### Fixed
 
+- **Un botón deshabilitado no se veía deshabilitado.** El componente solo quitaba el puntero,
+  sin ningún cambio visual, así que en toda la aplicación un botón apagado parecía pulsable.
+- **Borrar un borrador guardado dejaba su fila huérfana en la nube.** Se limpiaba el
+  navegador y el optimizador seguía en Supabase para siempre, inalcanzable desde la interfaz
+  porque el vínculo vivía justo en la fila local recién borrada. Ahora el borrado se lleva las
+  dos copias, lo avisa antes, y si la nube falla no borra nada.
+
+- **Nueve comprobaciones del motor no se ejecutaban desde la aplicación.** La pantalla de
+  configuración llamaba a `validateTemplate` sin el inventario, y nueve de las 54
+  comprobaciones solo corren con él. El espacio de búsqueda, que se calcula en ese mismo
+  bloque, salía siempre como `n/a`.
+- **Un id de estadística con guion rompía las fórmulas sin avisar.** El validador miraba
+  ids duplicados pero no su forma, y el tokenizador lee `ataque-critico` como una resta.
+  Ahora se rechaza al validar, venga del formulario, de un paquete importado o de una
+  plantilla escrita a mano.
+- **La pantalla de configuración separa los dos guardados.** El del navegador es automático
+  y privado; el de la cuenta es el botón. Nada lo decía donde se está trabajando, y quien
+  buscaba el botón asumía que no se había guardado nada. El texto se había añadido a la
+  copia sin llegar a pintarse en ninguna parte; ahora sale junto al botón.
+- **Menú de acciones en cada borrador.** Los tres puntos, dentro del mismo marco del
+  nombre, abren renombrar, duplicar y borrar. Renombrar no toca el id, porque lo usan las
+  claves del inventario. Duplicar se lleva también las piezas y queda registrado como copia.
+- **Tampoco había forma de borrarlos.** `remove` y `clearLocalData` existían en el
+  repositorio y no los llamaba nadie, así que los borradores solo se acumulaban. Ahora se
+  borran desde la portada, y la confirmación dice cuántas piezas del inventario se lleva
+  por delante, porque no hay deshacer.
+- **No había forma de volver a un borrador.** Nada en la interfaz listaba los
+  optimizadores creados en este navegador: se entraba al crearlo y al volver al menú
+  desaparecía de la vista, aunque siguiera guardado. La portada ahora los lista, y
+  distingue los propios de la copia en caché de los del catálogo.
+- **El botón de editar de cada fila se anunciaba como "EditAtaque".** El nombre del atributo
+  se concatenaba sin separador en el árbol de accesibilidad. Ahora el nombre accesible es
+  explícito.
+- **La copia local de las plantillas era de solo escritura.** Se guardaba en IndexedDB todo
+  lo que se cargaba, pero nadie la leía. Un juego creado en el editor no se podía abrir sin
+  publicarlo.
 - **Producción servía el prototipo archivado.** El proyecto de Vercel estaba configurado para
   construir `demo/`. Ahora construye `apps/web` (`npx nx build web` → `apps/web/dist`): la URL
   de producción responde con la versión final. Verificado el título, el SPA fallback, el cache

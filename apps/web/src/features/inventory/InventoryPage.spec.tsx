@@ -9,6 +9,7 @@ import {
   defaultOptimizerRepository,
   setOptimizerRepository,
 } from '../optimizer/optimizer-repository';
+import { fakeGameRepository, fakeOptimizerRepository } from '../game/testing';
 import { renderWorkspace } from '../optimizer/workspace/testing';
 
 const template: GameTemplate = {
@@ -65,13 +66,7 @@ const flower: Item = {
   stats: { hp: 4780 },
 };
 
-const noopGames: GameRepository = {
-  list: async () => [],
-  get: async () => undefined,
-  save: async (game) => ({ ...game, updatedAt: 0 }),
-  remove: async () => undefined,
-  clearLocalData: async () => undefined,
-};
+const noopGames: GameRepository = fakeGameRepository().repo;
 
 const memoryInventory = (seed: Item[] = []) => {
   const items = new Map(seed.map((entry) => [entry.id, entry]));
@@ -112,17 +107,19 @@ const setup = (seed: Item[] = []) => {
   const inventory = memoryInventory(seed);
   setGameRepository(noopGames);
   setInventoryRepository(inventory.repository);
-  setOptimizerRepository({
-    getOptimizer: async () => ({
-      id: OPTIMIZER_ID,
-      name: 'Astral Forge optimizer',
-      gameName: 'Astral Forge',
-      description: '',
-      template,
-      sampleItems: [],
-      published: true,
+  setOptimizerRepository(
+    fakeOptimizerRepository({
+      getOptimizer: async () => ({
+        id: OPTIMIZER_ID,
+        name: 'Astral Forge optimizer',
+        gameName: 'Astral Forge',
+        description: '',
+        template,
+        sampleItems: [],
+        published: true,
+      }),
     }),
-  });
+  );
   return inventory;
 };
 

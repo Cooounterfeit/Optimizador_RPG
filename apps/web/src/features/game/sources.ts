@@ -98,15 +98,25 @@ export const seedSource: GameSource = {
  */
 export const GAME_SOURCES: GameSource[] = [remoteSource, localSource, seedSource];
 
+/** Lo que devuelve un origen, mas cual fue. */
+export interface ResolvedGame extends GameSourceResult {
+  /**
+   * El origen que lo resolvio. Importa fuera de aqui: lo que no vino de
+   * `local` es una COPIA de algo ajeno, y la portada no debe listarlo entre
+   * los borradores del autor.
+   */
+  source: string;
+}
+
 /** Primer origen que sepa resolver el id y tenga algo. */
 export async function resolveGame(
   id: string,
   sources: GameSource[] = GAME_SOURCES,
-): Promise<GameSourceResult | undefined> {
+): Promise<ResolvedGame | undefined> {
   for (const source of sources) {
     if (!source.canHandle(id)) continue;
     const found = await source.load(id);
-    if (found) return found;
+    if (found) return { ...found, source: source.id };
   }
   return undefined;
 }

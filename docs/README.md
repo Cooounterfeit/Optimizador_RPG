@@ -23,6 +23,7 @@ conjunto de documentos.
 | [`estrategia-de-pruebas.md`](./estrategia-de-pruebas.md) | Qué se prueba, con qué y qué falta |
 | [`definition-of-ready-done.md`](./definition-of-ready-done.md) | Cuándo una historia empieza y cuándo termina |
 | [`ritmo-de-trabajo.md`](./ritmo-de-trabajo.md) | Cómo trabajó el equipo y cómo leer el historial de Git |
+| [`epicas-2-3.md`](./epicas-2-3.md) | Qué se construyó en las épicas de hub y editor, qué se decidió y en qué se aparta de los criterios |
 | [`fase2/`](./fase2/README.md) | Los cuatro sprints: planning, backlog, tablero, burndown, daily, impedimentos, release, review y retrospectiva |
 | [`decisiones/`](./decisiones/) | ADRs: por qué se eligió NX, cliente, Supabase, Docker y Vercel |
 

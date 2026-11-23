@@ -19,10 +19,63 @@ export const editorCopy = {
     failed: 'Could not create the optimizer.',
     draftNote: 'It is saved in this browser only. Publishing it comes later.',
   },
+  /**
+   * Guardar en la cuenta.
+   *
+   * Dos guardados distintos conviven en esta pantalla y la copia tiene que
+   * dejarlos claros, porque confundirlos hace perder trabajo: el del navegador
+   * es automatico y privado, y el de la cuenta es a boton y puede ser publico.
+   */
+  save: {
+    heading: 'This optimizer',
+    first: 'Save to my account',
+    again: 'Save changes',
+    saving: 'Saving…',
+    signIn: 'Sign in to save',
+    signInWhy:
+      'Saving needs an account, so the optimizer stays yours: only you and the admins can change or delete it.',
+    unavailable: 'This install has no accounts set up, so there is nowhere to save.',
+    whatTravels:
+      'Only the optimizer travels: the attributes, the formulas and the rules. Your items stay in this browser, and you import them by JSON or add them by hand.',
+    visibility: 'Who can see it',
+    privateLabel: 'Only me',
+    privateNote: 'It stays in your account and nobody else can open it.',
+    sharedLabel: 'The community',
+    sharedNote: 'It shows up in the catalog. Anyone can open it, and only you and the admins can change it.',
+    confirm: 'Save',
+    cancel: 'Cancel',
+    savedPrivate: 'Saved in your account, visible only to you.',
+    savedShared: 'Saved and shared with the community.',
+    change: 'Change',
+    failed: 'It could not be saved.',
+    // El boton esta siempre en pantalla, asi que cada razon para no poder
+    // guardar tiene que decirse. Un boton que desaparece no explica nada.
+    checking: 'Checking the template.',
+    // El dialogo es la unica pantalla que explica por que no se puede guardar,
+    // porque el boton ya no se apaga: siempre se puede pulsar y siempre
+    // contesta algo.
+    dialogTitle: 'Save this optimizer',
+    needAccountTitle: 'You need an account',
+    needAccount:
+      'To save your optimizer you must sign in, or create an account if you do not have one.',
+    signInAction: 'Sign in',
+    createAccount: 'Create an account',
+    notReadyTitle: 'Not ready to save yet',
+    close: 'Close',
+    savedTitle: 'Saved',
+    done: 'Done',
+    blockedMissing: 'Still missing: {what}. An optimizer has to be complete before it goes to your account.',
+    blockedErrors:
+      'The report below has errors to fix first. Saving a template the engine rejects would publish something nobody can run.',
+  },
   config: {
     created: 'Optimizer created. Now you can configure it.',
     eyebrow: 'Configuration',
     lede: 'Everything this optimizer is made of, and what the engine says about it.',
+    // Sin "el boton de arriba": en una instalacion sin cuentas no hay ningun
+    // boton, y la frase quedaba mintiendo en la unica pantalla que la lee.
+    autosave:
+      'Changes are written as you make them and stay in this browser. Saving to your account is a separate step.',
     stateTitle: 'State of the template',
     ready: 'This template has everything the solver needs. It can run.',
     notReady: 'The solver cannot run yet. These parts are still empty:',
@@ -41,6 +94,15 @@ export const editorCopy = {
     unknown: 'n/a',
     required: 'required',
     empty: 'Nothing here yet.',
+    search: 'Search by name',
+    searchPlaceholder: 'Search…',
+    sort: 'Sort',
+    sortName: 'Name (A to Z)',
+    sortTemplate: 'Order in the template',
+    noMatches: 'No attribute matches that name.',
+    matches: 'Showing {n} of {total}.',
+    usedIn: 'used in {n}',
+    unused: 'not used',
     readOnly:
       'This optimizer came from the catalog, so it cannot be edited here yet.',
   },
@@ -64,6 +126,27 @@ export const editorCopy = {
     submit: 'Create attribute',
     pending: 'Creating…',
     created: 'Attribute created.',
+    updated: 'Attribute updated.',
+    edit: 'Edit',
+    editing: 'Editing',
+    save: 'Save changes',
+    saveAnyway: 'Save anyway',
+    delete: 'Delete',
+    deleted: 'Attribute deleted.',
+    deletedCascade: 'Attribute and everything that depended on it deleted.',
+    deleteFailed: 'Could not delete the attribute.',
+    deletingNow: 'Deleting…',
+    deleteTitle: 'Delete {name}?',
+    deleteIntro: '{n} things use it, so deleting it changes all of them.',
+    deleteGone: 'Removed completely',
+    deleteKept: 'Kept, without this value',
+    deleteConfirm: 'Delete all of it',
+    deleteBreaks:
+      'After this the optimizer will not be able to run: {parts} would be left empty.',
+    kindObjective: 'objective',
+    kindDerived: 'derived value',
+    aggregateWarning:
+      'This changes how the stat combines across gear, and {n} things already use it. Every result will change. Save anyway?',
     nameRequired: 'Give the attribute a name.',
     nameTooLong: 'The name cannot be longer than 100 characters.',
     nameTaken: 'There is already an attribute with that name.',

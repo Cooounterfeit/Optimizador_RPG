@@ -1,4 +1,38 @@
 export const copy = {
+  drafts: {
+    title: 'Your drafts',
+    // Dejo de ser cierto para todos cuando aparecio el boton de guardar: un
+    // borrador subido vive en los dos sitios.
+    note: 'In this browser, and in your account once you save one',
+    inAccount: 'In your account',
+    sharedTag: 'Shared',
+    unsave: 'Remove from my account',
+    unsaveAsk: 'Remove {name} from your account?',
+    unsavePrivate: 'The draft stays in this browser. You can save it again whenever you want.',
+    unsaveShared:
+      'It is shared, so it also disappears from the community catalog. The draft stays in this browser.',
+    unsaveConfirm: 'Remove it',
+    unsaveFailed: 'Could not remove it from your account.',
+    deleteAlsoAccount: 'The copy in your account goes with it.',
+    deleteAlsoShared:
+      'It is shared with the community, so it disappears from the catalog for everyone.',
+    menu: 'More actions',
+    rename: 'Rename',
+    duplicate: 'Make a copy',
+    delete: 'Delete',
+    cancel: 'Cancel',
+    renameLabel: 'New name',
+    save: 'Save',
+    copySuffix: 'copy',
+    renameFailed: 'Could not rename the draft.',
+    duplicateFailed: 'Could not copy the draft.',
+    deleteAsk: 'Delete {name}?',
+    deleteWithItems:
+      'This also deletes the {n} items you added for it, along with the gear you had equipped and your level history. It cannot be undone.',
+    deleteNoItems: 'It has no items yet. This cannot be undone.',
+    deleteConfirm: 'Delete everything',
+    deleteFailed: 'Could not delete the draft.',
+  },
   brand: 'Zenith',
   brandSub: 'Optimizer',
   skipToCatalog: 'Skip to optimizers',

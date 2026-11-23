@@ -26,6 +26,24 @@ export interface OptimizerRow {
   published: boolean;
 }
 
+/**
+ * Lo que la app ESCRIBE en `optimizers`.
+ *
+ * Es menos de lo que lee a proposito: `author_id` lo pone Postgres con
+ * `auth.uid()`, y `score`, `votes_count` y las fechas no se tocan a mano. Los
+ * grants de la migracion inicial solo permiten estas columnas, asi que mandar
+ * una de mas no es un error de tipos sino un 403.
+ */
+export interface OptimizerWrite {
+  name: string;
+  game_name: string;
+  description: string;
+  template: unknown;
+  sample_items: unknown;
+  published: boolean;
+  forked_from?: string;
+}
+
 /** Fila de la vista `optimizer_cards` (migracion 20261005000003). */
 export interface OptimizerCardRow {
   id: string;
