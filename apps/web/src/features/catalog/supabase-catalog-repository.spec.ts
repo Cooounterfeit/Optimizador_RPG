@@ -11,7 +11,7 @@ const row = (overrides: Partial<OptimizerCardRow> = {}): OptimizerCardRow => ({
   name: 'Disorder anomaly solver',
   description: 'Maximiza anomalia',
   game_name: 'Neon Drift',
-  category: 'Action RPG',
+  genres: ['Action RPG'],
   cover: 'https://cdn.ejemplo.cl/zzz.webp',
   score: 42,
   votes_count: 7,
@@ -48,15 +48,15 @@ describe('mapCard', () => {
       score: 42,
       votesCount: 7,
       createdAt: '2026-10-20T00:00:00.000Z',
-      category: 'Action RPG',
+      genres: ['Action RPG'],
       cover: 'https://cdn.ejemplo.cl/zzz.webp',
       published: true,
     });
   });
 
   it('deja sin categoria ni portada cuando vienen nulas', () => {
-    const card = mapCard(row({ category: null, cover: null, author_avatar: null }));
-    expect(card.category).toBeUndefined();
+    const card = mapCard(row({ genres: [], cover: null, author_avatar: null }));
+    expect(card.genres).toEqual([]);
     expect(card.cover).toBeUndefined();
     expect(card.author.avatarUrl).toBeUndefined();
   });

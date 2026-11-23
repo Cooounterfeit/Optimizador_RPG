@@ -56,7 +56,13 @@ export interface OptimizerCardRow {
   description: string;
   /** Nombre del juego, resuelto desde `juego.nombre` por la vista. */
   game_name: string;
-  category: string | null;
+  /**
+   * Los generos del juego, del catalogo normalizado. Sustituye a `category`,
+   * que era texto libre copiado del JSON del autor y por tanto admitia que el
+   * mismo juego apareciera como "ARPG" en un optimizador y "Action RPG" en
+   * otro. Un juego puede tener varios, de ahi el arreglo.
+   */
+  genres: string[];
   cover: string | null;
   score: number;
   votes_count: number;

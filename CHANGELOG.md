@@ -66,6 +66,11 @@ Quien cierra el sprint la mueve a la versión correspondiente.
 
 ### Fixed
 
+- **El catálogo no mostraba nada.** La vista dejó de exponer `category` al normalizar los
+  géneros, pero la consulta del hub seguía pidiéndola, y PostgREST rechaza la consulta
+  entera cuando una columna no existe. El hub pasa a leer `genres`, que es un arreglo porque
+  un juego puede tener varios: la tarjeta muestra los dos primeros, las facetas cuentan cada
+  género y el filtro deja pasar a quien tenga el elegido entre los suyos.
 - **Un optimizador de la nube siempre se reportaba como no publicado.** La consulta dejó de
   pedir `published` al normalizar el catálogo de juegos, pero el mapeo seguía leyéndolo, así
   que salía `false` para todos.

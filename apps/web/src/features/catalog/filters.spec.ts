@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  categoryFacets,
+  genreFacets,
   filterOptimizers,
   initialFilterState,
   topRanks,
@@ -19,6 +19,7 @@ const make = (overrides: Partial<CatalogOptimizer>): CatalogOptimizer => ({
   score: 0,
   votesCount: 0,
   createdAt: '2026-10-01T00:00:00.000Z',
+  genres: [],
   published: true,
   ...overrides,
 });
@@ -28,7 +29,7 @@ const list: CatalogOptimizer[] = [
     id: 'a',
     name: 'Zeta solver',
     gameName: 'Neon Drift',
-    category: 'Action RPG',
+    genres: ['Action RPG'],
     author: { id: 'kalibr', displayName: 'kalibr' },
     score: 300,
     createdAt: '2026-10-20T00:00:00.000Z',
@@ -37,7 +38,7 @@ const list: CatalogOptimizer[] = [
     id: 'b',
     name: 'Alpha solver',
     gameName: 'Emberfall',
-    category: 'ARPG',
+    genres: ['ARPG'],
     author: { id: 'brutus', displayName: 'brutus' },
     score: 120,
     createdAt: '2026-10-25T00:00:00.000Z',
@@ -57,13 +58,43 @@ const state = (overrides: Partial<CatalogFilterState> = {}): CatalogFilterState 
   ...overrides,
 });
 
+/**
+ * Un juego puede tener varios generos desde que el catalogo se normalizo. Antes
+ * era una sola categoria de texto libre, asi que estas dos son el caso nuevo.
+ */
+describe('un juego con varios generos', () => {
+  const dos = [
+    make({ id: 'multi', genres: ['ARPG', 'Soulslike'] }),
+    make({ id: 'uno', genres: ['ARPG'] }),
+  ];
+
+  it('aparece en cualquiera de sus generos', () => {
+    expect(filterOptimizers(dos, state({ genre: 'Soulslike' })).map((o) => o.id)).toEqual([
+      'multi',
+    ]);
+    expect(filterOptimizers(dos, state({ genre: 'ARPG' })).map((o) => o.id).sort()).toEqual([
+      'multi',
+      'uno',
+    ]);
+  });
+
+  it('cuenta en cada uno, asi que las facetas ya no suman el total', () => {
+    const facetas = genreFacets(dos);
+
+    expect(facetas.find((f) => f.name === 'ARPG')?.count).toBe(2);
+    expect(facetas.find((f) => f.name === 'Soulslike')?.count).toBe(1);
+    // Tres apariciones para dos optimizadores: es correcto, no un error de suma.
+    expect(facetas.reduce((total, f) => total + f.count, 0)).toBe(3);
+  });
+});
+
 describe('filterOptimizers', () => {
   it('filtra por genero', () => {
-    expect(filterOptimizers(list, state({ category: 'ARPG' })).map((o) => o.id)).toEqual(['b']);
+    expect(filterOptimizers(list, state({ genre: 'ARPG' })).map((o) => o.id)).toEqual(['b']);
   });
 
   it('agrupa lo que no tiene genero', () => {
-    expect(filterOptimizers(list, state({ category: UNCATEGORIZED })).map((o) => o.id)).toEqual([
+    expect(filterOptimizers(list, state({ genre: UNCATEGORIZED })).map((o) => o.id)).toEqual([
       'c',
     ]);
   });
@@ -106,9 +137,9 @@ describe('filterOptimizers', () => {
   });
 });
 
-describe('categoryFacets', () => {
+describe('genreFacets', () => {
   it('cuenta por genero y ordena de mayor a menor', () => {
-    expect(categoryFacets(list)).toEqual([
+    expect(genreFacets(list)).toEqual([
       { name: 'Action RPG', count: 1 },
       { name: 'ARPG', count: 1 },
       { name: UNCATEGORIZED, count: 1 },

@@ -67,6 +67,7 @@ const builtin = () => ({
     score: 0,
     votesCount: 0,
     createdAt: '2026-11-06T00:00:00.000Z',
+    genres: [],
     published: true,
   },
   load: async () => ({

@@ -12,7 +12,7 @@ import { HeroBanner } from './components/HeroBanner';
 import { UpdatesRail } from './components/UpdatesRail';
 import { copy } from './copy';
 import {
-  categoryFacets,
+  genreFacets,
   filterOptimizers,
   initialFilterState,
   topRanks,
@@ -53,7 +53,7 @@ export function HomePage() {
   }, [attempt]);
 
   const all = useMemo(() => optimizers ?? [], [optimizers]);
-  const facets = useMemo(() => categoryFacets(all), [all]);
+  const facets = useMemo(() => genreFacets(all), [all]);
   const ranks = useMemo(() => topRanks(all), [all]);
   const visible = useMemo(
     () => filterOptimizers(all, { ...state, query }),
@@ -76,7 +76,7 @@ export function HomePage() {
           facets={facets}
           total={all.length}
           state={state}
-          onCategory={(category) => setState((current) => ({ ...current, category }))}
+          onGenre={(genre) => setState((current) => ({ ...current, genre }))}
           onSort={(sort) => setState((current) => ({ ...current, sort }))}
           onTopOnly={(topOnly) => setState((current) => ({ ...current, topOnly }))}
         />
