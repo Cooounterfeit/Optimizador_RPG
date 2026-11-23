@@ -2,8 +2,16 @@ export const copy = {
   drafts: {
     title: 'Your drafts',
     note: 'In this browser only',
+    menu: 'More actions',
+    rename: 'Rename',
+    duplicate: 'Make a copy',
     delete: 'Delete',
     cancel: 'Cancel',
+    renameLabel: 'New name',
+    save: 'Save',
+    copySuffix: 'copy',
+    renameFailed: 'Could not rename the draft.',
+    duplicateFailed: 'Could not copy the draft.',
     deleteAsk: 'Delete {name}?',
     deleteWithItems:
       'This also deletes the {n} items you added for it, along with the gear you had equipped and your level history. It cannot be undone.',

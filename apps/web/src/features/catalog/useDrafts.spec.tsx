@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { GameRepository } from '@zenith/data-access';
+import type { GameRepository, InventoryRepository } from '@zenith/data-access';
 import type { GameTemplate, Item } from '@zenith/shared-types';
 
 import { buildSkeleton } from '../editor/skeleton';
@@ -30,10 +30,14 @@ let borrados: { remove: string[]; clear: string[] };
 
 const repoCon = (filas: Fila[]) => {
   borrados = { remove: [], clear: [] };
+  guardados = [];
   setGameRepository({
     list: async () => filas,
     get: async (id: string) => filas.find((f) => f.id === id),
-    save: async (game: unknown) => game,
+    save: async (game: { id: string; template: GameTemplate; forkedFrom?: string }) => {
+      guardados.push(game);
+      return game;
+    },
     remove: async (id: string) => {
       borrados.remove.push(id);
     },
@@ -43,7 +47,27 @@ const repoCon = (filas: Fila[]) => {
   } as unknown as GameRepository);
 };
 
-const conPiezas = (items: Item[]) => setInventoryRepository(fakeInventoryRepository(items));
+let anadidas: { item: Item; gameId: string }[] = [];
+
+const conPiezas = (items: Item[]) => {
+  anadidas = [];
+  setInventoryRepository({
+    ...fakeInventoryRepository(items),
+    addItem: async (item: Item, gameId: string) => {
+      anadidas.push({ item, gameId });
+    },
+  } as unknown as InventoryRepository);
+};
+
+/** Lo que se mando guardar, para mirar la copia. */
+let guardados: { id: string; template: GameTemplate; forkedFrom?: string }[] = [];
+
+/** Abre el menu de los tres puntos de esa tarjeta. */
+const abrirMenu = async (nombre: string) =>
+  fireEvent.click(await screen.findByRole('button', { name: `More actions: ${nombre}` }));
+
+const elegir = async (opcion: string) =>
+  fireEvent.click(await screen.findByRole('menuitem', { name: opcion }));
 
 const juego = (id: string, name: string, cloud?: boolean): Fila => ({
   id,
@@ -134,7 +158,8 @@ describe('borrar un borrador', () => {
     conPiezas([pieza('a'), pieza('b'), pieza('c')]);
     render(<Sonda />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete Mi juego' }));
+    await abrirMenu('Mi juego');
+    await elegir('Delete');
 
     expect(await screen.findByText('Delete Mi juego?')).toBeTruthy();
     expect(screen.getByText(/deletes the 3 items/i)).toBeTruthy();
@@ -145,7 +170,8 @@ describe('borrar un borrador', () => {
     repoCon([juego('mi-juego', 'Mi juego')]);
     render(<Sonda />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete Mi juego' }));
+    await abrirMenu('Mi juego');
+    await elegir('Delete');
 
     expect(await screen.findByText(/no items yet/i)).toBeTruthy();
   });
@@ -154,7 +180,8 @@ describe('borrar un borrador', () => {
     repoCon([juego('mi-juego', 'Mi juego')]);
     render(<Sonda />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete Mi juego' }));
+    await abrirMenu('Mi juego');
+    await elegir('Delete');
     fireEvent.click(await screen.findByRole('button', { name: 'Delete everything' }));
 
     // Las dos: `remove` sola dejaria el inventario huerfano para siempre.
@@ -166,11 +193,113 @@ describe('borrar un borrador', () => {
     repoCon([juego('mi-juego', 'Mi juego')]);
     render(<Sonda />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete Mi juego' }));
+    await abrirMenu('Mi juego');
+    await elegir('Delete');
     fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
 
     await waitFor(() => expect(screen.queryByText('Delete Mi juego?')).toBeNull());
     expect(borrados.remove).toEqual([]);
     expect(borrados.clear).toEqual([]);
+  });
+});
+
+describe('el menu de los tres puntos', () => {
+  it('se anuncia como menu y dice de que tarjeta es', async () => {
+    repoCon([juego('a', 'Uno'), juego('b', 'Dos')]);
+    render(<Sonda />);
+
+    const boton = await screen.findByRole('button', { name: 'More actions: Uno' });
+    expect(boton.getAttribute('aria-haspopup')).toBe('menu');
+    expect(boton.getAttribute('aria-expanded')).toBe('false');
+    // Hay uno por tarjeta y se distinguen, que es el punto de la etiqueta.
+    expect(screen.getByRole('button', { name: 'More actions: Dos' })).toBeTruthy();
+  });
+
+  it('trae las tres acciones', async () => {
+    repoCon([juego('a', 'Uno')]);
+    render(<Sonda />);
+    await abrirMenu('Uno');
+
+    expect(screen.getAllByRole('menuitem').map((b) => b.textContent)).toEqual([
+      'Rename',
+      'Make a copy',
+      'Delete',
+    ]);
+  });
+
+  it('Escape lo cierra', async () => {
+    repoCon([juego('a', 'Uno')]);
+    render(<Sonda />);
+    await abrirMenu('Uno');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+  });
+});
+
+describe('renombrar', () => {
+  it('cambia el nombre visible sin tocar el id', async () => {
+    repoCon([juego('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    await abrirMenu('Mi juego');
+    await elegir('Rename');
+    fireEvent.change(await screen.findByLabelText('New name'), {
+      target: { value: 'Otro nombre' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(guardados).toHaveLength(1));
+    expect(guardados[0].id).toBe('mi-juego');
+    expect(guardados[0].template.gameId).toBe('mi-juego');
+    expect(guardados[0].template.name).toBe('Otro nombre');
+  });
+
+  it('no acepta un nombre vacio', async () => {
+    repoCon([juego('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    await abrirMenu('Mi juego');
+    await elegir('Rename');
+    fireEvent.change(await screen.findByLabelText('New name'), { target: { value: '  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(guardados).toHaveLength(0);
+  });
+});
+
+describe('duplicar', () => {
+  const pieza2 = (id: string): Item => ({
+    id,
+    slot: 'arma',
+    setId: null,
+    name: `Pieza ${id}`,
+    stats: {},
+  });
+
+  it('crea una copia con id propio y registra de donde salio', async () => {
+    repoCon([juego('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    await abrirMenu('Mi juego');
+    await elegir('Make a copy');
+
+    await waitFor(() => expect(guardados).toHaveLength(1));
+    expect(guardados[0].id).toBe('mi-juego-copy');
+    expect(guardados[0].template.name).toBe('Mi juego (copy)');
+    expect(guardados[0].forkedFrom).toBe('mi-juego');
+  });
+
+  it('se lleva tambien las piezas: una copia vacia no es una copia', async () => {
+    repoCon([juego('mi-juego', 'Mi juego')]);
+    conPiezas([pieza2('a'), pieza2('b')]);
+    render(<Sonda />);
+
+    await abrirMenu('Mi juego');
+    await elegir('Make a copy');
+
+    await waitFor(() => expect(anadidas).toHaveLength(2));
+    expect(anadidas.every((entry) => entry.gameId === 'mi-juego-copy')).toBe(true);
   });
 });
