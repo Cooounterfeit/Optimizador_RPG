@@ -22,7 +22,8 @@ En concreto, cuando el producto cambie de etapa:
 - Las capturas del `demo/` muestran el prototipo del Capstone, no el producto publicado.
 
 **Fuente de los datos:** Jira, proyecto `ZO`. Los sprints 1 a 3 se verificaron contra la API el 20
-de noviembre de 2026; el Sprint 4 está activo y sus cifras son de ese mismo día.
+de noviembre de 2026; el Sprint 4 se cierra el 23 a medianoche y su tabla conserva esa misma foto,
+con la evidencia de código al cierre documentada en [`sprint-4/backlog.md`](./sprint-4/backlog.md).
 
 ## Los cuatro sprints
 
@@ -31,7 +32,7 @@ de noviembre de 2026; el Sprint 4 está activo y sus cifras son de ese mismo dí
 | [1 — Prototipo y motor](./sprint-1/planning.md) | 05-oct → 18-oct | 13 | 35 | 29 | **83 %** |
 | [2 — Catálogo y RLS](./sprint-2/planning.md) | 19-oct → 01-nov | 9 | 32 | 27 | **84 %** |
 | [3 — App real e inventario](./sprint-3/planning.md) | 02-nov → 15-nov | 39 | 182 | 126 | **69 %** |
-| [4 — Cierre y entrega](./sprint-4/planning.md) | 16-nov → 29-nov | 39 | 162 | 3 | en curso |
+| [4 — Cierre y entrega](./sprint-4/planning.md) | 16-nov → 23-nov | 39 | 162 | 3 | al cierre |
 
 > En los sprints 1 a 3, las HUs que no se cerraron se arrastraron al Sprint 4 al cerrar cada
 > sprint: 2 del Sprint 1, 2 del Sprint 2 y 14 del Sprint 3. A esas 18 se sumaron, en el ordenamiento
@@ -77,7 +78,7 @@ resumen del incremento en el mensaje:
 | 1 — Prototipo y motor | `sprint-1` | `8c78dd5` | [releases/tag/sprint-1](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-1) |
 | 2 — Catálogo y RLS | `sprint-2` | `17044c6` | [releases/tag/sprint-2](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-2) |
 | 3 — App real e inventario | `sprint-3` | `c98ce2c` | [releases/tag/sprint-3](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-3) |
-| 4 — Cierre y entrega | `sprint-4` | al cerrar | se crea el 22 o 23 de noviembre |
+| 4 — Cierre y entrega | `sprint-4` | `578b14b` | [releases/tag/sprint-4](https://github.com/Cooounterfeit/Optimizador_RPG/releases/tag/sprint-4) |
 
 El proyecto no usa versiones semánticas `v1.2.3`: versiona por sprint, que es lo que el listado de
 documentos pide como entregable de Release. Para ver el código exacto que se entregó en el Sprint 1:

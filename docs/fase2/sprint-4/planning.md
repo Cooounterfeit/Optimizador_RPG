@@ -1,13 +1,14 @@
 # Sprint 4 — Planning
 
-**Fechas:** 16 al 29 de noviembre de 2026
-**Estado en Jira:** **activo** al 20 de noviembre de 2026
+**Fechas:** 16 al 29 de noviembre de 2026 en Jira; el equipo cierra el **23 a las 24:00**
+**Estado en Jira:** **activo** al 20 de noviembre de 2026, última verificación contra su API
 **Objetivo del sprint (registrado en Jira):** documentación, CI/CD, Docker y preparación de la demo
 final.
 
 > Este documento describe un sprint **en curso**. Los datos son los que devuelve Jira el 20 de
-> noviembre de 2026. Jira lo fecha del 16 al 29, pero el equipo lo cierra el 22 o 23 porque la
-> entrega se presenta antes: esa es la ventana que usan el burndown y las cifras de avance.
+> noviembre de 2026. Jira lo fecha del 16 al 29, pero el equipo lo cierra el 23 a medianoche
+> porque la entrega se presenta el 24: esa es la ventana que usan el burndown y las cifras de
+> avance.
 
 ## Contexto de partida
 
@@ -90,3 +91,14 @@ todo lo demás.
 El único cierre es **SP-01** (evaluación de monorepos), una HU de investigación del sprint de
 arranque que se cerró al ordenar el proyecto el 20 de noviembre: el monorepo existe, funciona y la
 evaluación tenía respuesta desde septiembre.
+
+## Al cierre, 23 de noviembre
+
+La tabla anterior es la foto de Jira. Lo que sí se puede verificar es el código: entre el 20 y el
+23 de noviembre entraron CFG-05 completo (`17d444e`, `013e8b3`), CFG-06 (`6cff5b7`), CFG-01
+(`cec1a57`) y el cockpit 6.3.5 (`896debf`, `3bd3e2a`). El detalle, con la tabla de commits, está en
+[`backlog.md`](./backlog.md#evidencia-de-código-al-cierre-23-de-noviembre).
+
+El sprint **no se declara cerrado en Jira a la fecha de este documento**: los estados de la tabla
+se actualizan desde su API y esa verificación no se repitió. Declararlo cerrado sin esa
+comprobación sería presentar como hecho algo que no se comprobó.

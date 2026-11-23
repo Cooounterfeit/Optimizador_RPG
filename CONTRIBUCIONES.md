@@ -22,11 +22,11 @@ atribuciones estimadas: cada afirmación tiene su comando.
 git shortlog -sne
 ```
 
-Salida al commit de cierre:
+Salida al commit de cierre del Sprint 4 (`578b14b`, 23 de noviembre):
 
 ```
-    71  Matías Molina <matias.molinaplaza@gmail.com>
-    44  Arturo Moya <arturo.moya.contact@gmail.com>
+    78  Matías Molina <matias.molinaplaza@gmail.com>
+    45  Arturo Moya <arturo.moya.contact@gmail.com>
     14  Ignacio Rodriguez <50534414+Ignacio-Rodriguez-A@users.noreply.github.com>
 ```
 
@@ -41,8 +41,8 @@ filtros usan el nombre canónico:
 
 ```bash
 git log --author="Ignacio" --oneline             # 14 commits
-git log --author="Arturo Moya" --oneline         # 44 commits
-git log --author="Matías Molina" --oneline       # 71 commits
+git log --author="Arturo Moya" --oneline         # 45 commits
+git log --author="Matías Molina" --oneline       # 78 commits
 ```
 
 Filtrar por el nombre viejo (`Moya-Art`, `nSy0`, `Cooounterfeit`) devuelve 0 una vez aplicado

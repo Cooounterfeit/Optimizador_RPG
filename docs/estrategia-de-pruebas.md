@@ -24,7 +24,7 @@ Ejecución: `npx nx run-many -t test`. Solo lo afectado: `npx nx affected -t tes
 ### 1. Unitarias (Vitest)
 
 El núcleo. `core-engine` es TypeScript puro —sin React, sin DOM— precisamente para poder
-probarlo así: 142 casos corren en 10 segundos sin montar un navegador.
+probarlo así: 182 casos corren en pocos segundos sin montar un navegador.
 
 **Lo que se prueba en el motor:**
 
@@ -39,14 +39,14 @@ probarlo así: 142 casos corren en 10 segundos sin montar un navegador.
 
 - **Repositorios sobre Dexie real** con `fake-indexeddb`: no se mockea la base, se usa una
   implementación en memoria. Un mock habría ocultado errores de índices y transacciones.
-- **Esquema y RLS contra PGlite** (`supabase/tests/rls.spec.ts`, 68 casos): un Postgres real
+- **Esquema y RLS contra PGlite** (`supabase/tests/rls.spec.ts`, 89 casos): un Postgres real
   embebido que aplica las migraciones y verifica que cada política permita lo que debe y
   bloquee lo que no. Es la única forma honesta de probar RLS sin un proyecto en la nube.
 
 ### 3. Extremo a extremo (Playwright)
 
-Siete recorridos sobre el build real: importar inventario, optimizar, ver resultado, hoja de
-personaje, catálogo, cuenta y navegación. Corren con `VITE_USE_MOCKS=1` para no depender de
+27 recorridos en siete archivos sobre el build real: importar inventario, optimizar, ver resultado,
+hoja de personaje, catálogo, cuenta y navegación. Corren con `VITE_USE_MOCKS=1` para no depender de
 datos ni de red.
 
 En CI se ejecutan con Chromium. En fallo se guardan screenshot, video y trace: sin esa

@@ -1,9 +1,9 @@
 # Sprint 4 — Scrumboard
 
-![Tablero del Sprint 4 en curso](./scrumboard.png)
+![Tablero del Sprint 4 al 20 de noviembre](./scrumboard.png)
 
 > **Render, no captura.** Generado desde los datos de Jira del sprint 4 el 20 de noviembre de 2026.
-> El sprint está activo: el tablero cambia hasta el cierre del 22 o 23 de noviembre.
+> El sprint cierra el 23 a medianoche; el tablero refleja esa foto y no se redibuja al cierre.
 
 ## Columnas
 

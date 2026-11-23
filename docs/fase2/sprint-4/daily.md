@@ -1,7 +1,7 @@
-# Sprint 4 — Daily (en curso)
+# Sprint 4 — Daily
 
-**Ventana registrada:** 16 al 23 de noviembre de 2026. El sprint sigue abierto: Jira lo fecha
-del 16 al 29.
+**Ventana registrada:** 16 al 23 de noviembre de 2026, día de cierre. Jira lo fecha del 16 al 29,
+pero el equipo lo cierra la noche anterior a la presentación.
 
 Bitácora reconstruida desde las fechas de commit y el estado en Jira. No existió un daily
 escrito; se declara para no presentar como acta lo que es una reconstrucción. El método y el
@@ -49,6 +49,10 @@ Día de trazabilidad, no de producto.
   lugar de contra el historial de commits (`a0b0def`, `d82f674`, `09a65f8`, `a2ac60b`,
   `086d48b`), y se corrigen las cifras que no se sostenían (`21e3a5c`).
 
+## 21 de noviembre
+
+- Sin actividad. Sábado: la cadencia se mide sobre días hábiles.
+
 ## 22 de noviembre
 
 - Editor: cimientos para editar la plantilla (`998f123`), atributo base (CFG-01, `cec1a57`),
@@ -59,10 +63,17 @@ Día de trazabilidad, no de producto.
 
 ## 23 de noviembre
 
+Cierre del sprint.
+
 - Condiciones desde la barra y comparación plegada, 6.3.5 (`3bd3e2a`), con sus correcciones de
   superficie (`2f0184a`, `e4bd3bd`).
+- Presupuesto de habilidades por nivel, 6.4a (`6f6d839`).
 - Catálogo de juegos y géneros normalizado en Supabase (`97b46cf`).
-- Margen de 60 s por prueba bajo `nx affected` (`4c32a62`).
+- Calidad: se cierra el quality gate de Sonar y el S4036 del generador de ERD (`6c12efa`); el test
+  intermitente del optimizador deja de perder el resultado al remontarse (`275db33`); margen de 60 s
+  por prueba bajo `nx affected` (`4c32a62`).
+- Documentación de entrega: registro de cadencia, aportes por integrante y corrección del Sprint 4
+  (`966524d`).
 
 ## Observación
 

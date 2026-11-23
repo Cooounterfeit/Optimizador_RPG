@@ -1,6 +1,6 @@
-# Sprint 4 — Review (en curso)
+# Sprint 4 — Review
 
-**Fecha:** 20 de noviembre de 2026, con el sprint abierto. Se completa al cierre.
+**Fecha:** 20 de noviembre de 2026, con el sprint abierto. Cierra el 23 a medianoche.
 
 ## Objetivo del sprint
 
@@ -59,3 +59,19 @@ La review de este sprint no puede juzgar el objetivo todavía: la documentación
 están hechas, y el producto —el editor— está a mitad de camino. Lo que sí se puede juzgar es la
 decisión de haber puesto **todo el pendiente en el sprint abierto**: hace visible el hueco, pero
 también infla el compromiso a 162 puntos que no se van a cerrar.
+
+## Verificación al cierre, 23 de noviembre
+
+Las métricas de la tabla son la foto de Jira al 20. Lo que el repositorio permite confirmar al
+cierre es el estado del producto, y es mejor de lo que esa foto sugería: CFG-05 completo
+(`17d444e`, `013e8b3`), CFG-06 (`6cff5b7`) y CFG-01 (`cec1a57`), más el cockpit 6.3.5 (`896debf`,
+`3bd3e2a`) y el presupuesto de habilidades por nivel (`6f6d839`).
+
+La suite completa pasa al cierre: **182 casos del motor, 317 de la interfaz, 89 de base de datos,
+72 de persistencia, 29 de inventario y 11 del contrato**, más 27 recorridos de extremo a extremo.
+Los cinco casos del motor que fallaban en el checkout de Windows eran de portabilidad —el
+repositorio guarda tres fixtures como enlaces simbólicos— y quedaron corregidos en el lector de
+fixtures, no silenciados.
+
+Lo que sigue abierto al cierre es el editor completo de variables y la exportación de inventario. La
+presentación del 24 no los necesita: muestra lo que existe.

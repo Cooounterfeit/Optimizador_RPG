@@ -1,13 +1,14 @@
-# Sprint 4 — Release (en curso)
+# Sprint 4 — Release
 
-**Estado:** sprint activo al 23 de noviembre de 2026. Jira lo fecha del 16 al 29 de noviembre.
+**Estado:** sprint activo al 23 de noviembre de 2026. Cierra hoy a las 24:00; Jira lo fecha del 16
+al 29.
 
-**Versión entregada:** sin etiqueta todavía.
+**Versión entregada:** tag anotado `sprint-4` sobre `578b14b` (23 de noviembre), con el resumen del
+incremento en el mensaje. Creado en local al cierre de la ventana de trabajo.
 
-> **Pendiente explícito.** El tag anotado `sprint-4` no existe a la fecha de este documento. Los
-> sprints 1 a 3 tienen el suyo (`git tag -l` devuelve `sprint-1`, `sprint-2` y `sprint-3`); el del
-> Sprint 4 se crea sobre el commit de cierre, cuando el sprint cierre. Se deja anotado aquí en
-> lugar de darlo por hecho: entre el estado declarado y el verificable manda el verificable.
+> Los sprints 1 a 3 ya tienen su tag publicado en GitHub. El de este sprint existe en el repositorio
+> local; su publicación queda a la espera de confirmar que el sprint está efectivamente cerrado en
+> Jira.
 
 ## Qué entró a `main` desde el 16 de noviembre
 
@@ -57,7 +58,7 @@ Cada fila se verifica con `git merge-base --is-ancestor <hash> main`.
 
 - Unificar la interfaz del optimizador (UI-01).
 - Redirigir las rutas viejas (TEC-23).
-- Etiqueta `sprint-4` sobre el commit de cierre.
+- Publicar la etiqueta `sprint-4` en GitHub.
 
 ## Fuera de alcance hasta el Capstone
 

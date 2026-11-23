@@ -1,14 +1,14 @@
-# Sprint 4 — Burndown (en curso)
+# Sprint 4 — Burndown
 
 ![Burndown del Sprint 4 al 20 de noviembre](./burndown.png)
 
-> **Gráfico parcial.** El sprint está activo y solo transcurrieron 5 de los 6 días hábiles de
-> trabajo. La curva real llega hasta el 20 de noviembre y se detiene ahí; lo que sigue es la
-> proyección ideal, no un dato.
+> **Gráfico parcial.** El gráfico se generó el 20 de noviembre y llega hasta ese día; lo que sigue
+> es la proyección ideal, no un dato. La curva real al cierre no se dibuja aquí: exigiría volver a
+> consultar Jira para saber qué HUs quedaron en «Listo» al 23, y ese dato no se tiene.
 >
-> **Ventana.** Jira fecha el sprint del 16 al 29 de noviembre, pero el equipo lo cierra el 22 o 23
-> porque la entrega se presenta antes. El burndown usa la ventana real de trabajo, no la del
-> calendario de Jira: seis días hábiles, del 16 al 23.
+> **Ventana.** Jira fecha el sprint del 16 al 29 de noviembre, pero el equipo lo cierra el 23 a
+> medianoche porque la entrega se presenta el 24. El burndown usa la ventana real de trabajo, no la
+> del calendario de Jira: seis días hábiles, del 16 al 23.
 
 ## Tabla
 
@@ -19,7 +19,7 @@
 | 18 nov | 108,0 | 162 | — |
 | 19 nov | 81,0 | 162 | — |
 | 20 nov | 54,0 | **159** | SP-01 (−3) |
-| 23 nov | 0,0 | cierre | — |
+| 23 nov | 0,0 | sin dato de Jira | — |
 
 ## Aritmética al 20 de noviembre
 
@@ -48,9 +48,13 @@ Días hábiles transcurridos  5 de 6
 
 ## Qué mirar en el cierre
 
-Cuando el sprint cierre el 22 o 23 de noviembre, este documento se reemplaza con la curva
-definitiva. Los indicadores que importan entonces son dos:
+El sprint cierra el 23 de noviembre a medianoche. Los dos indicadores que importan son los mismos
+que se declararon al abrir el sprint:
 
 1. Cuántas de las 7 HUs en curso llegaron a «Listo», no cuántas se movieron de columna.
 2. Si el editor quedó en un estado demostrable. Es lo que se muestra; TEC-22 ya no se espera para
    la entrega.
+
+El punto 2 tiene respuesta verificable en el repositorio, y es afirmativa: al cierre existen CFG-05
+completo (`17d444e`, `013e8b3`), CFG-06 (`6cff5b7`) y CFG-01 (`cec1a57`), con 700 casos de prueba
+unitarios y de integración en verde. El punto 1 depende de Jira y no se declara sin consultarlo.

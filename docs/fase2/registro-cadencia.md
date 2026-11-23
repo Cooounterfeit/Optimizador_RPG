@@ -148,7 +148,7 @@ catálogos, importación GOOD, assets fuera del código y reglas del juego en da
 > puntos cayó en un solo día, porque el trabajo se integró por funcionalidad completa y no por
 > partes demostrables.
 
-## Sprint 4 — 16 al 20 de noviembre (hasta el corte)
+## Sprint 4 — 16 al 23 de noviembre (hasta el corte)
 
 **16-nov (lun).** Sin cambios en el repositorio. Arranque del sprint con el pendiente de los
 anteriores encima; la prioridad era el despliegue, no la interfaz.
@@ -176,8 +176,22 @@ los documentos de los sprints 2, 3 y 4 (`09a65f8`, `a2ac60b`, `086d48b`) y se en
 release (`f0f9c45`). También se ataca el test intermitente con sus dos causas reales (`e5af245`).
 Comentario: desde este día las cifras de los documentos y las de Jira son la misma cosa.
 
-**22-nov (dom).** Fuera de día hábil. Se registra el Overview en el changelog (`6dd2e13`) y se
-amplía el margen de espera de la prueba que el CI agotaba bajo carga (`c313d8f`).
+**21-nov (sáb).** Fin de semana, sin actividad. Se declara en lugar de omitirse: la cadencia se
+mide sobre días hábiles, y un sábado sin commits no es un día incumplido.
+
+**22-nov (dom).** Fuera de día hábil, con actividad: se cierra el editor con CFG-01 (`cec1a57`),
+CFG-05 completo (`013e8b3`) y CFG-06 (`6cff5b7`), más los cimientos para editar la plantilla
+(`998f123`) y la validación contra el inventario del navegador (`fc047d0`). Entra también el
+cockpit 6.3.5 (`896debf`) y el registro en el changelog (`6dd2e13`). Comentario: diez commits en
+domingo, y el sprint cierra al día siguiente; el editor se priorizó sobre las funcionalidades
+sociales y se terminó a tiempo.
+
+**23-nov (lun).** Cierre del sprint. Se consolida 6.3.5 con condiciones desde la barra y
+comparación plegada (`3bd3e2a`), sus correcciones de superficie (`2f0184a`, `e4bd3bd`), el
+presupuesto de habilidades por nivel 6.4a (`6f6d839`), el catálogo de juegos y géneros
+normalizado (`97b46cf`) y la corrección del test intermitente (`275db33`). En calidad: el
+quality gate de Sonar y el S4036 del generador de ERD (`6c12efa`). Y la documentación de entrega
+(`966524d`). Comentario: se cierra con 182 casos del motor en verde y la suite completa pasando.
 
 ---
 
@@ -199,8 +213,12 @@ git log --format='%ad %h %s' --date=format:'%Y-%m-%d' \
 
 ## Nota sobre el corte
 
-El Sprint 4 cierra el 29 de noviembre. Faltan los días hábiles 23, 24, 25, 26 y 27, que se
-agregan cuando ocurran.
+El Sprint 4 cierra el **23 de noviembre a las 24:00**. Jira lo fecha del 16 al 29, pero la
+entrega del Capstone se presenta el 24, así que el equipo cierra el sprint la noche anterior.
+
+Con eso, el Sprint 4 acumula **seis días hábiles** (16, 17, 18, 19, 20 y 23), más el sábado 21
+sin actividad y el domingo 22 con diez commits. La ventana completa del proyecto (5 de octubre al
+23 de noviembre) suma **35 días hábiles**, cada uno con su entrada.
 
 Las fechas de cierre de sprint y los fines de semana con actividad aparecen al final de cada
 sprint, después de los días hábiles, para no romper el orden de la semana.

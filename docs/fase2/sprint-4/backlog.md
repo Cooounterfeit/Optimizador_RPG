@@ -1,7 +1,13 @@
 # Sprint 4 — Backlog
 
 Estado **al 20 de noviembre de 2026**, con el sprint activo. Fuente: Jira, proyecto `ZO`, sprint 4
-("Sprint 4 — Cierre y entrega"). Las cifras cambian hasta el cierre del 22 o 23 de noviembre.
+("Sprint 4 — Cierre y entrega").
+
+> **Nota de lectura.** La foto de Jira es del 20 de noviembre porque es la última verificación
+> contra su API que quedó registrada. El sprint cierra el 23 de noviembre a las 24:00, y entre esas
+> dos fechas entraron los commits que están al final de este documento. Los estados de las tablas
+> no se actualizan a mano: se actualizan desde Jira, y una tabla editada sin esa verificación sería
+> un relato paralelo. La evidencia de código sí está, y es la que se puede comprobar.
 
 ## En curso (7 HUs · 34 puntos)
 
@@ -103,3 +109,22 @@ de builds— y llegó último porque todo lo demás era requisito previo.
 La segunda concentración son las **cuatro de suscripciones**, que dependen de Stripe (TEC-09) y no
 se van a cerrar en este sprint. Se mantienen visibles como pendiente declarado en lugar de
 marcarlas como fuera de alcance.
+
+## Evidencia de código al cierre (23 de noviembre)
+
+Lo que entró entre la foto de Jira y el cierre, con el commit que lo respalda:
+
+| HU | Commit | Qué quedó implementado |
+|---|---|---|
+| CFG-05 · Crear un juego desde cero | `17d444e`, `013e8b3` | Editor completo: plantilla, validación y criterios cerrados |
+| CFG-06 · Ver la configuración de un juego | `6cff5b7` | Pantalla de solo lectura con validación |
+| CFG-01 · Crear un atributo base | `cec1a57`, `998f123` | Atributo base con identificadores y referencias |
+| CFG-02/03/04 · Ver, editar y eliminar atributos | `cec1a57`, `8cab9f1` | Gestión de atributos base en el editor |
+| 6.3.1 a 6.3.5 · Interfaz del optimizador | `b52d76f`, `a0fcb94`, `b58b26d`, `d7a6a06`, `896debf`, `3bd3e2a` | Workspace, Overview, tarjetas, cockpit y comparación |
+| 6.4a · Presupuesto de habilidades por nivel | `6f6d839` | Proyección de puntos por nivel |
+| Catálogo de juegos y géneros | `97b46cf` | Normalización en Supabase |
+| TEC-03 · RLS | `17044c6` | 40 políticas probadas con PGlite (89 casos) |
+
+Las cuatro HUs de suscripciones y la pasarela de pago siguen sin implementación al cierre. También
+quedan fuera las de comunidad (votos, favoritos, compartir y reportes) y la exportación de
+inventario. El informe final las declara como pendientes; no se marcan como terminadas.
