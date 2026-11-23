@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/Button';
 import { useOptimizerWorkspace } from '../optimizer/workspace/OptimizerWorkspaceProvider';
 
 import { BlockSection } from './BlockSection';
+import { SavePanel } from './SavePanel';
 import { CONFIG_BLOCKS, missingRequired } from './blocks';
 import { editorCopy } from './copy';
 
@@ -107,6 +108,20 @@ export function ConfigurationPage() {
         <p className="max-w-[60ch] text-sm text-muted-foreground">
           {editorCopy.config.lede}
         </p>
+
+        {/*
+          Solo en un optimizador propio. En uno abierto del catalogo, ofrecer
+          guardar seria mentir: la RLS no deja escribir en lo ajeno, y hablar de
+          guardado automatico tampoco valdria.
+        */}
+        {editable ? (
+          <>
+            <SavePanel template={template} />
+            <p className="m-0 mt-3 max-w-[60ch] text-[12px] text-muted-foreground">
+              {editorCopy.config.autosave}
+            </p>
+          </>
+        ) : null}
       </header>
 
       {justCreated ? (

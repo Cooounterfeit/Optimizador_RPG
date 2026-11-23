@@ -9,6 +9,10 @@ export interface GameInput {
   forkedFrom?: string;
   cloud?: boolean;
   syncedAt?: number;
+  /** La fila de `optimizers` que ya representa a este borrador. */
+  remoteId?: string;
+  /** Si esa fila esta compartida con la comunidad. */
+  shared?: boolean;
 }
 
 /** Puerto de optimizadores. En F5 lo implementa Supabase; localmente es cache. */

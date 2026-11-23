@@ -27,6 +27,7 @@ import {
   setOptimizerRepository,
   type OptimizerRecord,
 } from '../optimizer-repository';
+import { fakeOptimizerRepository } from '../../game/testing';
 import { renderWorkspace } from './testing';
 
 const workspaceRoot = (() => {
@@ -114,12 +115,14 @@ let templateLoads = 0;
 
 const useTemplate = (template: GameTemplate = seed.template, published = true): void => {
   templateLoads = 0;
-  setOptimizerRepository({
-    getOptimizer: async () => {
-      templateLoads += 1;
-      return record(template, published);
-    },
-  });
+  setOptimizerRepository(
+    fakeOptimizerRepository({
+      getOptimizer: async () => {
+        templateLoads += 1;
+        return record(template, published);
+      },
+    }),
+  );
   setInventoryRepository(inventory(seed.items));
   setGameRepository(games);
   setSkillsRepository(skills);

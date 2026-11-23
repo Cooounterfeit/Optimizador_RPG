@@ -25,6 +25,19 @@ export interface GameRow {
   forkedFrom?: string;
   cloud?: boolean;
   syncedAt?: number;
+  /**
+   * La fila de `optimizers` que corresponde a este borrador, si ya se guardo
+   * en la cuenta. Sin esto cada clic en guardar dejaria un optimizador nuevo
+   * en la nube, porque el id local es un slug y el de Supabase un uuid: no hay
+   * forma de reconocer que son el mismo.
+   */
+  remoteId?: string;
+  /**
+   * Si la copia de la nube esta compartida con la comunidad. Se guarda aqui
+   * para que la cabecera pueda decir en que estado esta sin consultar la red
+   * cada vez que se abre la pantalla.
+   */
+  shared?: boolean;
 }
 
 /** Equipo puesto por un personaje (perfil) de un juego. */

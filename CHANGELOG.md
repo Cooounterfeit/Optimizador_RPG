@@ -22,6 +22,15 @@ Quien cierra el sprint la mueve a la versión correspondiente.
 - **Una sola tarjeta de personaje (`6.3.4`).** `CharacterPanel` reemplaza a `StatsPanel`: retrato,
   nombre, "Change" como acción propia y el nivel editable como campo numérico que confirma al salir
   del campo o con Enter, recorta al rango y revierte con Escape.
+- **Guardar el optimizador en tu cuenta.** Un botón en la configuración sube la plantilla
+  a Supabase bajo tu usuario, y al guardar eliges si queda privada o compartida con la
+  comunidad, decisión que se puede cambiar después. Sin sesión el botón lleva a iniciar
+  sesión y vuelve a donde estabas; sin cuentas configuradas lo dice en vez de fallar. Lo que
+  sube es el optimizador, es decir la matemática: los objetos del jugador se quedan en su
+  navegador y se importan por JSON o se escriben a mano.
+- **El nombre del optimizador llega a 100 caracteres en la base.** La tabla estaba en 80 y
+  el formulario de CFG-05 en 100, así que un nombre de 90 se guardaba en el navegador y
+  reventaba al subirlo.
 - **Crear un optimizador desde cero** (CFG-05). Un formulario de tres campos crea un juego
   vacío pero válido, sin pedir cuenta, y lleva directo a su configuración.
 - **Ver y validar la configuración de un juego** (CFG-06). Primera pantalla que consume
@@ -50,9 +59,10 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   ids duplicados pero no su forma, y el tokenizador lee `ataque-critico` como una resta.
   Ahora se rechaza al validar, venga del formulario, de un paquete importado o de una
   plantilla escrita a mano.
-- **La pantalla de configuración dice que se guarda sola.** No hay botón de guardar porque
-  cada cambio se escribe al hacerlo, pero nada lo decía donde se está trabajando y quien
-  buscaba el botón asumía que no se había guardado nada.
+- **La pantalla de configuración separa los dos guardados.** El del navegador es automático
+  y privado; el de la cuenta es el botón. Nada lo decía donde se está trabajando, y quien
+  buscaba el botón asumía que no se había guardado nada. El texto se había añadido a la
+  copia sin llegar a pintarse en ninguna parte; ahora sale junto al botón.
 - **Menú de acciones en cada borrador.** Los tres puntos, dentro del mismo marco del
   nombre, abren renombrar, duplicar y borrar. Renombrar no toca el id, porque lo usan las
   claves del inventario. Duplicar se lleva también las piezas y queda registrado como copia.

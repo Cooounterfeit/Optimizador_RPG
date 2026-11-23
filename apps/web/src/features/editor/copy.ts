@@ -19,12 +19,42 @@ export const editorCopy = {
     failed: 'Could not create the optimizer.',
     draftNote: 'It is saved in this browser only. Publishing it comes later.',
   },
+  /**
+   * Guardar en la cuenta.
+   *
+   * Dos guardados distintos conviven en esta pantalla y la copia tiene que
+   * dejarlos claros, porque confundirlos hace perder trabajo: el del navegador
+   * es automatico y privado, y el de la cuenta es a boton y puede ser publico.
+   */
+  save: {
+    heading: 'This optimizer',
+    first: 'Save to my account',
+    again: 'Save changes',
+    saving: 'Saving…',
+    signIn: 'Sign in to save',
+    signInWhy:
+      'Saving needs an account, so the optimizer stays yours: only you and the admins can change or delete it.',
+    unavailable: 'This install has no accounts set up, so there is nowhere to save.',
+    whatTravels:
+      'Only the optimizer travels: the attributes, the formulas and the rules. Your items stay in this browser, and you import them by JSON or add them by hand.',
+    visibility: 'Who can see it',
+    privateLabel: 'Only me',
+    privateNote: 'It stays in your account and nobody else can open it.',
+    sharedLabel: 'The community',
+    sharedNote: 'It shows up in the catalog. Anyone can open it, and only you and the admins can change it.',
+    confirm: 'Save',
+    cancel: 'Cancel',
+    savedPrivate: 'Saved in your account, visible only to you.',
+    savedShared: 'Saved and shared with the community.',
+    change: 'Change',
+    failed: 'It could not be saved.',
+  },
   config: {
     created: 'Optimizer created. Now you can configure it.',
     eyebrow: 'Configuration',
     lede: 'Everything this optimizer is made of, and what the engine says about it.',
     autosave:
-      'There is no save button: every change is written as you make it, and it stays in this browser. Publishing it for other people comes later.',
+      'Changes are written as you make them and stay in this browser. Saving to your account is a separate step, and it is the button above.',
     stateTitle: 'State of the template',
     ready: 'This template has everything the solver needs. It can run.',
     notReady: 'The solver cannot run yet. These parts are still empty:',

@@ -1,6 +1,8 @@
 import type { GameRepository, InventoryRepository } from '@zenith/data-access';
 import type { GameTemplate, Item } from '@zenith/shared-types';
 
+import type { OptimizerRepository } from '../optimizer/optimizer-repository';
+
 /**
  * Dobles de repositorio para las pruebas
  * ======================================
@@ -65,4 +67,23 @@ export function fakeGameRepository(
     clearLocalData: async () => undefined,
   } as unknown as GameRepository;
   return { repo, saved };
+}
+
+/**
+ * Optimizadores remotos en memoria.
+ *
+ * Casi todas las pruebas solo necesitan `getOptimizer`, pero el puerto tambien
+ * escribe desde que se puede guardar en la cuenta. El doble completo deja que
+ * cada prueba sobreescriba solo lo que le importa, en vez de repetir los
+ * metodos que no usa.
+ */
+export function fakeOptimizerRepository(
+  partial: Partial<OptimizerRepository> = {},
+): OptimizerRepository {
+  return {
+    getOptimizer: async () => undefined,
+    createOptimizer: async () => 'uuid-de-prueba',
+    updateOptimizer: async () => undefined,
+    ...partial,
+  };
 }

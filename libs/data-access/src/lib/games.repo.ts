@@ -27,6 +27,8 @@ const parseTemplate = (input: GameInput): GameRow => {
     forkedFrom: input.forkedFrom,
     cloud: input.cloud,
     syncedAt: input.syncedAt,
+    remoteId: input.remoteId,
+    shared: input.shared,
   };
 };
 
@@ -60,6 +62,11 @@ export function createGameRepository(database: ZenithDatabase = db): GameReposit
           forkedFrom: row.forkedFrom ?? previous?.forkedFrom,
           cloud: row.cloud ?? previous?.cloud,
           syncedAt: row.syncedAt ?? previous?.syncedAt,
+          // `??` y no `||`: una vez guardado en la cuenta, un guardado que no
+          // mencione el vinculo no lo pierde, pero pasar `shared: false`
+          // expresamente si lo cambia a privado.
+          remoteId: row.remoteId ?? previous?.remoteId,
+          shared: row.shared ?? previous?.shared,
         };
         await table.put(merged);
         changes.emit(merged.id);

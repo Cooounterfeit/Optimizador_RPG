@@ -11,6 +11,7 @@ import {
 } from '../optimizer/optimizer-repository';
 import { findBuiltinGame } from './builtin-games';
 import { setGameRepository } from './repositories';
+import { fakeOptimizerRepository } from './testing';
 import { useGame } from './useGame';
 
 vi.mock('./builtin-games', () => ({
@@ -91,7 +92,7 @@ afterEach(() => {
 describe('useGame', () => {
   it('lee la plantilla de Supabase y la cachea por gameId', async () => {
     const getOptimizer = vi.fn(async () => record());
-    setOptimizerRepository({ getOptimizer });
+    setOptimizerRepository(fakeOptimizerRepository({ getOptimizer }));
     const gameRepo = games();
     setGameRepository(gameRepo.repository);
 
@@ -108,7 +109,7 @@ describe('useGame', () => {
 
   it('va directo al juego integrado cuando el id no es un uuid', async () => {
     const getOptimizer = vi.fn(async () => record());
-    setOptimizerRepository({ getOptimizer });
+    setOptimizerRepository(fakeOptimizerRepository({ getOptimizer }));
     const gameRepo = games();
     setGameRepository(gameRepo.repository);
     vi.mocked(findBuiltinGame).mockReturnValue(builtin());
@@ -123,7 +124,7 @@ describe('useGame', () => {
   });
 
   it('da error cuando no existe ni en Supabase ni como juego integrado', async () => {
-    setOptimizerRepository({ getOptimizer: async () => undefined });
+    setOptimizerRepository(fakeOptimizerRepository({ getOptimizer: async () => undefined }));
     setGameRepository(games().repository);
     vi.mocked(findBuiltinGame).mockReturnValue(undefined);
 

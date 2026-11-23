@@ -9,6 +9,7 @@ import {
   defaultOptimizerRepository,
   setOptimizerRepository,
 } from '../optimizer/optimizer-repository';
+import { fakeOptimizerRepository } from '../game/testing';
 import { renderWorkspace } from '../optimizer/workspace/testing';
 
 const template: GameTemplate = {
@@ -112,17 +113,19 @@ const setup = (seed: Item[] = []) => {
   const inventory = memoryInventory(seed);
   setGameRepository(noopGames);
   setInventoryRepository(inventory.repository);
-  setOptimizerRepository({
-    getOptimizer: async () => ({
-      id: OPTIMIZER_ID,
-      name: 'Astral Forge optimizer',
-      gameName: 'Astral Forge',
-      description: '',
-      template,
-      sampleItems: [],
-      published: true,
+  setOptimizerRepository(
+    fakeOptimizerRepository({
+      getOptimizer: async () => ({
+        id: OPTIMIZER_ID,
+        name: 'Astral Forge optimizer',
+        gameName: 'Astral Forge',
+        description: '',
+        template,
+        sampleItems: [],
+        published: true,
+      }),
     }),
-  });
+  );
   return inventory;
 };
 

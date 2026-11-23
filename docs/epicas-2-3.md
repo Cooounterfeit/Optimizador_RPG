@@ -42,7 +42,12 @@ sin una pantalla que muestre el estado de la plantilla no había dónde colgar e
 | `b5d69a2` | CFG-02. Búsqueda, orden y estado de uso |
 | `6934864` | Esta bitácora y las entradas de changelog que faltaban |
 | `40cbc0e` | CFG-03. Editar en la fila, con aviso al cambiar la acumulación |
-| (este) | CFG-04. Borrar con cascada hasta punto fijo |
+| `bd4b437` | CFG-04. Borrar con cascada hasta punto fijo |
+| `4ef30a6` | El modelo de propiedad, escrito para la épica 2 |
+| `4b8aefa` | Listar los borradores locales en la portada |
+| `72c4f74` | Borrarlos, con la cuenta de piezas que se van con ellos |
+| `3516e0b` | El menú de los tres puntos: renombrar, duplicar, borrar |
+| (este) | Guardar el optimizador en la cuenta, privado o comunitario |
 
 ### Tres hallazgos que no se buscaban
 
@@ -129,6 +134,35 @@ Tres, y cada uno tiene miembros reales:
 
 El motivo es el mismo en los tres: las historias que quedan añaden una entrada cada una en
 vez de pelearse por el mismo bloque de condiciones.
+
+### Dos guardados que no son lo mismo
+
+El sistema guarda en dos sitios y confundirlos cuesta trabajo perdido, así que la pantalla
+lo dice con palabras:
+
+El **del navegador** es automático. Cada edición escribe en IndexedDB, no pide cuenta y no
+sale de la máquina. Es lo que hace que cerrar la pestaña a media edición no cueste nada.
+
+El **de la cuenta** es a botón. Sube la plantilla a Supabase bajo el `author_id` de quien
+tiene la sesión, y por eso exige sesión: la política RLS cuelga de `auth.uid()`, y sin ella
+el insert no tiene dueño a quien pertenecer. Sin sesión el botón no intenta guardar y
+fallar: lleva a iniciar sesión y vuelve a donde estaba.
+
+Lo que sube es la plantilla, es decir las estadísticas, las fórmulas y las reglas. **Los
+objetos del jugador no viajan.** No es una limitación sino el reparto del sistema: la
+matemática la construye el autor y la data de cada partida la pone cada uno, importándola
+por JSON o escribiéndola a mano. El tipo `OptimizerDraft` no tiene por dónde recibir el
+inventario, que es la única garantía de verdad de que no se filtre por descuido; una prueba
+lo comprueba con un `@ts-expect-error`.
+
+El vínculo entre el borrador local y su fila remota se guarda en la fila local
+(`remoteId`). Sin él, cada clic insertaría un optimizador nuevo: el id local es un slug y
+el remoto un uuid, y no hay forma de reconocer que son el mismo. Se escribe DESPUÉS de que
+la nube confirme, porque al contrario un fallo de red dejaría un `remoteId` que no existe y
+el guardado siguiente intentaría actualizar una fila fantasma.
+
+Quién lo ve lo decide el autor, no el sistema: un optimizador a medio hacer en el catálogo
+es tan malo como uno terminado que nadie encuentra.
 
 ### El modelo de propiedad
 
@@ -245,6 +279,11 @@ editable. Faltan ranuras, objetivos y personajes, que no estaban en estas histor
 
 Lo siguiente es la épica 2, el hub.
 
+**Pendiente de aplicar:** la migración `20261123000001_nombre_de_cien.sql` sube el nombre
+del optimizador de 80 a 100 caracteres en la base. Hasta que corra contra la base
+hospedada, un nombre de más de 80 se guarda en el navegador y falla al subirlo a la cuenta,
+y el error de Postgres sale debajo del botón.
+
 Fuera de la épica, anotado para cuando toque: mover `app/OptimizerPage.tsx` a
 `features/optimizer/`, porque importa doce cosas de `features/` y cero de `app/`, y el
 editor de fórmulas por bloques, cuyo modelo de datos ya existe (`FormulaNode` en
@@ -258,7 +297,7 @@ en los siete proyectos, más `check:genres`.
 
 | Métrica | Valor |
 |---|---|
-| Pruebas en `apps/web` | 322 |
+| Pruebas en `apps/web` | 386 |
 | Pruebas en `libs/core-engine` | 189 |
 | Cobertura sobre código nuevo | 94.5 % |
 
