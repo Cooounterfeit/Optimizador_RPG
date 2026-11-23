@@ -258,7 +258,7 @@ en los siete proyectos, más `check:genres`.
 
 | Métrica | Valor |
 |---|---|
-| Pruebas en `apps/web` | 311 |
+| Pruebas en `apps/web` | 315 |
 | Pruebas en `libs/core-engine` | 189 |
 | Cobertura sobre código nuevo | 94.5 % |
 

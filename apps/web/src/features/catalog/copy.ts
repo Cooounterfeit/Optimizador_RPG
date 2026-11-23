@@ -2,6 +2,14 @@ export const copy = {
   drafts: {
     title: 'Your drafts',
     note: 'In this browser only',
+    delete: 'Delete',
+    cancel: 'Cancel',
+    deleteAsk: 'Delete {name}?',
+    deleteWithItems:
+      'This also deletes the {n} items you added for it, along with the gear you had equipped and your level history. It cannot be undone.',
+    deleteNoItems: 'It has no items yet. This cannot be undone.',
+    deleteConfirm: 'Delete everything',
+    deleteFailed: 'Could not delete the draft.',
   },
   brand: 'Zenith',
   brandSub: 'Optimizer',

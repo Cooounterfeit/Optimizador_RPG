@@ -1,12 +1,17 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { GameRepository } from '@zenith/data-access';
-import type { GameTemplate } from '@zenith/shared-types';
+import type { GameTemplate, Item } from '@zenith/shared-types';
 
 import { buildSkeleton } from '../editor/skeleton';
-import { getGameRepository, setGameRepository } from '../game/repositories';
+import {
+  getGameRepository,
+  setGameRepository,
+  setInventoryRepository,
+} from '../game/repositories';
+import { fakeInventoryRepository } from '../game/testing';
 
 import { DraftsRail } from './components/DraftsRail';
 import { useDrafts } from './useDrafts';
@@ -20,14 +25,25 @@ interface Fila {
   cloud?: boolean;
 }
 
-const repoCon = (filas: Fila[]) =>
+/** Lo que se pidio borrar, para comprobar que se borran las dos cosas. */
+let borrados: { remove: string[]; clear: string[] };
+
+const repoCon = (filas: Fila[]) => {
+  borrados = { remove: [], clear: [] };
   setGameRepository({
     list: async () => filas,
     get: async (id: string) => filas.find((f) => f.id === id),
     save: async (game: unknown) => game,
-    remove: async () => undefined,
-    clearLocalData: async () => undefined,
+    remove: async (id: string) => {
+      borrados.remove.push(id);
+    },
+    clearLocalData: async (id: string) => {
+      borrados.clear.push(id);
+    },
   } as unknown as GameRepository);
+};
+
+const conPiezas = (items: Item[]) => setInventoryRepository(fakeInventoryRepository(items));
 
 const juego = (id: string, name: string, cloud?: boolean): Fila => ({
   id,
@@ -49,6 +65,7 @@ function Sonda() {
 
 beforeEach(() => {
   repoCon([]);
+  conPiezas([]);
 });
 
 afterEach(() => {
@@ -100,5 +117,60 @@ describe('useDrafts', () => {
 
     await waitFor(() => expect(screen.queryByText('cargando')).toBeNull());
     expect(screen.queryByText('Your drafts')).toBeNull();
+  });
+});
+
+describe('borrar un borrador', () => {
+  const pieza = (id: string): Item => ({
+    id,
+    slot: 'arma',
+    setId: null,
+    name: `Pieza ${id}`,
+    stats: {},
+  });
+
+  it('pregunta antes, diciendo cuantas piezas se lleva por delante', async () => {
+    repoCon([juego('mi-juego', 'Mi juego')]);
+    conPiezas([pieza('a'), pieza('b'), pieza('c')]);
+    render(<Sonda />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete Mi juego' }));
+
+    expect(await screen.findByText('Delete Mi juego?')).toBeTruthy();
+    expect(screen.getByText(/deletes the 3 items/i)).toBeTruthy();
+    expect(borrados.remove).toEqual([]);
+  });
+
+  it('lo dice distinto cuando todavia no hay piezas', async () => {
+    repoCon([juego('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete Mi juego' }));
+
+    expect(await screen.findByText(/no items yet/i)).toBeTruthy();
+  });
+
+  it('al confirmar borra la ficha Y los datos del juego', async () => {
+    repoCon([juego('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete Mi juego' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete everything' }));
+
+    // Las dos: `remove` sola dejaria el inventario huerfano para siempre.
+    await waitFor(() => expect(borrados.remove).toEqual(['mi-juego']));
+    expect(borrados.clear).toEqual(['mi-juego']);
+  });
+
+  it('cancelar no borra nada', async () => {
+    repoCon([juego('mi-juego', 'Mi juego')]);
+    render(<Sonda />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete Mi juego' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() => expect(screen.queryByText('Delete Mi juego?')).toBeNull());
+    expect(borrados.remove).toEqual([]);
+    expect(borrados.clear).toEqual([]);
   });
 });

@@ -50,6 +50,10 @@ Quien cierra el sprint la mueve a la versión correspondiente.
   ids duplicados pero no su forma, y el tokenizador lee `ataque-critico` como una resta.
   Ahora se rechaza al validar, venga del formulario, de un paquete importado o de una
   plantilla escrita a mano.
+- **Tampoco había forma de borrarlos.** `remove` y `clearLocalData` existían en el
+  repositorio y no los llamaba nadie, así que los borradores solo se acumulaban. Ahora se
+  borran desde la portada, y la confirmación dice cuántas piezas del inventario se lleva
+  por delante, porque no hay deshacer.
 - **No había forma de volver a un borrador.** Nada en la interfaz listaba los
   optimizadores creados en este navegador: se entraba al crearlo y al volver al menú
   desaparecía de la vista, aunque siguiera guardado. La portada ahora los lista, y
