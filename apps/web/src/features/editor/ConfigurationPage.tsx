@@ -10,7 +10,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { useOptimizerWorkspace } from '../optimizer/workspace/OptimizerWorkspaceProvider';
 
-import { BLOCK_EDITORS } from './block-editors';
+import { BlockSection } from './BlockSection';
 import { CONFIG_BLOCKS, missingRequired } from './blocks';
 import { editorCopy } from './copy';
 
@@ -254,74 +254,9 @@ export function ConfigurationPage() {
       </section>
 
       {/* Las partes, en el orden del registro. */}
-      {CONFIG_BLOCKS.map((block) => {
-        const entries = block.entries(template);
-        const Editor = BLOCK_EDITORS[block.id];
-        return (
-          <section
-            key={block.id}
-            className="mb-8"
-            aria-labelledby={`block-${block.id}`}
-          >
-            <div className="mb-3 flex flex-wrap items-baseline gap-3 border-b border-border pb-2">
-              <h2
-                id={`block-${block.id}`}
-                className="text-base font-bold tracking-[-0.02em]"
-              >
-                {block.label}
-              </h2>
-              <span className="font-mono text-[10px] text-muted-foreground">
-                {entries.length}
-              </span>
-              {block.required ? (
-                <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground">
-                  {editorCopy.config.required}
-                </span>
-              ) : null}
-            </div>
-            <p className="mb-3 text-[13px] text-muted-foreground">
-              {block.hint}
-            </p>
-
-            {entries.length === 0 ? (
-              <p className="border border-dashed border-border-strong px-4 py-6 text-center text-[13px] text-muted-foreground">
-                {editorCopy.config.empty}
-              </p>
-            ) : (
-              <ul className="divide-y divide-border border-y border-border">
-                {entries.map((entry) => (
-                  <li
-                    key={entry.id}
-                    className="flex flex-wrap gap-x-4 gap-y-1 px-1 py-2.5"
-                  >
-                    <span className="min-w-[160px] text-sm font-medium">
-                      {entry.name}
-                    </span>
-                    <span className="font-mono text-[11px] text-muted-foreground">
-                      {entry.id}
-                    </span>
-                    {entry.detail ? (
-                      <span className="font-mono text-[11px] text-muted-foreground">
-                        {entry.detail}
-                      </span>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {/* Un bloque solo se edita si tiene editor Y si lo guardado se va a
-                poder volver a leer. Un optimizador del catalogo no cumple lo
-                segundo, y ofrecer un boton que no persiste seria mentir. */}
-            {Editor && editable ? <Editor /> : null}
-            {Editor && !editable ? (
-              <p className="mt-3 text-[12px] text-muted-foreground">
-                {editorCopy.config.readOnly}
-              </p>
-            ) : null}
-          </section>
-        );
-      })}
+      {CONFIG_BLOCKS.map((block) => (
+        <BlockSection key={block.id} block={block} template={template} editable={editable} />
+      ))}
     </div>
   );
 }

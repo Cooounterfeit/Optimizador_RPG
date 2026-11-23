@@ -1,3 +1,4 @@
+import { statReferences } from '@zenith/core-engine';
 import type { GameTemplate } from '@zenith/shared-types';
 
 /**
@@ -23,6 +24,14 @@ export interface BlockEntry {
   id: string;
   /** Una linea con lo que distingue a este elemento de sus hermanos. */
   detail: string;
+  /**
+   * Si algo mas de la plantilla depende de este elemento. Solo lo calculan los
+   * bloques que pueden borrarse, porque es la pregunta que hay que responder
+   * antes de ofrecer un boton de eliminar.
+   *
+   * `undefined` significa que este bloque no lo calcula, no que no se use.
+   */
+  usedIn?: number;
 }
 
 export interface ConfigBlock {
@@ -33,6 +42,14 @@ export interface ConfigBlock {
   hint: string;
   /** Sin esto el optimizador no puede buscar. */
   required: boolean;
+  /**
+   * Si la lista se puede buscar y ordenar. Se declara aqui, como dato, para
+   * que la pagina no tenga que saber de que bloque se trata: cuando otro
+   * bloque crezca lo suficiente, es cambiar un booleano.
+   */
+  searchable?: boolean;
+  /** Que decir cuando no hay nada. Sin esto se usa el texto generico. */
+  empty?: string;
   entries: (template: GameTemplate) => BlockEntry[];
 }
 
@@ -46,10 +63,16 @@ export const CONFIG_BLOCKS: ConfigBlock[] = [
     label: 'Stats',
     hint: 'The numbers a piece of gear can carry.',
     required: true,
+    searchable: true,
+    empty: 'You have not created any attributes yet. Create the first one.',
     entries: (t) =>
       t.stats.map((stat) => ({
         name: stat.name,
         id: stat.id,
+        // Sin inventario a proposito: la pregunta del criterio es si la usan
+        // las formulas y las restricciones de la PLANTILLA. Contar las piezas
+        // diria "en uso" de casi todo y no ayudaria a decidir nada.
+        usedIn: statReferences(t, stat.id).refs.length,
         detail: [
           stat.unit === 'percent' ? 'percent' : 'flat',
           stat.aggregate === 'multiply' ? 'multiplies' : 'adds up',
