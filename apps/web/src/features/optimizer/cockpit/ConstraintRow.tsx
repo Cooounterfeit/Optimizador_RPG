@@ -10,13 +10,8 @@ interface ConstraintRowProps {
   constraint: Constraint;
   /** Posicion en la lista; solo se usa para ids estables de los radios. */
   index: number;
-  /**
-   * `chip` es la version de la barra: el stat no se elige y no se borra.
-   * `row` es la version de la hoja: stat, valor y borrar.
-   */
-  variant: 'chip' | 'row';
   onChange: (patch: Partial<Constraint>) => void;
-  onRemove?: () => void;
+  onRemove: () => void;
   /** Durante una busqueda no se editan las condiciones. */
   disabled?: boolean;
 }
@@ -25,12 +20,14 @@ interface ConstraintRowProps {
  * Una condicion del objetivo. La direccion es un par de radios reales (`≥`/`≤`)
  * en vez de un icono: en una fila de 28 px un glifo se lee como un control roto.
  * Al cambiar de direccion el valor se mueve con el, igual que antes en el editor.
+ *
+ * La misma fila se usa en la barra y en la hoja: el contenedor decide si
+ * scrollea en horizontal.
  */
 export function ConstraintRow({
   template,
   constraint,
   index,
-  variant,
   onChange,
   onRemove,
   disabled = false,
@@ -40,16 +37,12 @@ export function ConstraintRow({
   const stat = template.stats.find((entry) => entry.id === constraint.statId);
   const isMax = constraint.max !== undefined;
   const value = (isMax ? constraint.max : constraint.min) ?? 0;
-  const unit =
-    stat?.aggregate === 'multiply' ? '×' : stat?.unit === 'percent' ? '%' : '';
+  const unit = stat?.aggregate === 'multiply' ? '×' : stat?.unit === 'percent' ? '%' : '';
+  const [draft, setDraft] = useState<string | null>(null);
 
   const setDirection = (kind: 'min' | 'max') => {
     if ((kind === 'max') === isMax) return;
-    onChange(
-      kind === 'max'
-        ? { min: undefined, max: value }
-        : { max: undefined, min: value },
-    );
+    onChange(kind === 'max' ? { min: undefined, max: value } : { max: undefined, min: value });
   };
 
   const commit = (raw: string) => {
@@ -57,8 +50,6 @@ export function ConstraintRow({
     if (!Number.isFinite(next)) return;
     onChange(isMax ? { max: next } : { min: next });
   };
-
-  const [draft, setDraft] = useState<string | null>(null);
 
   const direction = (
     <span
@@ -111,70 +102,69 @@ export function ConstraintRow({
     </span>
   );
 
-  const valueInput = (className: string, label: string) => (
-    <input
-      type="text"
-      inputMode="decimal"
-      aria-label={label}
-      disabled={disabled}
-      className={cn(
-        'bg-transparent text-end font-mono text-[11.5px] text-foreground outline-none',
-        className,
-      )}
-      value={draft ?? String(value)}
-      onFocus={(event) => {
-        setDraft(String(value));
-        event.currentTarget.select();
-      }}
-      onChange={(event) => {
-        const next = event.target.value;
-        if (!/^-?\d*[.,]?\d*$/.test(next)) return;
-        setDraft(next);
-        if (next === '' || next === '-' || next === '.' || next === ',') return;
-        commit(next);
-      }}
-      onBlur={() => setDraft(null)}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') event.currentTarget.blur();
-        if (event.key === 'Escape') {
-          setDraft(null);
-          event.currentTarget.blur();
-        }
-      }}
-    />
-  );
-
-  if (variant === 'chip') {
-    return (
-      <span className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-[2px] border border-line bg-background pl-2 pr-1.5 font-mono text-[11.5px]">
-        <span className="whitespace-nowrap text-[9.5px] uppercase tracking-[0.05em] text-foreground">
-          {stat?.name ?? constraint.statId}
-        </span>
-        {direction}
-        {valueInput('w-[46px]', `${stat?.name ?? constraint.statId} ${gameCopy.cockpit.constraintValue}`)}
-        {unit ? <span className="text-muted-foreground">{unit}</span> : null}
-      </span>
-    );
-  }
-
   return (
-    <div className="grid w-[246px] shrink-0 grid-cols-[minmax(0,104px)_40px_44px_auto_16px] items-center gap-1.5 rounded-[2px] border border-line bg-background px-2">
-      <select
-        aria-label={gameCopy.cockpit.constraintStat}
-        disabled={disabled}
-        className="min-w-0 bg-transparent pr-0.5 text-[11.5px] font-medium text-foreground outline-none"
-        value={constraint.statId}
-        onChange={(event) => onChange({ statId: event.target.value })}
-      >
-        {template.constrainableStats.map((statId) => (
-          <option key={statId} value={statId}>
-            {template.stats.find((entry) => entry.id === statId)?.name ?? statId}
-          </option>
-        ))}
-      </select>
+    <div
+      data-constraint-row
+      className="grid h-7 w-auto shrink-0 grid-cols-[auto_32px_40px_auto_14px] items-center gap-1.5 rounded-[2px] border border-line bg-background px-2"
+    >
+      <span className="relative flex min-w-0 items-center">
+        <select
+          aria-label={gameCopy.cockpit.constraintStat}
+          disabled={disabled}
+          className="h-5 min-w-0 appearance-none bg-transparent pr-3.5 text-[11.5px] font-medium text-foreground outline-none"
+          value={constraint.statId}
+          onChange={(event) => onChange({ statId: event.target.value })}
+        >
+          {template.constrainableStats.map((statId) => (
+            <option key={statId} value={statId}>
+              {template.stats.find((entry) => entry.id === statId)?.name ?? statId}
+            </option>
+          ))}
+        </select>
+        <svg
+          width="9"
+          height="9"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.9"
+          aria-hidden="true"
+          className="pointer-events-none absolute right-0 text-muted-foreground"
+        >
+          <path d="M5 8l5 5 5-5" />
+        </svg>
+      </span>
 
       {direction}
-      {valueInput('w-full', gameCopy.cockpit.constraintValue)}
+
+      <input
+        type="text"
+        inputMode="decimal"
+        aria-label={gameCopy.cockpit.constraintValue}
+        disabled={disabled}
+        className="w-full bg-transparent text-end font-mono text-[11.5px] text-foreground outline-none"
+        value={draft ?? String(value)}
+        onFocus={(event) => {
+          setDraft(String(value));
+          event.currentTarget.select();
+        }}
+        onChange={(event) => {
+          const next = event.target.value;
+          if (!/^-?\d*[.,]?\d*$/.test(next)) return;
+          setDraft(next);
+          if (next === '' || next === '-' || next === '.' || next === ',') return;
+          commit(next);
+        }}
+        onBlur={() => setDraft(null)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') event.currentTarget.blur();
+          if (event.key === 'Escape') {
+            setDraft(null);
+            event.currentTarget.blur();
+          }
+        }}
+      />
+
       <span className="font-mono text-[10.5px] text-muted-foreground">{unit}</span>
 
       <button

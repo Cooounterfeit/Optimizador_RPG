@@ -1,5 +1,11 @@
 import type { Constraint, GameTemplate } from '@zenith/shared-types';
 
+/** Condicion nueva con el primer stat restringible y valor 0. */
+export const defaultConstraint = (template: GameTemplate): Constraint => ({
+  statId: template.constrainableStats[0] ?? '',
+  min: 0,
+});
+
 /** Una condicion de la corrida, contrastada con las stats finales de una build. */
 export interface ConditionResult {
   statId: string;

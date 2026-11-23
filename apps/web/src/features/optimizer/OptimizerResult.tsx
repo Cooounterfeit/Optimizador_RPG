@@ -10,7 +10,7 @@ import type {
 } from '@zenith/shared-types';
 
 import { gameCopy } from '../game/copy';
-import { BuildComparison } from './BuildComparison';
+import { CompareBar } from './cockpit/CompareBar';
 import { BuildRow } from './BuildRow';
 import { SearchSummary } from './cockpit/SearchSummary';
 import { formatCount } from './search-summary';
@@ -209,8 +209,14 @@ export function OptimizerResult({
         })}
       </ul>
 
-      {result && result.builds.length > 1 ? (
-        <BuildComparison template={template} objective={objective} builds={result.builds} />
+      {result ? (
+        <CompareBar
+          template={template}
+          objective={objective}
+          builds={result.builds}
+          items={items}
+          equipped={equipped}
+        />
       ) : null}
 
       {result ? (

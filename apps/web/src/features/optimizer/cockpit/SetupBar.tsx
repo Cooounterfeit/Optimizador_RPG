@@ -7,7 +7,7 @@ import { gameCopy } from '../../game/copy';
 import { characterIconUrls } from '../../../lib/images';
 import { ItemGlyph } from '../../inventory/ItemGlyph';
 import type { SkillPoints } from '../skill-points';
-import { ConstraintRow } from './ConstraintRow';
+import { ConstraintEditor } from '../ConstraintEditor';
 
 interface SetupBarProps {
   id: string;
@@ -28,7 +28,6 @@ interface SetupBarProps {
   onStop: () => void;
   sheetOpen: boolean;
   onToggleSheet: () => void;
-  onOpenSheet: (block: 'character' | 'constraints') => void;
 }
 
 const numberInput =
@@ -62,19 +61,12 @@ export function SetupBar({
   onStop,
   sheetOpen,
   onToggleSheet,
-  onOpenSheet,
 }: SetupBarProps) {
   const objective =
     template.objectives.find((entry) => entry.id === objectiveId) ?? template.objectives[0];
   const levelKey = template.leveling?.levelKey;
   const level = levelKey && profile ? profile.base[levelKey] : undefined;
   const maxLevel = template.leveling?.max;
-
-  const updateConstraint = (index: number, patch: Partial<Constraint>) => {
-    onConstraints(
-      constraints.map((constraint, i) => (i === index ? { ...constraint, ...patch } : constraint)),
-    );
-  };
 
   return (
     <div className="sticky top-16 z-30 -mx-4 bg-background px-4 pt-1">
@@ -135,43 +127,14 @@ export function SetupBar({
           )}
         </div>
 
-        <div className="flex min-w-0 grow basis-[220px] flex-col gap-1">
+        <div className="flex min-w-0 grow basis-[240px] flex-col gap-1">
           <span className="label-caps">{gameCopy.cockpit.constraints}</span>
-          <span className="flex min-w-0 items-center gap-1.5">
-            <span className="flex min-w-0 items-center gap-1.5 overflow-x-auto pb-0.5">
-              {constraints.map((constraint, index) => (
-                <ConstraintRow
-                  key={`${constraint.statId}-${index}`}
-                  template={template}
-                  constraint={constraint}
-                  index={index}
-                  variant="chip"
-                  disabled={running}
-                  onChange={(patch) => updateConstraint(index, patch)}
-                />
-              ))}
-            </span>
-            <button
-              type="button"
-              onClick={() => onOpenSheet('constraints')}
-              aria-label={gameCopy.cockpit.addCondition}
-              title={gameCopy.cockpit.addCondition}
-              className="inline-flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-[2px] border border-dashed border-line-strong px-2 text-[11.5px] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-            >
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.9"
-                aria-hidden="true"
-              >
-                <path d="M10 4v12M4 10h12" />
-              </svg>
-              {constraints.length === 0 ? gameCopy.cockpit.addCondition : null}
-            </button>
-          </span>
+          <ConstraintEditor
+            template={template}
+            constraints={constraints}
+            onChange={onConstraints}
+            addLabel={gameCopy.cockpit.addCondition}
+          />
         </div>
 
         {skills ? (

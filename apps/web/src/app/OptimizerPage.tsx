@@ -271,7 +271,6 @@ export function OptimizerPage() {
           setFocusBlock(null);
           setSheetOpen((current) => !current);
         }}
-        onOpenSheet={openSheet}
       />
 
       <SetupSheet

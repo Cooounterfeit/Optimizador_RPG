@@ -267,7 +267,6 @@ export function SetupSheet({
                   template={template}
                   constraints={constraints}
                   onChange={onConstraints}
-                  full
                 />
               </div>
             </div>

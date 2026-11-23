@@ -67,13 +67,43 @@ test('calcula la mejor build con el inventario del juego sintético', async ({ p
   await expect(page.getByLabel('Build A')).toBeVisible();
   await expect(page.getByLabel('Build B')).toBeVisible();
 
+  // La comparacion es una barra plegada: al abrirla suma equipamiento y stats.
+  await expect(page.getByText('Equipment', { exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Compare builds' }).click();
+  await expect(page.getByText('Equipment', { exact: true })).toBeVisible();
+  await expect(page.getByText(/pieces? differ/).first()).toBeVisible();
+
   // Correr cierra la hoja: se vuelve a abrir para editar las condiciones.
   await openSetup(page);
   await page.getByRole('button', { name: 'Add constraint' }).click();
-  await page.getByLabel('Value', { exact: true }).fill('999999');
+  await page.locator('#setup-sheet').getByLabel('Value', { exact: true }).fill('999999');
   await runSearch(page).click();
   await expect(page.getByText('No feasible build')).toBeVisible({ timeout: 20_000 });
   await expect(page.getByRole('button', { name: 'Run without constraints' })).toBeVisible();
+});
+
+test('crea y edita una condicion desde la barra', async ({ page }) => {
+  await page.goto('/optimizer/gacha-demo/optimize');
+  await loadSamples(page);
+
+  const values = page.getByLabel('Value', { exact: true });
+  await expect(values).toHaveCount(0);
+
+  const add = page.getByRole('button', { name: 'Add condition' });
+  await add.click();
+  await add.click();
+  await expect(values).toHaveCount(2);
+
+  // La regla ≥/≤ tambien se cambia desde la barra.
+  await page.getByTitle('Maximum').first().click();
+  await expect(page.getByRole('radio', { name: 'Maximum' }).first()).toBeChecked();
+
+  // El valor se escribe, no se sube de a uno.
+  await values.first().fill('1000');
+  await expect(values.first()).toHaveValue('1000');
+
+  await runSearch(page).click();
+  await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
 });
 
 test('carga el inventario de muestra y optimiza sin agregar objetos a mano', async ({ page }) => {
