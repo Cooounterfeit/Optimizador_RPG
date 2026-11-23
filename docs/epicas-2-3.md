@@ -130,6 +130,41 @@ Tres, y cada uno tiene miembros reales:
 El motivo es el mismo en los tres: las historias que quedan añaden una entrada cada una en
 vez de pelearse por el mismo bloque de condiciones.
 
+### El modelo de propiedad
+
+Decidido por el equipo y ya implementado en la base de datos desde la migración
+inicial. La épica 2 no lo inventa: lo expone.
+
+| Regla | Dónde vive hoy |
+|---|---|
+| Los borradores viven en este navegador | IndexedDB, vía `games.repo` y `localSource` |
+| Lo que sube a la base es la configuración del optimizador | `optimizers.template` |
+| El autor decide si es comunitario | `optimizers.published`, en el `grant update` |
+| Ese interruptor lo mueven el autor y los administradores | `optimizers_update`, con `is_admin()` |
+| Nadie más puede borrarlo | `optimizers_delete` |
+| Editar algo ajeno produce una copia | `forked_from`, en el `grant insert` |
+
+Dos detalles que ya estaban bien resueltos y conviene no romper: el `grant update`
+enumera columnas y **`author_id` no está entre ellas**, así que ni el autor puede
+regalar la autoría; y `forked_from` tiene `on delete set null`, así que una copia
+sobrevive al borrado de su original y solo pierde el puntero.
+
+Lo que falta es todo de la aplicación. `apps/web` conoce el tipo
+`role: 'user' | 'admin'` y no lo lee en ningún sitio, y nunca pregunta quién eres
+para decidir si puedes editar.
+
+Eso le da a `editable` su forma definitiva, que hoy es una aproximación local:
+
+1. Borrador local, tuyo. Se edita en el sitio.
+2. Remoto y eres el autor o un administrador. Se edita en el sitio, cuando exista
+   el camino de escritura a Supabase.
+3. Remoto y no eres ninguno de los dos. No se edita: se ofrece copiarlo. La copia
+   nace como borrador local con `forkedFrom` apuntando al original, y puedes
+   publicarla como tuya.
+
+El tercer caso encaja con el resto del producto sin forzar nada: la copia aterriza
+en tu IndexedDB como cualquier otro borrador.
+
 ## Divergencias con los criterios de aceptación
 
 Lo que no se implementó, por historia. Nada de esto es un olvido.
@@ -182,6 +217,11 @@ pero borrarle su único objetivo en silencio sería dejar que se rompa de lado.
 Tres criterios quedaron fuera y los tres dependen de sesión, o sea de la épica 2: asociar
 el optimizador al usuario autenticado, guardar el estado "Configuración incompleta" y que
 aparezca en la lista sin recargar (hoy se navega al editor).
+
+Sobre el primero conviene ser preciso, porque se decidió dos veces. Se construyó local y
+sin cuenta a propósito, y el equipo confirmó después que los borradores locales se quedan:
+lo que exige sesión no es crear, es **publicar**. El optimizador adquiere autor al subirse,
+no al nacer. Así que ese criterio no está incumplido, está repartido entre las dos épicas.
 
 ### Pendientes de acordar con el equipo
 
