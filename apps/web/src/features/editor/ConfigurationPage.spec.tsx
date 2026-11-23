@@ -27,7 +27,14 @@ const informe = {
   ok: true,
   issues: [],
   selfTests: [],
-  summary: { stats: 1, slots: 1, sets: 0, objectives: 1, monotonicOk: 1, profiles: 1 },
+  summary: {
+    stats: 1,
+    slots: 1,
+    sets: 0,
+    objectives: 1,
+    monotonicOk: 1,
+    profiles: 1,
+  },
 };
 
 vi.mock('@zenith/core-engine', async (importOriginal) => ({
@@ -44,7 +51,13 @@ const completa: GameTemplate = {
   stats: [{ id: 'atk', name: 'Attack', unit: 'flat' }],
   slots: [{ id: 'arma', name: 'Weapon' }],
   objectives: [
-    { id: 'dps', name: 'Damage', description: 'More damage.', kind: 'linear', formula: 'atk' },
+    {
+      id: 'dps',
+      name: 'Damage',
+      description: 'More damage.',
+      kind: 'linear',
+      formula: 'atk',
+    },
   ],
   baseProfiles: [{ id: 'base', name: 'Base', base: { atk: 10 } }],
   constrainableStats: ['atk'],
@@ -137,7 +150,12 @@ describe('ConfigurationPage', () => {
   });
 
   it('le pasa el inventario al motor, que es lo que habilita nueve comprobaciones', async () => {
-    const pieza = { id: 'p1', gameId: 'x', slot: 'arma', stats: { atk: 5 } } as unknown as Item;
+    const pieza = {
+      id: 'p1',
+      gameId: 'x',
+      slot: 'arma',
+      stats: { atk: 5 },
+    } as unknown as Item;
     useItems([pieza]);
     mockGame(completa);
     open();
@@ -145,12 +163,17 @@ describe('ConfigurationPage', () => {
     await waitFor(() => expect(vi.mocked(validateTemplate)).toHaveBeenCalled());
     const [, itemsArg] = vi.mocked(validateTemplate).mock.calls.at(-1) ?? [];
     expect(itemsArg).toEqual([pieza]);
-    expect(await screen.findByText(/Checked against the 1 items/i)).toBeTruthy();
+    expect(
+      await screen.findByText(/Checked against the 1 items/i),
+    ).toBeTruthy();
   });
 
   it('felicita una sola vez, y solo si se llego desde el formulario de creacion', async () => {
     mockGame(completa);
-    renderWorkspace({ pathname: '/optimizer/x/configuracion', state: { created: true } });
+    renderWorkspace({
+      pathname: '/optimizer/x/configuracion',
+      state: { created: true },
+    });
 
     expect(await screen.findByText(/Optimizer created/i)).toBeTruthy();
   });

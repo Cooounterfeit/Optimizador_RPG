@@ -4,11 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 // Las tres clases son presentacion generica de formulario, no algo de auth:
 // se importan para no tener dos definiciones del mismo campo que se separen.
-import { errorClass, fieldClass, labelClass } from '../auth/AuthShell';
+import { errorClass, fieldClass, labelClass } from '../../components/ui/form';
 import { getGameRepository } from '../game/repositories';
 
 import { editorCopy } from './copy';
-import { buildSkeleton, nameProblem, slugify, uniqueGameId, type NameProblem } from './skeleton';
+import { nameProblem, type NameProblem } from './name-rules';
+import { buildSkeleton, slugify, uniqueGameId } from './skeleton';
 
 /**
  * Crear un optimizador desde cero (CFG-05)
@@ -48,8 +49,9 @@ export function CreateOptimizerPage() {
    * el campo este vacio no es un error hasta que intenta enviar, y si el nombre
    * ya existe no se sabe sin consultar.
    */
-  const typing = nameProblem(name);
-  const warning = typing === 'badChars' || typing === 'tooLong' ? NAME_MESSAGE[typing] : null;
+  const typing = nameProblem(name, { restrictChars: true });
+  const warning =
+    typing === 'badChars' || typing === 'tooLong' ? NAME_MESSAGE[typing] : null;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,7 +60,7 @@ export function CreateOptimizerPage() {
     const trimmed = name.trim();
 
     // Primero lo que se resuelve sin tocar la base, para no leerla en vano.
-    const offline = nameProblem(trimmed);
+    const offline = nameProblem(trimmed, { restrictChars: true });
     if (offline) {
       setError(NAME_MESSAGE[offline]);
       return;
@@ -72,10 +74,10 @@ export function CreateOptimizerPage() {
       // El nombre repetido es un error que se le cuenta. El id repetido no: se
       // numera en silencio, porque el id no lo eligio el y no lo ve. Los dos
       // hacen falta: dos nombres distintos pueden dar el mismo slug.
-      const repeated = nameProblem(
-        trimmed,
-        rows.map((row) => row.template.name).filter(Boolean),
-      );
+      const repeated = nameProblem(trimmed, {
+        restrictChars: true,
+        taken: rows.map((row) => row.template.name).filter(Boolean),
+      });
       if (repeated) {
         setError(NAME_MESSAGE[repeated]);
         setPending(false);
@@ -86,14 +88,24 @@ export function CreateOptimizerPage() {
         slugify(trimmed),
         rows.map((row) => row.id),
       );
-      const template = buildSkeleton({ name: trimmed, description, category }, gameId);
+      const template = buildSkeleton(
+        { name: trimmed, description, category },
+        gameId,
+      );
 
       await games.save({ id: gameId, template });
       // A configuracion y no al workspace a secas: es lo que le falta hacer, y
       // es donde el aviso de creado tiene sentido.
-      navigate(`/optimizer/${gameId}/configuracion`, { replace: true, state: { created: true } });
+      navigate(`/optimizer/${gameId}/configuracion`, {
+        replace: true,
+        state: { created: true },
+      });
     } catch (cause) {
-      setError(cause instanceof Error && cause.message ? cause.message : editorCopy.create.failed);
+      setError(
+        cause instanceof Error && cause.message
+          ? cause.message
+          : editorCopy.create.failed,
+      );
       setPending(false);
     }
   }
@@ -103,7 +115,9 @@ export function CreateOptimizerPage() {
       <h1 className="mb-2 text-2xl font-extrabold tracking-[-0.03em]">
         {editorCopy.create.title}
       </h1>
-      <p className="mb-8 text-sm text-muted-foreground">{editorCopy.create.lede}</p>
+      <p className="mb-8 text-sm text-muted-foreground">
+        {editorCopy.create.lede}
+      </p>
 
       <form onSubmit={onSubmit} noValidate>
         {error ? (
@@ -125,7 +139,10 @@ export function CreateOptimizerPage() {
           aria-describedby="create-name-hint"
           aria-invalid={warning ? true : undefined}
         />
-        <p id="create-name-hint" className="mt-1.5 text-[12px] text-muted-foreground">
+        <p
+          id="create-name-hint"
+          className="mt-1.5 text-[12px] text-muted-foreground"
+        >
           {warning ? (
             <span className="text-[oklch(0.68_0.15_25)]">{warning}</span>
           ) : (
@@ -145,7 +162,10 @@ export function CreateOptimizerPage() {
           onChange={(event) => setDescription(event.target.value)}
           aria-describedby="create-description-hint"
         />
-        <p id="create-description-hint" className="mt-1.5 text-[12px] text-muted-foreground">
+        <p
+          id="create-description-hint"
+          className="mt-1.5 text-[12px] text-muted-foreground"
+        >
           {editorCopy.create.descriptionHint}
         </p>
 
@@ -161,7 +181,10 @@ export function CreateOptimizerPage() {
           onChange={(event) => setCategory(event.target.value)}
           aria-describedby="create-category-hint"
         />
-        <p id="create-category-hint" className="mt-1.5 text-[12px] text-muted-foreground">
+        <p
+          id="create-category-hint"
+          className="mt-1.5 text-[12px] text-muted-foreground"
+        >
           {editorCopy.create.categoryHint}
         </p>
 
@@ -177,7 +200,9 @@ export function CreateOptimizerPage() {
           </Link>
         </div>
 
-        <p className="mt-6 text-[12px] text-muted-foreground">{editorCopy.create.draftNote}</p>
+        <p className="mt-6 text-[12px] text-muted-foreground">
+          {editorCopy.create.draftNote}
+        </p>
       </form>
     </div>
   );

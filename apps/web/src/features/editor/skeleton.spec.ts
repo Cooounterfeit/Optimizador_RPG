@@ -1,7 +1,7 @@
 import { GameTemplateSchema } from '@zenith/shared-types';
 import { describe, expect, it } from 'vitest';
 
-import { buildSkeleton, nameProblem, slugify, uniqueGameId } from './skeleton';
+import { buildSkeleton, slugify, uniqueGameId } from './skeleton';
 
 describe('slugify', () => {
   it('quita acentos en vez de comerse la letra', () => {
@@ -59,60 +59,20 @@ describe('buildSkeleton', () => {
   });
 
   it('limpia los espacios del nombre y la descripcion', () => {
-    const template = buildSkeleton({ name: '  Mi juego  ', description: '  algo  ' }, 'x');
+    const template = buildSkeleton(
+      { name: '  Mi juego  ', description: '  algo  ' },
+      'x',
+    );
     expect(template.name).toBe('Mi juego');
     expect(template.description).toBe('algo');
   });
 
   it('omite la categoria cuando viene vacia en vez de guardar una cadena sola', () => {
-    expect(buildSkeleton({ name: 'x', category: '   ' }, 'x').category).toBeUndefined();
-    expect(buildSkeleton({ name: 'x', category: 'Souls' }, 'x').category).toBe('Souls');
-  });
-});
-
-describe('nameProblem', () => {
-  it('acepta un nombre corriente', () => {
-    expect(nameProblem('Hollow Knight')).toBeUndefined();
-  });
-
-  it('exige un nombre, y un campo con solo espacios no cuenta', () => {
-    expect(nameProblem('')).toBe('required');
-    expect(nameProblem('   ')).toBe('required');
-  });
-
-  it('corta a los 100 caracteres, no antes', () => {
-    expect(nameProblem('a'.repeat(100))).toBeUndefined();
-    expect(nameProblem('a'.repeat(101))).toBe('tooLong');
-  });
-
-  it('rechaza los caracteres que el criterio no permite', () => {
-    for (const malo of ['Juego@', 'Juego#1', 'Juego!', 'Juego$', 'Juego-2', 'Juego.1']) {
-      expect(nameProblem(malo)).toBe('badChars');
-    }
-  });
-
-  it('admite guion bajo, numeros y espacios, que si estan permitidos', () => {
-    expect(nameProblem('Final Fantasy 7_remake')).toBeUndefined();
-  });
-
-  it('no trata un nombre acentuado o no latino como invalido', () => {
-    expect(nameProblem('Dragón Quest')).toBeUndefined();
-    expect(nameProblem('Pokémon')).toBeUndefined();
-    expect(nameProblem('ドラゴンクエスト')).toBeUndefined();
-  });
-
-  it('delata el nombre repetido sin mirar mayusculas ni espacios al borde', () => {
-    expect(nameProblem('Elden Ring', ['Elden Ring'])).toBe('taken');
-    expect(nameProblem('elden ring', ['Elden Ring'])).toBe('taken');
-    expect(nameProblem('  Elden Ring  ', ['Elden Ring'])).toBe('taken');
-  });
-
-  it('deja pasar un nombre que solo se parece a otro', () => {
-    expect(nameProblem('Elden Ring 2', ['Elden Ring'])).toBeUndefined();
-  });
-
-  it('informa del primer problema y no de todos, para no apilar errores', () => {
-    // Largo y con caracter invalido a la vez: manda el largo.
-    expect(nameProblem(`${'a'.repeat(101)}@`)).toBe('tooLong');
+    expect(
+      buildSkeleton({ name: 'x', category: '   ' }, 'x').category,
+    ).toBeUndefined();
+    expect(buildSkeleton({ name: 'x', category: 'Souls' }, 'x').category).toBe(
+      'Souls',
+    );
   });
 });

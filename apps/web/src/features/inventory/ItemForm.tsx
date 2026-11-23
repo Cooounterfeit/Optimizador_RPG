@@ -3,16 +3,9 @@ import { useState, type FormEvent } from 'react';
 import { inventoryRules } from '@zenith/inventory';
 import type { GameTemplate, Item } from '@zenith/shared-types';
 
+import { errorClass, fieldClass, labelClass } from '../../components/ui/form';
+
 import { inventoryCopy } from './copy';
-
-const fieldClass =
-  'h-[38px] w-full rounded-[2px] border border-line bg-surface px-3 text-[13.5px] text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-line-strong';
-
-const labelClass =
-  'mb-1.5 block font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground';
-
-const errorClass =
-  'mb-4 rounded-[2px] border border-[oklch(0.6_0.19_25)] px-3 py-2 text-[12.5px] text-[oklch(0.78_0.16_25)]';
 
 interface StatRow {
   key: number;
@@ -38,12 +31,20 @@ const rowsFrom = (item: Item | undefined): StatRow[] =>
       }))
     : [];
 
-const makeId = (): string => `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const makeId = (): string =>
+  `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 const messageOf = (cause: unknown): string =>
-  cause instanceof Error && cause.message ? cause.message : inventoryCopy.form.errors.submit;
+  cause instanceof Error && cause.message
+    ? cause.message
+    : inventoryCopy.form.errors.submit;
 
-export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProps) {
+export function ItemForm({
+  template,
+  initial,
+  onSubmit,
+  onCancel,
+}: ItemFormProps) {
   const rules = inventoryRules(template);
   const rarities = rules?.rarities ?? [];
   const levelRange = rules?.itemLevelRange;
@@ -51,14 +52,21 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
   const [name, setName] = useState(initial?.name ?? '');
   const [slot, setSlot] = useState(initial?.slot ?? '');
   const [setId, setSetId] = useState(initial?.setId ?? '');
-  const [rarity, setRarity] = useState(String(initial?.rarity ?? rarities[0] ?? ''));
-  const [level, setLevel] = useState(String(initial?.level ?? levelRange?.min ?? ''));
+  const [rarity, setRarity] = useState(
+    String(initial?.rarity ?? rarities[0] ?? ''),
+  );
+  const [level, setLevel] = useState(
+    String(initial?.level ?? levelRange?.min ?? ''),
+  );
   const [rows, setRows] = useState<StatRow[]>(() => rowsFrom(initial));
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   const addRow = () => {
-    setRows((current) => [...current, { key: nextRowKey++, statId: '', value: '' }]);
+    setRows((current) => [
+      ...current,
+      { key: nextRowKey++, statId: '', value: '' },
+    ]);
   };
 
   const removeRow = (key: number) => {
@@ -66,14 +74,18 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
   };
 
   const updateRow = (key: number, patch: Partial<StatRow>) => {
-    setRows((current) => current.map((row) => (row.key === key ? { ...row, ...patch } : row)));
+    setRows((current) =>
+      current.map((row) => (row.key === key ? { ...row, ...patch } : row)),
+    );
   };
 
   const build = (): { item: Item } | { error: string } => {
-    if (!rules || !levelRange) return { error: inventoryCopy.form.errors.rules };
+    if (!rules || !levelRange)
+      return { error: inventoryCopy.form.errors.rules };
     const trimmedName = name.trim();
     if (!trimmedName) return { error: inventoryCopy.form.errors.name };
-    if (trimmedName.length > 80) return { error: inventoryCopy.form.errors.nameLength };
+    if (trimmedName.length > 80)
+      return { error: inventoryCopy.form.errors.nameLength };
     if (!slot) return { error: inventoryCopy.form.errors.slot };
 
     const rarityValue = Number(rarity);
@@ -94,11 +106,14 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
     for (const row of rows) {
       if (!row.statId && !row.value) continue;
       if (!row.statId) return { error: inventoryCopy.form.errors.statMissing };
-      if (!row.value.trim()) return { error: inventoryCopy.form.errors.statValue };
+      if (!row.value.trim())
+        return { error: inventoryCopy.form.errors.statValue };
 
       const value = Number(row.value);
-      if (!Number.isFinite(value)) return { error: inventoryCopy.form.errors.statValue };
-      if (row.statId in stats) return { error: inventoryCopy.form.errors.statDuplicate };
+      if (!Number.isFinite(value))
+        return { error: inventoryCopy.form.errors.statValue };
+      if (row.statId in stats)
+        return { error: inventoryCopy.form.errors.statDuplicate };
       stats[row.statId] = value;
     }
 
@@ -141,7 +156,9 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
       onSubmit={submit}
       noValidate
       className="mb-6 rounded-[6px] border border-line bg-surface p-5"
-      aria-label={initial ? inventoryCopy.form.editTitle : inventoryCopy.form.addTitle}
+      aria-label={
+        initial ? inventoryCopy.form.editTitle : inventoryCopy.form.addTitle
+      }
     >
       <h2 className="mb-4 text-md font-bold">
         {initial ? inventoryCopy.form.editTitle : inventoryCopy.form.addTitle}
@@ -253,7 +270,9 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
                 className={fieldClass}
                 aria-label={`${inventoryCopy.form.stat} ${index + 1}`}
                 value={row.statId}
-                onChange={(event) => updateRow(row.key, { statId: event.target.value })}
+                onChange={(event) =>
+                  updateRow(row.key, { statId: event.target.value })
+                }
               >
                 <option value="">{inventoryCopy.form.stat}</option>
                 {template.stats.map((definition) => (
@@ -275,7 +294,9 @@ export function ItemForm({ template, initial, onSubmit, onCancel }: ItemFormProp
                 step="any"
                 aria-label={`${inventoryCopy.form.value} ${index + 1}`}
                 value={row.value}
-                onChange={(event) => updateRow(row.key, { value: event.target.value })}
+                onChange={(event) =>
+                  updateRow(row.key, { value: event.target.value })
+                }
               />
             </div>
 

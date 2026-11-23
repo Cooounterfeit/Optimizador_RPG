@@ -12,7 +12,10 @@ const bloque = (id: string) => {
   return found;
 };
 
-const con = (parte: Partial<GameTemplate>): GameTemplate => ({ ...vacia, ...parte });
+const con = (parte: Partial<GameTemplate>): GameTemplate => ({
+  ...vacia,
+  ...parte,
+});
 
 describe('CONFIG_BLOCKS', () => {
   it('no repite identificadores, que es lo que romperia el registro', () => {
@@ -31,7 +34,13 @@ describe('CONFIG_BLOCKS', () => {
       con({
         stats: [
           { id: 'atk', name: 'Attack', unit: 'flat' },
-          { id: 'more', name: 'More', unit: 'percent', aggregate: 'multiply', group: 'Offense' },
+          {
+            id: 'more',
+            name: 'More',
+            unit: 'percent',
+            aggregate: 'multiply',
+            group: 'Offense',
+          },
         ],
       }),
     );
@@ -82,7 +91,11 @@ describe('missingRequired', () => {
   });
 
   it('deja de faltar lo que ya se lleno', () => {
-    const conStats = con({ stats: [{ id: 'atk', name: 'Attack', unit: 'flat' }] });
-    expect(missingRequired(conStats).map((block) => block.id)).not.toContain('stats');
+    const conStats = con({
+      stats: [{ id: 'atk', name: 'Attack', unit: 'flat' }],
+    });
+    expect(missingRequired(conStats).map((block) => block.id)).not.toContain(
+      'stats',
+    );
   });
 });

@@ -116,7 +116,8 @@ export const CONFIG_BLOCKS: ConfigBlock[] = [
       t.sets.map((set) => ({
         name: set.name,
         id: set.id,
-        detail: set.tiers.map((tier) => `${tier.pieces}pc`).join(' · ') || 'no tiers',
+        detail:
+          set.tiers.map((tier) => `${tier.pieces}pc`).join(' · ') || 'no tiers',
       })),
   },
   {
@@ -128,11 +129,15 @@ export const CONFIG_BLOCKS: ConfigBlock[] = [
       t.constrainableStats.map((id) => ({
         name: noName(t.stats.find((stat) => stat.id === id)?.name, id),
         id,
-        detail: t.stats.some((stat) => stat.id === id) ? '' : 'no stat with this id',
+        detail: t.stats.some((stat) => stat.id === id)
+          ? ''
+          : 'no stat with this id',
       })),
   },
 ];
 
 /** Las partes que faltan y sin las cuales el optimizador no puede trabajar. */
 export const missingRequired = (template: GameTemplate): ConfigBlock[] =>
-  CONFIG_BLOCKS.filter((block) => block.required && block.entries(template).length === 0);
+  CONFIG_BLOCKS.filter(
+    (block) => block.required && block.entries(template).length === 0,
+  );

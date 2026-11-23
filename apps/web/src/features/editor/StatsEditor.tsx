@@ -3,10 +3,11 @@ import { useState, type FormEvent } from 'react';
 import type { StatDef } from '@zenith/shared-types';
 
 import { Button } from '../../components/ui/Button';
-import { errorClass, fieldClass, labelClass } from '../auth/AuthShell';
+import { errorClass, fieldClass, labelClass } from '../../components/ui/form';
 import { useOptimizerWorkspace } from '../optimizer/workspace/OptimizerWorkspaceProvider';
 
 import { editorCopy } from './copy';
+import { nameProblem, type NameProblem } from './name-rules';
 import { suggestStatId } from './stat-id';
 
 /**
@@ -33,11 +34,16 @@ import { suggestStatId } from './stat-id';
  * asi que pedirlo seria un campo obligatorio que no sirve a nadie.
  */
 
-/** Dos nombres chocan si solo se diferencian en mayusculas o espacios al borde. */
-const sameName = (a: string, b: string): boolean =>
-  a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase();
-
-const MAX_NAME = 100;
+/** El codigo que devuelve `nameProblem`, traducido a lo que lee el usuario. */
+const NAME_MESSAGE: Record<NameProblem, string> = {
+  required: editorCopy.stats.nameRequired,
+  tooLong: editorCopy.stats.nameTooLong,
+  // Hoy no se produce: el nombre de un atributo no restringe caracteres. El
+  // mensaje existe igual, porque una entrada del mapa que miente es peor que
+  // una que sobra, y si manana se restringieran ya esta escrito.
+  badChars: editorCopy.stats.nameChars,
+  taken: editorCopy.stats.nameTaken,
+};
 
 export function StatsEditor() {
   const { template, saveTemplate } = useOptimizerWorkspace();
@@ -70,16 +76,11 @@ export function StatsEditor() {
     setDone(null);
 
     const trimmed = name.trim();
-    if (!trimmed) {
-      setError(editorCopy.stats.nameRequired);
-      return;
-    }
-    if (trimmed.length > MAX_NAME) {
-      setError(editorCopy.stats.nameTooLong);
-      return;
-    }
-    if (template.stats.some((stat) => sameName(stat.name, trimmed))) {
-      setError(editorCopy.stats.nameTaken);
+    const problem = nameProblem(trimmed, {
+      taken: template.stats.map((stat) => stat.name),
+    });
+    if (problem) {
+      setError(NAME_MESSAGE[problem]);
       return;
     }
 

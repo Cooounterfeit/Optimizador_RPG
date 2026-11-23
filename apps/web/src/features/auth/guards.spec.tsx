@@ -56,7 +56,13 @@ describe('RequireSession', () => {
   });
 
   it('sin configuracion explica como activarla', async () => {
-    renderAt('/perfil', <RequireSession><p>privado</p></RequireSession>, null);
+    renderAt(
+      '/perfil',
+      <RequireSession>
+        <p>privado</p>
+      </RequireSession>,
+      null,
+    );
 
     expect(await screen.findByText('Accounts are not configured')).toBeTruthy();
   });
@@ -65,7 +71,9 @@ describe('RequireSession', () => {
 describe('RedirectIfSignedIn', () => {
   it('con sesion manda al hub', async () => {
     render(
-      <AuthProvider service={fakeAuthService({ initialUser: SAMPLE_USER }).service}>
+      <AuthProvider
+        service={fakeAuthService({ initialUser: SAMPLE_USER }).service}
+      >
         <MemoryRouter initialEntries={['/login']}>
           <Routes>
             <Route

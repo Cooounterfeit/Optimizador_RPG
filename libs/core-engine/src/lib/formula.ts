@@ -62,7 +62,7 @@ export const FUNCTION_NAMES: readonly string[] = Object.keys(ARITY)
 
 export class FormulaError extends Error {
   constructor(message: string, public expression: string) {
-    super(`${message}  —  en la formula: "${expression}"`)
+    super(`${message} · en la formula: "${expression}"`)
     this.name = 'FormulaError'
   }
 }

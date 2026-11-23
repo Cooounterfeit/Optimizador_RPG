@@ -35,7 +35,9 @@ describe('suggestStatId', () => {
   it('numera la raiz, para que el guion bajo final no se desplace', () => {
     expect(suggestStatId('Ataque', 'percent', ['ataque_'])).toBe('ataque2_');
     expect(suggestStatId('Ataque', 'flat', ['ataque'])).toBe('ataque2');
-    expect(suggestStatId('Ataque', 'flat', ['ataque', 'ataque2'])).toBe('ataque3');
+    expect(suggestStatId('Ataque', 'flat', ['ataque', 'ataque2'])).toBe(
+      'ataque3',
+    );
   });
 
   it('esquiva los nombres de funcion del lenguaje de formulas', () => {
@@ -54,11 +56,21 @@ describe('suggestStatId', () => {
   });
 
   it('todo lo que produce pasa el guardian del motor', () => {
-    const nombres = ['Ataque critico', 'Daño mágico', '2 manos', 'Max', '', 'Vida máxima %'];
+    const nombres = [
+      'Ataque critico',
+      'Daño mágico',
+      '2 manos',
+      'Max',
+      '',
+      'Vida máxima %',
+    ];
     for (const unit of ['flat', 'percent'] as const) {
       for (const nombre of nombres) {
         const id = suggestStatId(nombre, unit);
-        expect(statIdProblem(id), `${nombre} (${unit}) -> ${id}`).toBeUndefined();
+        expect(
+          statIdProblem(id),
+          `${nombre} (${unit}) -> ${id}`,
+        ).toBeUndefined();
       }
     }
   });

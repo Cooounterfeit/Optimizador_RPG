@@ -59,7 +59,9 @@ const renderPage = () =>
   );
 
 const escribir = (etiqueta: string, valor: string) =>
-  fireEvent.change(screen.getByLabelText(etiqueta), { target: { value: valor } });
+  fireEvent.change(screen.getByLabelText(etiqueta), {
+    target: { value: valor },
+  });
 
 afterEach(() => {
   setGameRepository(real);
@@ -111,7 +113,9 @@ describe('CreateOptimizerPage', () => {
 
     escribir('Game name', 'Juego@');
     expect(
-      await screen.findByText(/only contain letters, numbers, spaces and underscores/i),
+      await screen.findByText(
+        /only contain letters, numbers, spaces and underscores/i,
+      ),
     ).toBeTruthy();
 
     // Y no lo deja pasar: un aviso que se puede ignorar no sirve de nada.
@@ -129,7 +133,9 @@ describe('CreateOptimizerPage', () => {
     await screen.findByText(/only contain letters/i);
 
     escribir('Game name', 'Juego');
-    await waitFor(() => expect(screen.queryByText(/only contain letters/i)).toBeNull());
+    await waitFor(() =>
+      expect(screen.queryByText(/only contain letters/i)).toBeNull(),
+    );
   });
 
   it('acepta 100 caracteres y rechaza 101, que es el limite del criterio', async () => {
@@ -138,16 +144,22 @@ describe('CreateOptimizerPage', () => {
     renderPage();
 
     escribir('Game name', 'a'.repeat(101));
-    expect(await screen.findByText(/cannot be longer than 100 characters/i)).toBeTruthy();
+    expect(
+      await screen.findByText(/cannot be longer than 100 characters/i),
+    ).toBeTruthy();
 
     escribir('Game name', 'a'.repeat(100));
-    await waitFor(() => expect(screen.queryByText(/cannot be longer/i)).toBeNull());
+    await waitFor(() =>
+      expect(screen.queryByText(/cannot be longer/i)).toBeNull(),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Create optimizer' }));
     await waitFor(() => expect(guardados).toHaveLength(1));
   });
 
   it('dice que el nombre ya existe en vez de numerarlo a escondidas', async () => {
-    const { repo, guardados } = fakeRepo([{ id: 'elden-ring', name: 'Elden Ring' }]);
+    const { repo, guardados } = fakeRepo([
+      { id: 'elden-ring', name: 'Elden Ring' },
+    ]);
     setGameRepository(repo);
     renderPage();
 
@@ -156,7 +168,9 @@ describe('CreateOptimizerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create optimizer' }));
 
     expect(await screen.findByRole('alert')).toBeTruthy();
-    expect(screen.getByRole('alert').textContent).toContain('already have an optimizer');
+    expect(screen.getByRole('alert').textContent).toContain(
+      'already have an optimizer',
+    );
     expect(guardados).toHaveLength(0);
   });
 
@@ -169,7 +183,9 @@ describe('CreateOptimizerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create optimizer' }));
 
     await screen.findByText('workspace');
-    expect(screen.getByTestId('ruta').textContent).toBe('/optimizer/hollow-knight/configuracion');
+    expect(screen.getByTestId('ruta').textContent).toBe(
+      '/optimizer/hollow-knight/configuracion',
+    );
   });
 
   it('muestra el fallo y deja reintentar si el guardado revienta', async () => {
@@ -186,8 +202,10 @@ describe('CreateOptimizerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create optimizer' }));
 
     expect(await screen.findByRole('alert')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Create optimizer' }).hasAttribute('disabled')).toBe(
-      false,
-    );
+    expect(
+      screen
+        .getByRole('button', { name: 'Create optimizer' })
+        .hasAttribute('disabled'),
+    ).toBe(false);
   });
 });

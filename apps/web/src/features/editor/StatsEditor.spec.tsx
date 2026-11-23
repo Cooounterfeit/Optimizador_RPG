@@ -4,7 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GameRepository, InventoryRepository } from '@zenith/data-access';
 import type { GameTemplate } from '@zenith/shared-types';
 
-import { getGameRepository, setGameRepository, setInventoryRepository } from '../game/repositories';
+import {
+  getGameRepository,
+  setGameRepository,
+  setInventoryRepository,
+} from '../game/repositories';
 import { useGame } from '../game/useGame';
 import { renderWorkspace } from '../optimizer/workspace/testing';
 
@@ -19,7 +23,14 @@ vi.mock('@zenith/core-engine', async (importOriginal) => ({
     ok: true,
     issues: [],
     selfTests: [],
-    summary: { stats: 0, slots: 0, sets: 0, objectives: 0, monotonicOk: 0, profiles: 0 },
+    summary: {
+      stats: 0,
+      slots: 0,
+      sets: 0,
+      objectives: 0,
+      monotonicOk: 0,
+      profiles: 0,
+    },
   })),
 }));
 
@@ -60,8 +71,11 @@ const fakeRepos = () => {
 
 const abrir = () => renderWorkspace('/optimizer/x/configuracion');
 const escribir = (etiqueta: string, valor: string) =>
-  fireEvent.change(screen.getByLabelText(etiqueta), { target: { value: valor } });
-const enviar = () => fireEvent.click(screen.getByRole('button', { name: 'Create attribute' }));
+  fireEvent.change(screen.getByLabelText(etiqueta), {
+    target: { value: valor },
+  });
+const enviar = () =>
+  fireEvent.click(screen.getByRole('button', { name: 'Create attribute' }));
 
 const nuevoAtributo = async (nombre: string) => {
   fireEvent.click(await screen.findByRole('button', { name: 'Add attribute' }));
@@ -82,7 +96,9 @@ afterEach(() => {
 describe('StatsEditor', () => {
   it('se llega al formulario desde la vista de configuracion', async () => {
     abrir();
-    expect(await screen.findByRole('button', { name: 'Add attribute' })).toBeTruthy();
+    expect(
+      await screen.findByRole('button', { name: 'Add attribute' }),
+    ).toBeTruthy();
   });
 
   it('crea el atributo y aparece en el listado sin recargar', async () => {
@@ -92,7 +108,11 @@ describe('StatsEditor', () => {
 
     await waitFor(() => expect(guardados).toHaveLength(1));
     expect(guardados[0].stats).toHaveLength(1);
-    expect(guardados[0].stats[0]).toMatchObject({ id: 'fuerza', name: 'Fuerza', unit: 'flat' });
+    expect(guardados[0].stats[0]).toMatchObject({
+      id: 'fuerza',
+      name: 'Fuerza',
+      unit: 'flat',
+    });
 
     // Y la pantalla ya lo muestra, sin volver a cargar la plantilla.
     expect(await screen.findByText('fuerza')).toBeTruthy();
@@ -101,11 +121,15 @@ describe('StatsEditor', () => {
 
   it('exige el nombre', async () => {
     abrir();
-    fireEvent.click(await screen.findByRole('button', { name: 'Add attribute' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Add attribute' }),
+    );
     enviar();
 
     expect(await screen.findByRole('alert')).toBeTruthy();
-    expect(screen.getByRole('alert').textContent).toContain('Give the attribute a name');
+    expect(screen.getByRole('alert').textContent).toContain(
+      'Give the attribute a name',
+    );
     expect(guardados).toHaveLength(0);
   });
 
@@ -114,17 +138,24 @@ describe('StatsEditor', () => {
     await nuevoAtributo('a'.repeat(101));
     enviar();
 
-    expect((await screen.findByRole('alert')).textContent).toContain('longer than 100');
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'longer than 100',
+    );
     expect(guardados).toHaveLength(0);
   });
 
   it('no deja dos atributos con el mismo nombre, sin mirar mayusculas', async () => {
-    mockGame({ ...vacia, stats: [{ id: 'fuerza', name: 'Fuerza', unit: 'flat' }] });
+    mockGame({
+      ...vacia,
+      stats: [{ id: 'fuerza', name: 'Fuerza', unit: 'flat' }],
+    });
     abrir();
     await nuevoAtributo('  fuerza  ');
     enviar();
 
-    expect((await screen.findByRole('alert')).textContent).toContain('already an attribute');
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'already an attribute',
+    );
     expect(guardados).toHaveLength(0);
   });
 
@@ -146,7 +177,10 @@ describe('StatsEditor', () => {
     enviar();
 
     await waitFor(() => expect(guardados).toHaveLength(1));
-    expect(guardados[0].stats[0]).toMatchObject({ id: 'ataque_', unit: 'percent' });
+    expect(guardados[0].stats[0]).toMatchObject({
+      id: 'ataque_',
+      unit: 'percent',
+    });
   });
 
   it('guarda la acumulacion solo cuando no es la habitual', async () => {

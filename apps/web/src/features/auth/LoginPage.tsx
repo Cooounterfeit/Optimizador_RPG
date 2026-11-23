@@ -5,7 +5,9 @@ import { Button } from '../../components/ui/Button';
 import { copy } from '../catalog/copy';
 
 import { AuthUnavailable } from './AuthStatus';
-import { AuthShell, errorClass, fieldClass, labelClass } from './AuthShell';
+import { errorClass, fieldClass, labelClass } from '../../components/ui/form';
+
+import { AuthShell } from './AuthShell';
 import { useAuth } from './AuthProvider';
 import { authErrorMessage } from './error-message';
 import { safeNext } from './guards';
@@ -51,7 +53,10 @@ export function LoginPage() {
       footer={
         <>
           {copy.auth.noAccount}{' '}
-          <Link className="font-semibold text-foreground underline underline-offset-4" to="/registro">
+          <Link
+            className="font-semibold text-foreground underline underline-offset-4"
+            to="/registro"
+          >
             {copy.auth.goRegister}
           </Link>
         </>

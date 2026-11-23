@@ -452,7 +452,7 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
       }
       for (const [k, v] of Object.entries(test.expectStats ?? {})) {
         const got = b.finalStats[k]
-        if (got === undefined || Math.abs(got - v) > tol) fails.push(`${k} ${got?.toFixed(2) ?? '—'} ≠ ${v}`)
+        if (got === undefined || Math.abs(got - v) > tol) fails.push(`${k} ${got?.toFixed(2) ?? 'n/a'} ≠ ${v}`)
       }
       selfTests.push({
         name: test.name,

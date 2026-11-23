@@ -13,7 +13,8 @@ export const editorCopy = {
     cancel: 'Cancel',
     nameRequired: 'Give the game a name.',
     nameTooLong: 'The name cannot be longer than 100 characters.',
-    nameChars: 'The name can only contain letters, numbers, spaces and underscores.',
+    nameChars:
+      'The name can only contain letters, numbers, spaces and underscores.',
     nameTaken: 'You already have an optimizer with that name.',
     failed: 'Could not create the optimizer.',
     draftNote: 'It is saved in this browser only. Publishing it comes later.',
@@ -40,7 +41,8 @@ export const editorCopy = {
     unknown: 'n/a',
     required: 'required',
     empty: 'Nothing here yet.',
-    readOnly: 'This optimizer came from the catalog, so it cannot be edited here yet.',
+    readOnly:
+      'This optimizer came from the catalog, so it cannot be edited here yet.',
   },
   stats: {
     add: 'Add attribute',
@@ -65,6 +67,7 @@ export const editorCopy = {
     nameRequired: 'Give the attribute a name.',
     nameTooLong: 'The name cannot be longer than 100 characters.',
     nameTaken: 'There is already an attribute with that name.',
+    nameChars: 'The name has characters that are not allowed.',
     failed: 'Could not create the attribute.',
   },
 } as const;

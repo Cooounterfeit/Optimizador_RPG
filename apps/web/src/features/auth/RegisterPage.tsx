@@ -5,7 +5,9 @@ import { Button } from '../../components/ui/Button';
 import { copy } from '../catalog/copy';
 
 import { AuthUnavailable } from './AuthStatus';
-import { AuthShell, errorClass, fieldClass, labelClass } from './AuthShell';
+import { errorClass, fieldClass, labelClass } from '../../components/ui/form';
+
+import { AuthShell } from './AuthShell';
 import { useAuth } from './AuthProvider';
 import { authErrorMessage } from './error-message';
 
@@ -25,8 +27,14 @@ export function RegisterPage() {
 
   if (sent) {
     return (
-      <AuthShell title={copy.auth.confirmationTitle} lede={copy.auth.confirmationBody}>
-        <Link className="text-[13px] font-semibold underline underline-offset-4" to="/login">
+      <AuthShell
+        title={copy.auth.confirmationTitle}
+        lede={copy.auth.confirmationBody}
+      >
+        <Link
+          className="text-[13px] font-semibold underline underline-offset-4"
+          to="/login"
+        >
           {copy.auth.goLogin}
         </Link>
       </AuthShell>
@@ -46,7 +54,11 @@ export function RegisterPage() {
     setPending(true);
 
     try {
-      const result = await signUp({ email: email.trim(), password, displayName: name });
+      const result = await signUp({
+        email: email.trim(),
+        password,
+        displayName: name,
+      });
       if (result.needsConfirmation) {
         setSent(true);
         return;
@@ -66,7 +78,10 @@ export function RegisterPage() {
       footer={
         <>
           {copy.auth.hasAccount}{' '}
-          <Link className="font-semibold text-foreground underline underline-offset-4" to="/login">
+          <Link
+            className="font-semibold text-foreground underline underline-offset-4"
+            to="/login"
+          >
             {copy.auth.goLogin}
           </Link>
         </>
