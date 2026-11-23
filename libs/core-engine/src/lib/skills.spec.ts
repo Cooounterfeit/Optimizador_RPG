@@ -5,6 +5,7 @@ import type { GameTemplate, Item, SkillSelection, SkillTreeDef } from '@zenith/s
 import { solve, solveBruteForceTop } from './optimizer.js';
 import {
   canLower, canRaise, checkSelection, checkSkillTrees, sanitizeSelection, skillContribution,
+  withSkillBudget,
 } from './skills.js';
 import { validateTemplate } from './validate.js';
 
@@ -290,5 +291,82 @@ describe('5. fuzz contra fuerza bruta', () => {
       if (a.length === b.length && a.every((x, i) => close(x, b[i]))) coinciden++;
     }
     expect(coinciden, `${coinciden} de ${N} instancias coinciden con la fuerza bruta (top 3)`).toBe(N);
+  });
+});
+
+describe('6. presupuesto por nivel', () => {
+  const nivel = { levelKey: 'nivel', min: 1, max: 90, growth: { atk: '1' } };
+  const arbolNivel = (over: Partial<SkillTreeDef> = {}): SkillTreeDef => ({
+    id: 'g', name: 'G', budgetAtStart: 0, budgetPerLevel: 1,
+    nodes: [
+      { id: 'fuerza', name: 'Fuerza', maxRank: 10, effects: { atk: 5 } },
+      { id: 'agilidad', name: 'Agilidad', maxRank: 10, effects: { crit: 2 } },
+    ],
+    ...over,
+  });
+  const conNivel = (tree = arbolNivel(), over: Partial<GameTemplate> = {}) =>
+    tpl({ leveling: nivel, skillTrees: [tree], ...over });
+  const items: Item[] = [
+    { id: 'espada', slot: 'arma', setId: null, name: 'Espada', stats: { atk: 50 } },
+  ];
+
+  it('una plantilla sin campos derivados no cambia (misma referencia)', () => {
+    expect(withSkillBudget(T, 50)).toBe(T);
+    expect(withSkillBudget(T, null)).toBe(T);
+  });
+
+  it('el nivel cambia los puntos disponibles', () => {
+    const t = conNivel();
+    expect(withSkillBudget(t, 20).skillTrees![0].budget).toBe(19);
+    expect(withSkillBudget(t, 1).skillTrees![0].budget).toBe(0);
+    expect(withSkillBudget(withSkillBudget(t, 20), 4).skillTrees![0].budget).toBe(3);
+    // El ejemplo de §7.4: nivel 20, min 0, +1 por nivel → 20 puntos.
+    const desdeCero = tpl({ leveling: { ...nivel, min: 0 }, skillTrees: [arbolNivel()] });
+    expect(withSkillBudget(desdeCero, 20).skillTrees![0].budget).toBe(20);
+  });
+
+  it('el budget declarado sigue siendo el tope duro', () => {
+    const t = conNivel(arbolNivel({ budget: 12 }));
+    expect(withSkillBudget(t, 20).skillTrees![0].budget).toBe(12);
+    expect(withSkillBudget(t, 5).skillTrees![0].budget).toBe(4);
+  });
+
+  it('sin nivel usa budgetAtStart y nunca da negativo', () => {
+    const t = conNivel(arbolNivel({ budgetAtStart: 5 }));
+    expect(withSkillBudget(t, null).skillTrees![0].budget).toBe(5);
+    expect(withSkillBudget(t, 0).skillTrees![0].budget).toBe(5);
+    const sinNiveles = tpl({ skillTrees: [arbolNivel({ budgetAtStart: 5 })] });
+    expect(withSkillBudget(sinNiveles, 20).skillTrees![0].budget).toBe(5);
+  });
+
+  it('solo budgetPerLevel sin nivel no inventa un tope', () => {
+    const t = tpl({ skillTrees: [arbolNivel({ budgetAtStart: undefined })] });
+    expect(withSkillBudget(t, 20).skillTrees![0].budget).toBeUndefined();
+  });
+
+  it('la validacion usa el presupuesto efectivo, no el declarado', () => {
+    const t = withSkillBudget(conNivel(), 3);
+    const problemas = checkSelection(t, { fuerza: 3 });
+    expect(problemas.some((p) => p.treeId === 'g'), JSON.stringify(problemas)).toBe(true);
+  });
+
+  it('el motor rechaza una seleccion que excede el presupuesto derivado', () => {
+    const t = withSkillBudget(conNivel(), 2);
+    let lanzo = false;
+    try {
+      solve({ template: t, items, profileId: 'p', objectiveId: 'o', constraints: [], topN: 1, skills: { fuerza: 3 } });
+    } catch { lanzo = true; }
+    expect(lanzo).toBe(true);
+  });
+
+  it('checkSkillTrees valida los campos nuevos', () => {
+    const negativo = checkSkillTrees(tpl({ skillTrees: [arbolNivel({ budgetAtStart: -1 })] }));
+    expect(negativo.errors.some((e) => e.treeId === 'g'), JSON.stringify(negativo.errors)).toBe(true);
+    const noFinito = checkSkillTrees(tpl({ skillTrees: [arbolNivel({ budgetPerLevel: Number.NaN })] }));
+    expect(noFinito.errors.some((e) => e.treeId === 'g')).toBe(true);
+    const sinNivel = checkSkillTrees(tpl({ skillTrees: [arbolNivel()] }));
+    expect(sinNivel.warnings.some((w) => w.message.includes('leveling')), JSON.stringify(sinNivel.warnings)).toBe(true);
+    const conNiveles = checkSkillTrees(conNivel());
+    expect(conNiveles.warnings.some((w) => w.message.includes('leveling'))).toBe(false);
   });
 });

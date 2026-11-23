@@ -5,7 +5,14 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { OptimizerRow, OptimizerWrite } from '../../lib/database.types';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 
-const COLUMNS = ['id', 'name', 'game_name', 'description', 'template', 'sample_items', 'published'].join(',');
+const COLUMNS = [
+  'id',
+  'name',
+  'description',
+  'template',
+  'sample_items',
+  'game:game_id(name)',
+].join(',');
 
 /** Optimizador publicado: la plantilla completa mas sus objetos de muestra. */
 export interface OptimizerRecord {
@@ -72,8 +79,11 @@ export function toOptimizerWrite(draft: OptimizerDraft): OptimizerWrite {
   };
 }
 
+/** Fila tal como la devuelve la consulta: la tabla + el juego embebido. */
+type JoinedOptimizerRow = OptimizerRow & { game: { name: string } | null };
+
 /** Fila de `optimizers` → modelo validado. Nada entra sin pasar por Zod. */
-export function mapOptimizerRow(row: OptimizerRow): OptimizerRecord {
+export function mapOptimizerRow(row: JoinedOptimizerRow): OptimizerRecord {
   const template = GameTemplateSchema.safeParse(row.template);
   if (!template.success) {
     throw new DataAccessError('La plantilla del optimizador no es valida.', {
@@ -92,10 +102,16 @@ export function mapOptimizerRow(row: OptimizerRow): OptimizerRecord {
     return parsed.data;
   });
 
+  // `game_id` es NOT NULL con FK, asi que el join siempre resuelve. Si aun asi
+  // no viene, la fila no es coherente y se trata como dato invalido.
+  if (!row.game) {
+    throw new DataAccessError('El optimizador no tiene un juego asociado valido.');
+  }
+
   return {
     id: row.id,
     name: row.name,
-    gameName: row.game_name,
+    gameName: row.game.name,
     description: row.description,
     template: template.data,
     sampleItems,
@@ -115,7 +131,7 @@ export function createSupabaseOptimizerRepository(client: SupabaseClient): Optim
       if (error) throw new DataAccessError(error.message, { cause: error });
       if (!data) return undefined;
 
-      return mapOptimizerRow(data as unknown as OptimizerRow);
+      return mapOptimizerRow(data as unknown as JoinedOptimizerRow);
     },
 
     async createOptimizer(draft: OptimizerDraft): Promise<string> {

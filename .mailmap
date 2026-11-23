@@ -1,0 +1,10 @@
+# Normaliza la visualización de identidades en git.
+# No reescribe historia: solo agrupa commits bajo el nombre canónico.
+# Verificar con: git shortlog -sne
+
+Ignacio Rodriguez <50534414+Ignacio-Rodriguez-A@users.noreply.github.com> <rignacio871@gmail.com>
+Ignacio Rodriguez <50534414+Ignacio-Rodriguez-A@users.noreply.github.com> <50534414+Ignacio-Rodriguez-A@users.noreply.github.com>
+
+Matías Molina <matias.molinaplaza@gmail.com> <matias.molinaplaza@gmail.com>
+
+Arturo Moya <arturo.moya.contact@gmail.com> <arturo.moya.contact@gmail.com>

@@ -1,4 +1,4 @@
-import { conBase, sanitizeSelection } from '@zenith/core-engine';
+import { conBase, currentLevel, sanitizeSelection, withSkillBudget } from '@zenith/core-engine';
 import type {
   Constraint,
   GameTemplate,
@@ -38,13 +38,23 @@ export function buildSolveRequest({
     template.objectives.find((entry) => entry.id === objectiveId) ?? template.objectives[0];
   if (!objective) return null;
 
+  // Se guarda el nivel; los puntos del arbol se derivan aqui, con la base
+  // efectiva del perfil. Asi la validacion y el motor ven el mismo presupuesto
+  // que muestra la UI, y una plantilla sin campos derivados no cambia.
+  const effectiveTemplate = conBase(template, profileId, profileBase);
+  const profile = effectiveTemplate.baseProfiles.find((entry) => entry.id === profileId);
+  const withBudget = withSkillBudget(
+    effectiveTemplate,
+    profile ? currentLevel(effectiveTemplate, profile) : null,
+  );
+
   return {
-    template: conBase(template, profileId, profileBase),
+    template: withBudget,
     items,
     profileId,
     objectiveId: objective.id,
     constraints,
     topN,
-    skills: sanitizeSelection(template, skills),
+    skills: sanitizeSelection(withBudget, skills),
   };
 }

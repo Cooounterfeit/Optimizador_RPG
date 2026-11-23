@@ -87,6 +87,62 @@ export function pointsSpent(tree: SkillTreeDef, sel: SkillSelection, except?: st
   return p
 }
 
+/** El menor de dos topes; `undefined` es "sin tope". */
+const tightest = (a: number | undefined, b: number | undefined) =>
+  a === undefined ? b : b === undefined ? a : Math.min(a, b)
+
+/**
+ * Presupuesto que le corresponde a un arbol en un nivel.
+ *
+ * - Con nivel y `leveling`: `budgetAtStart + budgetPerLevel * (nivel - min)`.
+ * - Sin nivel (o sin `leveling`): `budgetAtStart` fijo, si lo declara.
+ * - Solo `budgetPerLevel` y sin nivel: no se puede derivar (`undefined`).
+ */
+function derivedBudget(
+  tree: SkillTreeDef,
+  leveling: GameTemplate['leveling'],
+  level: number | null,
+): number | undefined {
+  const declared = tree.budgetAtStart !== undefined || tree.budgetPerLevel !== undefined
+  if (!declared) return undefined
+  if (leveling && level !== null && Number.isFinite(level)) {
+    const base = tree.budgetAtStart ?? 0
+    const perLevel = tree.budgetPerLevel ?? 0
+    return Math.max(0, base + perLevel * Math.max(0, level - leveling.min))
+  }
+  return tree.budgetAtStart
+}
+
+/**
+ * Plantilla con el presupuesto EFECTIVO de cada arbol de habilidades para un
+ * nivel. Se guarda el nivel; los puntos se derivan.
+ *
+ * El `budget` declarado sigue siendo el tope duro: el efectivo es
+ * `min(budget, derivado)`. Si ningun arbol declara `budgetAtStart` ni
+ * `budgetPerLevel`, devuelve la MISMA plantilla (identidad), asi que una
+ * plantilla existente no cambia de comportamiento y la UI no se re-renderiza.
+ *
+ * El nivel lo provee quien llama con `currentLevel(template, profile)`; este
+ * helper no busca perfiles. No redondea: el presupuesto es un numero, como hoy.
+ */
+export function withSkillBudget<T extends Pick<GameTemplate, 'skillTrees' | 'leveling'>>(
+  template: T,
+  level: number | null,
+): T {
+  const trees = template.skillTrees
+  if (!trees?.length) return template
+  let changed = false
+  const out = trees.map((tree) => {
+    if (tree.budgetAtStart === undefined && tree.budgetPerLevel === undefined) return tree
+    const budget = tightest(tree.budget, derivedBudget(tree, template.leveling, level))
+    if (budget === tree.budget) return tree
+    changed = true
+    return { ...tree, budget }
+  })
+  if (!changed) return template
+  return { ...template, skillTrees: out } as T
+}
+
 // ----------------------------------------------------------------- reglas
 
 export interface SkillProblem { nodeId?: string; treeId?: string; message: string }
@@ -241,7 +297,9 @@ export function skillVariables(template: Pick<GameTemplate, 'skillTrees'>, sel: 
  * Problemas de ESTRUCTURA de los arboles (no de una seleccion). Lo usa el
  * validador de plantillas. Devuelve errores y avisos por separado.
  */
-export function checkSkillTrees(template: Pick<GameTemplate, 'skillTrees' | 'stats'>): {
+export function checkSkillTrees(
+  template: Pick<GameTemplate, 'skillTrees' | 'stats'> & { leveling?: GameTemplate['leveling'] },
+): {
   errors: SkillProblem[]; warnings: SkillProblem[]
 } {
   const errors: SkillProblem[] = []
@@ -260,6 +318,15 @@ export function checkSkillTrees(template: Pick<GameTemplate, 'skillTrees' | 'sta
     if (!Array.isArray(t.nodes)) { errors.push({ treeId: t.id, message: `El arbol "${t.name ?? t.id}" no tiene lista de nodos.` }); continue }
     if (t.budget !== undefined && !(Number.isFinite(t.budget) && t.budget >= 0)) {
       errors.push({ treeId: t.id, message: `El presupuesto de "${t.name ?? t.id}" debe ser un numero >= 0.` })
+    }
+    for (const [campo, etiqueta] of [
+      ['budgetAtStart', 'El presupuesto inicial'],
+      ['budgetPerLevel', 'Los puntos por nivel'],
+    ] as const) {
+      const v = t[campo]
+      if (v !== undefined && !(Number.isFinite(v) && v >= 0)) {
+        errors.push({ treeId: t.id, message: `${etiqueta} de "${t.name ?? t.id}" debe ser un numero >= 0.` })
+      }
     }
     for (const n of t.nodes) {
       if (!n?.id) { errors.push({ treeId: t.id, message: `Hay un nodo sin id en "${t.name ?? t.id}".` }); continue }
@@ -331,6 +398,12 @@ export function checkSkillTrees(template: Pick<GameTemplate, 'skillTrees' | 'sta
   for (const n of ix.node.values()) if (n.choiceGroup) grupos.set(n.choiceGroup, [...(grupos.get(n.choiceGroup) ?? []), n])
   for (const [g, ns] of grupos) {
     if (ns.length < 2) warnings.push({ nodeId: ns[0].id, message: `"${ns[0].name}" es una eleccion (${g}) pero no tiene alternativa.` })
+  }
+  const deriva = ix.trees.some((t) => t.budgetAtStart !== undefined || t.budgetPerLevel !== undefined)
+  if (deriva && template.leveling === undefined) {
+    warnings.push({
+      message: 'Hay arboles con presupuesto por nivel pero la plantilla no declara "leveling": los puntos no se derivaran del nivel (se usa "budgetAtStart" fijo).',
+    })
   }
   return { errors, warnings }
 }

@@ -27,6 +27,12 @@ erDiagram
     OPTIMIZERS ||--o{ REPORTS : "es reportado"
     PROFILES ||--o{ CLOUD_INVENTORY : "sincroniza"
 
+    GAME ||--o{ OPTIMIZERS : "agrupa"
+    GAME ||--o{ GAME_GENRE : "se etiqueta"
+    GENRE ||--o{ GAME_GENRE : "clasifica"
+    GAME ||--o{ GAME_ALIAS : "tambien se llama"
+    PROFILES ||--o{ GAME : "crea"
+
     PROFILES {
         uuid id PK "FK a auth.users"
         text display_name "1..40"
@@ -47,7 +53,7 @@ erDiagram
     OPTIMIZERS {
         uuid id PK
         uuid author_id FK "FK a profiles"
-        text game_name "1..80"
+        uuid game_id FK "FK a juego, obligatorio"
         text name "1..80"
         text description "hasta 2000"
         jsonb template "plantilla del juego"
@@ -91,9 +97,44 @@ erDiagram
         boolean id PK "fila unica"
         boolean cloud_requires_subscription
     }
+
+    GAME {
+        uuid id PK
+        text slug "unico, a-z y guiones"
+        text nombre "1..80, unico sin mayusculas"
+        text descripcion "hasta 2000"
+        text cover_url "http(s) o null"
+        uuid created_by FK "FK a profiles"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    GENRE {
+        uuid id PK
+        text nombre "1..60, unico sin mayusculas"
+        text descripcion "hasta 500"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    GAME_GENRE {
+        uuid game_id PK "FK a juego"
+        uuid genre_id PK "FK a genero"
+    }
+
+    GAME_ALIAS {
+        uuid id PK
+        uuid game_id FK "FK a juego"
+        text alias "1..80, unico entre juegos"
+    }
 ```
 
-Nueve relaciones, ocho tablas de dominio más `auth.users`, que administra Supabase.
+Dieciséis relaciones, doce tablas de dominio más `auth.users`, que administra Supabase.
+
+El catálogo de juegos vive aparte de los optimizadores: `game` agrupa builds, `genre` los
+clasifica en M:N a través de `game_genre`, y `game_alias` guarda los nombres alternativos
+para que una búsqueda resuelva a un solo juego. `optimizers.game_id` es obligatorio, así que
+el nombre del juego tiene una única fuente y no puede desincronizarse.
 
 ## Decisiones que se ven en el diagrama
 

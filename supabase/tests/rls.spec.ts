@@ -64,6 +64,17 @@ beforeAll(async () => {
     grant execute on function auth.uid() to anon, authenticated;
   `);
 
+  // PGlite no trae los privilegios POR DEFECTO que Supabase configura en un
+  // proyecto real: ahi `anon` y `authenticated` reciben todo sobre cada objeto
+  // nuevo de `public`. Sin emulacion, cualquier prueba de "no puede escribir"
+  // pasaria por falta de GRANT y no por RLS, y el agujero real seria invisible.
+  // Se emula ANTES de aplicar las migraciones, que es justo el orden en que
+  // Supabase aprovisiona el esquema. Ver 20261125000001_privilegios_por_defecto.
+  await db.exec(`
+    alter default privileges in schema public
+      grant all on tables to anon, authenticated;
+  `);
+
   const migracion = readdirSync(MIGRATIONS_DIR).find((f) => f.endsWith('_esquema_inicial.sql'));
   if (!migracion) throw new Error('falta la migracion *_esquema_inicial.sql en supabase/migrations');
   await db.exec(readFileSync(join(MIGRATIONS_DIR, migracion), 'utf8'));
@@ -158,18 +169,26 @@ describe('profiles: lectura publica, cada uno edita lo suyo', () => {
 });
 
 describe('optimizers: lectura publica, crea quien tiene sesion, edita el autor o un admin', () => {
+  const JUEGO = '00000000-0000-0000-0000-0000000000d1';
+
+  beforeAll(async () => {
+    await admin(`insert into public.game (id, slug, name) values ($1, 'souls', 'Souls')`, [JUEGO]);
+  });
+
   it('un visitante no puede crear', async () => {
-    const r = await como(null, `insert into public.optimizers (game_name, name, template) values ('Souls', 'x', $1)`, [
-      PLANTILLA,
-    ]);
+    const r = await como(
+      null,
+      `insert into public.optimizers (game_id, name, template) values ($1, 'x', $2)`,
+      [JUEGO, PLANTILLA],
+    );
     expect(denegado(r)).toBe(true);
   });
 
   it('Ana crea un optimizador y queda como autora', async () => {
     const ins = await como(
       A,
-      `insert into public.optimizers (game_name, name, template, published) values ('Elden Ring', 'Builds de fuerza', $1, true) returning id, author_id`,
-      [PLANTILLA],
+      `insert into public.optimizers (game_id, name, template, published) values ($1, 'Builds de fuerza', $2, true) returning id, author_id`,
+      [JUEGO, PLANTILLA],
     );
     expect(ins.error).toBeUndefined();
     expect(ins.rows[0]?.author_id).toBe(A);
@@ -179,8 +198,8 @@ describe('optimizers: lectura publica, crea quien tiene sesion, edita el autor o
   it('no se puede crear a nombre de otro', async () => {
     const r = await como(
       A,
-      `insert into public.optimizers (author_id, game_name, name, template) values ($1, 'X', 'a nombre de otro', $2)`,
-      [B, PLANTILLA],
+      `insert into public.optimizers (author_id, game_id, name, template) values ($1, $2, 'a nombre de otro', $3)`,
+      [B, JUEGO, PLANTILLA],
     );
     expect(denegado(r)).toBe(true);
   });
@@ -188,8 +207,8 @@ describe('optimizers: lectura publica, crea quien tiene sesion, edita el autor o
   it('no se puede crear con puntaje inflado', async () => {
     const r = await como(
       A,
-      `insert into public.optimizers (game_name, name, template, score) values ('X', 'trampa', $1, 999)`,
-      [PLANTILLA],
+      `insert into public.optimizers (game_id, name, template, score) values ($1, 'trampa', $2, 999)`,
+      [JUEGO, PLANTILLA],
     );
     expect(denegado(r)).toBe(true);
   });
@@ -197,8 +216,8 @@ describe('optimizers: lectura publica, crea quien tiene sesion, edita el autor o
   it('un visitante ve los publicados y no los borradores', async () => {
     const borr = await como(
       A,
-      `insert into public.optimizers (game_name, name, template) values ('Elden Ring', 'Borrador', $1) returning id`,
-      [PLANTILLA],
+      `insert into public.optimizers (game_id, name, template) values ($1, 'Borrador', $2) returning id`,
+      [JUEGO, PLANTILLA],
     );
     BORRADOR = borr.rows[0]?.id as string;
     const vistos = (await como(null, `select id from public.optimizers`)).rows.map((r) => r.id);
@@ -240,7 +259,7 @@ describe('optimizers: lectura publica, crea quien tiene sesion, edita el autor o
   });
 
   it('la plantilla debe ser un objeto JSON', async () => {
-    const r = await como(A, `insert into public.optimizers (game_name, name, template) values ('X', 'Y', '[]')`);
+    const r = await como(A, `insert into public.optimizers (game_id, name, template) values ($1, 'Y', '[]')`, [JUEGO]);
     expect(r.error).toBeTruthy();
   });
 
@@ -444,32 +463,43 @@ describe('cloud_inventory: solo el dueno; escribir exige suscripcion si la plata
 
 describe('optimizer_cards: listado publico y liviano del hub', () => {
   let CARD = '';
+  const JUEGO_ZZZ = '00000000-0000-0000-0000-0000000000c1';
+  const JUEGO_HSR = '00000000-0000-0000-0000-0000000000c2';
   const conPortada = JSON.stringify({
     gameId: 'zzz',
     name: 'Zenless Zone Zero',
-    category: 'Action RPG',
     cover: 'https://cdn.ejemplo.cl/zzz.webp',
   });
   const conPortadaEmbebida = JSON.stringify({
     gameId: 'hsr',
     name: 'Honkai: Star Rail',
-    category: 'Gacha',
     cover: 'data:image/png;base64,AAAA',
   });
 
   beforeAll(async () => {
+    await admin(`insert into public.game (id, slug, name) values
+      ($1, 'zenless-zone-zero', 'Zenless Zone Zero'),
+      ($2, 'honkai-star-rail', 'Honkai: Star Rail')`, [JUEGO_ZZZ, JUEGO_HSR]);
+    // Generos propios de este bloque: los del catalogo se insertan despues y
+    // `genre_name_unique` es unico entre todos.
+    await admin(`insert into public.genre (id, name) values
+      ('00000000-0000-0000-0000-0000000000b1', 'Deckbuilder'),
+      ('00000000-0000-0000-0000-0000000000b2', 'Roguelike')`);
+    await admin(`insert into public.game_genre (game_id, genre_id) values
+      ($1, '00000000-0000-0000-0000-0000000000b2'),
+      ($1, '00000000-0000-0000-0000-0000000000b1')`, [JUEGO_ZZZ]);
     const r = await como(
       A,
-      `insert into public.optimizers (game_name, name, template, published)
-       values ('Zenless Zone Zero', 'Disorder solver', $1, true) returning id`,
-      [conPortada],
+      `insert into public.optimizers (game_id, name, template, published)
+       values ($1, 'Disorder solver', $2, true) returning id`,
+      [JUEGO_ZZZ, conPortada],
     );
     CARD = r.rows[0]?.id as string;
     await como(
       A,
-      `insert into public.optimizers (game_name, name, template, published)
-       values ('Honkai: Star Rail', 'Portada embebida', $1, true)`,
-      [conPortadaEmbebida],
+      `insert into public.optimizers (game_id, name, template, published)
+       values ($1, 'Portada embebida', $2, true)`,
+      [JUEGO_HSR, conPortadaEmbebida],
     );
   });
 
@@ -479,13 +509,23 @@ describe('optimizer_cards: listado publico y liviano del hub', () => {
     expect(r.rows.length).toBeGreaterThan(0);
   });
 
-  it('expone categoria, portada y autor', async () => {
+  it('expone generos, juego, portada y autor', async () => {
     const r = await como(null, `select * from public.optimizer_cards where id = $1`, [CARD]);
     const fila = r.rows[0] as Row;
-    expect(fila.category).toBe('Action RPG');
+    expect(fila.game_id).toBe(JUEGO_ZZZ);
+    // `array_agg(order by g.name)` los devuelve ordenados.
+    expect(fila.genres).toEqual(['Deckbuilder', 'Roguelike']);
     expect(fila.cover).toBe('https://cdn.ejemplo.cl/zzz.webp');
     expect(fila.author_name).toBe('Ana R');
     expect(fila.score).toBe(0);
+  });
+
+  it('un juego sin generos devuelve arreglo vacio, no NULL', async () => {
+    const r = await como(
+      null,
+      `select genres from public.optimizer_cards where name = 'Portada embebida'`,
+    );
+    expect((r.rows[0] as Row).genres).toEqual([]);
   });
 
   it('descarta una portada embebida', async () => {
@@ -524,6 +564,87 @@ describe('optimizer_cards: listado publico y liviano del hub', () => {
   });
 });
 
+describe('catalogo de juegos: juego, genero, juego_genero y juego_alias', () => {
+  // El catalogo lo escribe solo la administracion; la lectura es publica.
+  const JUEGO = '00000000-0000-0000-0000-0000000000e1';
+
+  beforeAll(async () => {
+    await admin(`insert into public.game (id, slug, name) values ($1, 'mundo-prueba', 'Mundo Prueba')`, [JUEGO]);
+    await admin(`insert into public.genre (id, name) values
+      ('00000000-0000-0000-0000-0000000000f1', 'Action RPG'),
+      ('00000000-0000-0000-0000-0000000000f2', 'Gacha')`);
+    await admin(`insert into public.game_genre (game_id, genre_id) values
+      ($1, '00000000-0000-0000-0000-0000000000f1'),
+      ($1, '00000000-0000-0000-0000-0000000000f2')`, [JUEGO]);
+    await admin(`insert into public.game_alias (game_id, alias) values ($1, 'MP')`, [JUEGO]);
+  });
+
+  it('un visitante lee el catalogo', async () => {
+    const r = await como(null, `select name from public.game`);
+    expect(r.rows.length).toBeGreaterThan(0);
+  });
+
+  it('un juego tiene varios generos (M:N)', async () => {
+    const r = await admin(`select count(*)::int n from public.game_genre where game_id = $1`, [JUEGO]);
+    expect((r.rows[0] as { n: number }).n).toBe(2);
+  });
+
+  it('un juego tiene varios alias y el alias es unico entre juegos', async () => {
+    const alias = await admin(`select alias from public.game_alias where game_id = $1`, [JUEGO]);
+    expect(alias.rows.length).toBe(1);
+    const dup = await admin(
+      `insert into public.game_alias (game_id, alias)
+       select id, ' mp ' from public.game where id = $1`,
+      [JUEGO],
+    ).catch((e: Error) => e);
+    expect(dup).toBeInstanceOf(Error);
+  });
+
+  it('el slug solo admite minusculas y guiones', async () => {
+    const r = await admin(`insert into public.game (slug, name) values ('Con Espacios', 'X')`).catch(
+      (e: Error) => e,
+    );
+    expect(r).toBeInstanceOf(Error);
+  });
+
+  it('un usuario normal no puede escribir el catalogo', async () => {
+    expect(denegado(await como(A, `insert into public.game (slug, name) values ('colado', 'Colado')`))).toBe(true);
+    // Un delete bloqueado por RLS no lanza error: afecta 0 filas.
+    expect((await como(A, `delete from public.game where id = $1`, [JUEGO])).affected).toBe(0);
+    expect(
+      denegado(
+        await como(
+          A,
+          `insert into public.game_alias (game_id, alias) values ($1, 'hack')`,
+          [JUEGO],
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it('un juego agrupa varios optimizadores y no se puede borrar mientras los tenga', async () => {
+    const enlazar = (nombre: string) =>
+      admin(
+        `insert into public.optimizers (author_id, game_id, name, description, template, published)
+         values ($1, $2, $3, '', '{}'::jsonb, true)`,
+        [A, JUEGO, nombre],
+      );
+    await enlazar('Build 1');
+    await enlazar('Build 2');
+
+    const antes = await admin(`select count(*)::int n from public.optimizers where game_id = $1`, [JUEGO]);
+    expect((antes.rows[0] as { n: number }).n).toBe(2);
+
+    // RESTRICT: retirar un juego del catalogo no puede dejar builds huerfanas
+    // ni borrarlas en silencio. Primero se mueven, despues se borra el juego.
+    const borrado = await admin(`delete from public.game where id = $1`, [JUEGO]).catch((e: Error) => e);
+    expect(borrado).toBeInstanceOf(Error);
+
+    const vivos = await admin(`select count(*)::int n from public.optimizers where game_id = $1`, [JUEGO]);
+    expect((vivos.rows[0] as { n: number }).n).toBe(2);
+  });
+});
+
 describe('cascada: borrar la cuenta borra sus datos', () => {
   it('el perfil y los favoritos de Beto desaparecen', async () => {
     await admin(`delete from auth.users where id = $1`, [B]);
@@ -535,5 +656,199 @@ describe('cascada: borrar la cuenta borra sus datos', () => {
     ).rows[0] as { p: number; f: number };
     expect(quedan.p).toBe(0);
     expect(quedan.f).toBe(0);
+  });
+});
+
+/**
+ * Regresion de 20261125000001_privilegios_por_defecto.
+ *
+ * El arnes emula los privilegios por defecto de Supabase, asi que estas
+ * pruebas SI detectan el agujero: sin la migracion, `anon` y `authenticated`
+ * heredan INSERT/UPDATE/DELETE/TRUNCATE sobre la vista y sobre cada tabla
+ * nueva. Se comprueba el privilegio directamente en el catalogo (no el
+ * resultado de una consulta) porque un INSERT denegado por RLS y uno denegado
+ * por falta de GRANT devuelven el mismo error y no se distinguen.
+ */
+describe('privilegios: un objeto nuevo no nace abierto', () => {
+  it('la vista del hub solo concede SELECT', async () => {
+    const r = await admin(
+      `select grantee, string_agg(privilege_type, ',' order by privilege_type) as privs
+         from information_schema.role_table_grants
+        where table_schema = 'public' and table_name = 'optimizer_cards'
+          and grantee in ('anon', 'authenticated')
+        group by grantee order by grantee`,
+    );
+    expect(r.rows).toEqual([
+      { grantee: 'anon', privs: 'SELECT' },
+      { grantee: 'authenticated', privs: 'SELECT' },
+    ]);
+  });
+
+  it('ningun rol de la API puede truncar ni borrar a traves de la vista', async () => {
+    for (const rol of ['anon', 'authenticated']) {
+      const r = await admin(
+        `select has_table_privilege($1, 'public.optimizer_cards', 'TRUNCATE')::text as t,
+                has_table_privilege($1, 'public.optimizer_cards', 'DELETE')::text as d`,
+        [rol],
+      );
+      expect((r.rows[0] as Row).t).toBe('false');
+      expect((r.rows[0] as Row).d).toBe('false');
+    }
+  });
+
+  it('un authenticated no puede truncar el catalogo ni las tablas nuevas', async () => {
+    for (const tabla of ['game', 'genre', 'game_genre', 'subscription_gifts']) {
+      const r = await admin(
+        `select has_table_privilege('authenticated', $1, 'TRUNCATE')::text as t`,
+        [`public.${tabla}`],
+      );
+      expect((r.rows[0] as Row).t).toBe('false');
+    }
+  });
+
+  it('handle_new_user no es invocable por la API', async () => {
+    for (const rol of ['anon', 'authenticated']) {
+      const r = await admin(
+        `select has_function_privilege($1, 'public.handle_new_user()', 'EXECUTE')::text as x`,
+        [rol],
+      );
+      expect((r.rows[0] as Row).x).toBe('false');
+    }
+  });
+
+  it('is_admin y can_write_cloud siguen disponibles para los policies', async () => {
+    for (const rol of ['anon', 'authenticated']) {
+      for (const fn of ['public.is_admin()', 'public.can_write_cloud()']) {
+        const r = await admin(`select has_function_privilege($1, $2, 'EXECUTE')::text as x`, [rol, fn]);
+        expect((r.rows[0] as Row).x).toBe('true');
+      }
+    }
+  });
+
+  it('un objeto creado despues de las migraciones nace cerrado', async () => {
+    // Prueba de comportamiento, no de catalogo: se crea una tabla y una vista
+    // reales y se comprueba que la API no hereda nada. Sin la migracion, el
+    // default de Supabase (emulado en el arnes) les daria arwdDxtm.
+    await admin(`create table public.zz_probe_default (id int)`);
+    await admin(`create view public.zz_probe_vista as select 1 as x`);
+    try {
+      for (const rol of ['anon', 'authenticated']) {
+        for (const tabla of ['zz_probe_default', 'zz_probe_vista']) {
+          for (const priv of ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE']) {
+            const r = await admin(`select has_table_privilege($1, $2, $3)::text as x`, [
+              rol,
+              `public.${tabla}`,
+              priv,
+            ]);
+            expect(`${tabla}.${priv}=${(r.rows[0] as Row).x}`).toBe(`${tabla}.${priv}=false`);
+          }
+        }
+      }
+    } finally {
+      await admin(`drop view public.zz_probe_vista`);
+      await admin(`drop table public.zz_probe_default`);
+    }
+  });
+
+  it('ninguna funcion SECURITY DEFINER queda ejecutable salvo las de los policies', async () => {
+    // PostgreSQL no permite cerrar por defecto el EXECUTE a PUBLIC de una
+    // funcion (queda incorporado al valor de fabrica, no en la ACL), asi que
+    // cada SECURITY DEFINER tiene que cerrarse en su migracion. Esto vigila
+    // que ninguna se olvide: se listan las que la API puede ejecutar y se
+    // compara con la lista blanca. Si alguien agrega una funcion nueva sin
+    // revocarla, esta prueba falla y dice su nombre.
+    const r = await admin(
+      `select p.proname
+         from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+        where n.nspname = 'public' and p.prosecdef
+          and (has_function_privilege('anon', p.oid, 'EXECUTE')
+               or has_function_privilege('authenticated', p.oid, 'EXECUTE'))
+        order by p.proname`,
+    );
+    expect(r.rows.map((f) => f.proname)).toEqual(['can_write_cloud', 'is_admin']);
+  });
+});
+
+describe('subscription_gifts y stripe_events: las escribe el servidor', () => {
+  const DONANTE = '00000000-0000-0000-0000-0000000000d9';
+  const CREADOR = '00000000-0000-0000-0000-0000000000da';
+
+  beforeAll(async () => {
+    for (const [id, nombre] of [
+      [DONANTE, 'Dora'],
+      [CREADOR, 'Ciro'],
+    ]) {
+      await admin(`insert into auth.users (id) values ($1)`, [id]);
+      await admin(`update public.profiles set display_name = $2 where id = $1`, [id, nombre]);
+    }
+    await admin(
+      `insert into public.subscription_gifts (from_user_id, to_user_id, months, status)
+       values ($1, $2, 3, 'paid')`,
+      [DONANTE, CREADOR],
+    );
+  });
+
+  it('el receptor ve lo que le donaron y el donante lo que dio', async () => {
+    const comoCreador = (await como(CREADOR, `select months from public.subscription_gifts`)).rows;
+    const comoDonante = (await como(DONANTE, `select months from public.subscription_gifts`)).rows;
+    expect(comoCreador).toEqual([{ months: 3 }]);
+    expect(comoDonante).toEqual([{ months: 3 }]);
+  });
+
+  it('un tercero no ve donaciones ajenas', async () => {
+    const r = await como(A, `select months from public.subscription_gifts`);
+    expect(r.rows).toEqual([]);
+  });
+
+  it('nadie puede insertar una donacion desde el cliente', async () => {
+    expect(
+      denegado(
+        await como(
+          DONANTE,
+          `insert into public.subscription_gifts (from_user_id, to_user_id, months)
+           values ($1, $2, 1)`,
+          [DONANTE, CREADOR],
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it('nadie se regala meses a si mismo (constraint)', async () => {
+    const r = await admin(
+      `insert into public.subscription_gifts (from_user_id, to_user_id, months)
+       values ($1, $1, 1)`,
+      [DONANTE],
+    ).catch((e: Error) => e);
+    expect(r).toBeInstanceOf(Error);
+  });
+
+  it('un mismo pago no se acredita dos veces (payment_ref unico)', async () => {
+    const pagar = () =>
+      admin(
+        `insert into public.subscription_gifts (from_user_id, to_user_id, months, payment_ref)
+         values ($1, $2, 1, 'pi_123')`,
+        [DONANTE, CREADOR],
+      );
+    await pagar();
+    expect(await pagar().catch((e: Error) => e)).toBeInstanceOf(Error);
+  });
+
+  it('ningun rol de la API toca stripe_events', async () => {
+    for (const rol of ['anon', 'authenticated']) {
+      const r = await admin(
+        `select has_table_privilege($1, 'public.stripe_events', 'SELECT')::text as s,
+                has_table_privilege($1, 'public.stripe_events', 'INSERT')::text as i`,
+        [rol],
+      );
+      expect((r.rows[0] as Row).s).toBe('false');
+      expect((r.rows[0] as Row).i).toBe('false');
+    }
+  });
+
+  it('el evento de Stripe es idempotente por event_id', async () => {
+    const recibir = () =>
+      admin(`insert into public.stripe_events (event_id, type) values ('evt_1', 'checkout.session.completed')`);
+    await recibir();
+    expect(await recibir().catch((e: Error) => e)).toBeInstanceOf(Error);
   });
 });

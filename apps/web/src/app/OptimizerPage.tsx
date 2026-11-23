@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { currentLevel, withSkillBudget } from '@zenith/core-engine';
 import type { BuildResult, Constraint, Equipment, Item, SolveRequest } from '@zenith/shared-types';
 
 import { CharacterPickerDialog } from '../features/game/CharacterPicker';
@@ -177,9 +178,14 @@ export function OptimizerPage() {
       ? equippedBuild(template, equipment, evaluation, objective.id)
       : null;
 
+  // Los puntos se derivan del nivel del perfil elegido; el presupuesto
+  // declarado sigue siendo el tope duro (ver `withSkillBudget`).
   const points =
     template.skillTrees && template.skillTrees.length > 0
-      ? skillPoints(template, skillSelection)
+      ? skillPoints(
+          withSkillBudget(template, profile ? currentLevel(template, profile) : null),
+          skillSelection,
+        )
       : undefined;
 
   const deadlineMs = (): number | undefined => {
