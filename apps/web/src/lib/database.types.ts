@@ -19,7 +19,7 @@ export interface ProfileRow {
 export interface OptimizerRow {
   id: string;
   name: string;
-  game_name: string;
+  game_id: string;
   description: string;
   template: unknown;
   sample_items: unknown;
@@ -30,6 +30,7 @@ export interface OptimizerCardRow {
   id: string;
   name: string;
   description: string;
+  /** Nombre del juego, resuelto desde `juego.nombre` por la vista. */
   game_name: string;
   category: string | null;
   cover: string | null;
