@@ -20,7 +20,7 @@ La épica 3 llega hasta CFG-05. La épica 2 es el hub, que empieza cuando la 3 c
 | CFG-01 Crear un atributo base | Hecha | `features/editor/StatsEditor.tsx` |
 | CFG-02 Ver el listado de atributos | Hecha | `features/editor/BlockSection.tsx` |
 | CFG-03 Editar un atributo | Hecha | `features/editor/StatEditRow.tsx` |
-| CFG-04 Eliminar un atributo | Pendiente | |
+| CFG-04 Eliminar un atributo | Hecha | `features/editor/StatDeleteRow.tsx` |
 | CFG-05 Crear un juego desde cero | Hecha | `features/editor/CreateOptimizerPage.tsx` |
 
 CFG-06 (ver y validar la configuración) no es de esta épica pero se construyó aquí, porque
@@ -41,7 +41,8 @@ sin una pantalla que muestre el estado de la plantilla no había dónde colgar e
 | `2f16ea7` | Lo que marcaría el análisis estático |
 | `b5d69a2` | CFG-02. Búsqueda, orden y estado de uso |
 | `6934864` | Esta bitácora y las entradas de changelog que faltaban |
-| (este) | CFG-03. Editar en la fila, con aviso al cambiar la acumulación |
+| `40cbc0e` | CFG-03. Editar en la fila, con aviso al cambiar la acumulación |
+| (este) | CFG-04. Borrar con cascada hasta punto fijo |
 
 ### Tres hallazgos que no se buscaban
 
@@ -157,6 +158,25 @@ Lo que no se implementó, por historia. Nada de esto es un olvido.
 | Advertencia por reducir el rango | Depende de lo anterior. En su lugar se avisa al cambiar la acumulación, que es el riesgo equivalente |
 | Fecha de última modificación | No existe por atributo |
 
+### CFG-04
+
+| Criterio | Por qué no |
+|---|---|
+| Historial de deshacer hasta 10 acciones | Es una funcionalidad propia, cercana a CFG-16. Sin ella, la confirmación es la única red: por eso lista exactamente qué desaparece en vez de dar un número |
+
+El borrado en cascada **sí** se implementó como pide el criterio, con una
+salvedad que el criterio no contempla: **encadena**. Si cae el derivado `dps`
+porque usaba `atk`, un objetivo con la fórmula `dps * 2` queda apuntando a una
+variable que ya no existe. `cascadeOf` resuelve la cadena hasta punto fijo antes
+de tocar nada, y hay pruebas con tres derivados seguidos.
+
+El inventario no se toca. Las piezas son del usuario, no de la plantilla, y el
+motor ya ignora con un aviso las estadísticas que no conoce.
+
+Y donde el criterio no decía nada: si tras el borrado el optimizador deja de
+poder buscar, se avisa antes. No se bloquea, porque la plantilla es del autor,
+pero borrarle su único objetivo en silencio sería dejar que se rompa de lado.
+
 ### CFG-05
 
 Tres criterios quedaron fuera y los tres dependen de sesión, o sea de la épica 2: asociar
@@ -165,11 +185,8 @@ aparezca en la lista sin recargar (hoy se navega al editor).
 
 ### Pendientes de acordar con el equipo
 
-- **El borrado en cascada de CFG-04.** Tal como está escrito, borrar un atributo borraría el
-  objetivo que lo usa, y un juego sin objetivos no puede optimizar. El autor podría dejarse
-  el optimizador inservible con dos clics. La alternativa es bloquear y mostrar qué hay que
-  desenganchar primero, pero eso contradice el criterio.
 - **El deshacer de diez pasos de CFG-04.** Es una funcionalidad propia, cercana a CFG-16.
+  Mientras no exista, el borrado no se puede revertir y la confirmación es la única red.
 - **CFG-03 y las referencias.** El criterio dice que al renombrar se actualicen las
   variables que usaban el nombre antiguo. En este modelo las fórmulas referencian por `id`,
   no por nombre, así que renombrar no rompe nada y ese criterio ya se cumple. Lo que sí
@@ -177,9 +194,11 @@ aparezca en la lista sin recargar (hoy se navega al editor).
 
 ## Lo que queda
 
-Al cerrar la épica 3 se podrá crear un juego y definirle sus atributos, pero **ese juego
-todavía no podrá buscar**: `missingRequired` exige cuatro bloques y solo uno se vuelve
-editable. Faltan ranuras, objetivos y personajes, que no están en CFG-01 a CFG-05.
+La épica 3 queda cerrada: CFG-01 a CFG-05 están hechas. Pero un juego creado aquí
+**todavía no puede buscar**: `missingRequired` exige cuatro bloques y solo uno se volvió
+editable. Faltan ranuras, objetivos y personajes, que no estaban en estas historias.
+
+Lo siguiente es la épica 2, el hub.
 
 Fuera de la épica, anotado para cuando toque: mover `app/OptimizerPage.tsx` a
 `features/optimizer/`, porque importa doce cosas de `features/` y cero de `app/`, y el
@@ -194,8 +213,8 @@ en los siete proyectos, más `check:genres`.
 
 | Métrica | Valor |
 |---|---|
-| Pruebas en `apps/web` | 295 |
-| Pruebas en `libs/core-engine` | 174 |
+| Pruebas en `apps/web` | 306 |
+| Pruebas en `libs/core-engine` | 189 |
 | Cobertura sobre código nuevo | 94.5 % |
 
 La cobertura está medida como la mide la puerta de calidad: solo sobre líneas añadidas.
