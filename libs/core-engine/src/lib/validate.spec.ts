@@ -1,11 +1,13 @@
-import { readFileSync } from 'node:fs';
-
 import { describe, expect, it } from 'vitest';
 
+import type { GameTemplate, Item } from '@zenith/shared-types';
+
+import { loadFixture } from './testing/fixtures.js';
 import { validateTemplate } from './validate.js';
 
-const load = (file: string) =>
-  JSON.parse(readFileSync(new URL(`../../../../demo/public/examples/${file}`, import.meta.url), 'utf8'));
+type Paquete = { template: GameTemplate; items: Item[] };
+
+const load = (file: string) => loadFixture<Paquete>(file);
 const errores = (r: ReturnType<typeof validateTemplate>) =>
   r.issues.filter((i) => i.severity === 'error').map((i) => i.message).join(' | ');
 

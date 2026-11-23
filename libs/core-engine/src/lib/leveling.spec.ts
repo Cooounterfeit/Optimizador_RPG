@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-
 import { describe, expect, it } from 'vitest';
 
 import type { BaseProfile, GameTemplate, Item, LevelingDef } from '@zenith/shared-types';
@@ -11,6 +9,7 @@ import {
   allocatePoints, checkLeveling, currentLevel, futureLevels, maxReachable, pointsBetween, projectProfile, proyectarEstadisticas,
 } from './leveling.js';
 import { solve } from './optimizer.js';
+import { loadFixture } from './testing/fixtures.js';
 import { validateTemplate } from './validate.js';
 
 const close = (a: number | undefined, b: number) => a !== undefined && Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b));
@@ -120,9 +119,7 @@ describe('4. validacion', () => {
 });
 
 describe('5. ejemplo publicado (RPG clasico)', () => {
-  const pkg = JSON.parse(
-    readFileSync(new URL('../../../../demo/public/examples/rpg.zenith.json', import.meta.url), 'utf8'),
-  );
+  const pkg = loadFixture<{ template: GameTemplate; items: Item[] }>('rpg.zenith.json');
   const tpl = pkg.template as GameTemplate;
   const items = pkg.items as Item[];
   const v = validateTemplate(tpl);
@@ -252,9 +249,7 @@ describe('8. reparto automatico', () => {
 
 describe('9. ejemplo ARPG (niveles por puntos y curvas)', () => {
   it('valida sin avisos de curvas ni niveles, cumple el requisito y sube el dano', () => {
-    const arpg = JSON.parse(
-      readFileSync(new URL('../../../../demo/public/examples/arpg.zenith.json', import.meta.url), 'utf8'),
-    );
+    const arpg = loadFixture<{ template: GameTemplate; items: Item[] }>('arpg.zenith.json');
     const ts9 = arpg.template as GameTemplate;
     const it9 = arpg.items as Item[];
     const v9 = validateTemplate(ts9, it9);
