@@ -120,6 +120,7 @@ const setup = (seed: Item[] = []) => {
       description: '',
       template,
       sampleItems: [],
+      published: true,
     }),
   });
   return inventory;

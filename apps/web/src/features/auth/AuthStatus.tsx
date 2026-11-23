@@ -19,11 +19,16 @@ export function AuthUnavailable() {
       <h1 className="mb-3 text-2xl font-extrabold tracking-[-0.03em]">
         {copy.auth.unavailableTitle}
       </h1>
-      <p className="mb-4 text-sm text-muted-foreground">{copy.auth.unavailableBody}</p>
+      <p className="mb-4 text-sm text-muted-foreground">
+        {copy.auth.unavailableBody}
+      </p>
       <code className="mb-8 block rounded-[2px] border border-line bg-surface px-3 py-2 font-mono text-[11px] text-muted-foreground">
         apps/web/.env.local → VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
       </code>
-      <Link to="/" className="text-[13px] font-semibold underline underline-offset-4">
+      <Link
+        to="/"
+        className="text-[13px] font-semibold underline underline-offset-4"
+      >
         {copy.pages.back}
       </Link>
     </div>

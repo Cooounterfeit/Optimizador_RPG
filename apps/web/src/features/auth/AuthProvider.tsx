@@ -17,7 +17,11 @@ import {
   type SignUpInput,
 } from './auth-service';
 
-export type AuthStatus = 'unconfigured' | 'loading' | 'anonymous' | 'authenticated';
+export type AuthStatus =
+  | 'unconfigured'
+  | 'loading'
+  | 'anonymous'
+  | 'authenticated';
 
 export interface AuthContextValue {
   status: AuthStatus;
@@ -38,7 +42,9 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children, service }: AuthProviderProps) {
   const resolved = service === undefined ? getAuthService() : service;
-  const [status, setStatus] = useState<AuthStatus>(resolved ? 'loading' : 'unconfigured');
+  const [status, setStatus] = useState<AuthStatus>(
+    resolved ? 'loading' : 'unconfigured',
+  );
   const [user, setUser] = useState<SessionUser | null>(null);
 
   useEffect(() => {

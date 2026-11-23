@@ -66,7 +66,9 @@ export function WorkspaceRail({ id, sections, activeId }: WorkspaceRailProps) {
                   className={itemClass(active)}
                 >
                   <section.Icon className="h-5 w-5 shrink-0" />
-                  <span className={`${labelBase} ${labelExpanded}`}>{section.label}</span>
+                  <span className={`${labelBase} ${labelExpanded}`}>
+                    {section.label}
+                  </span>
                 </Link>
               </li>
             );
@@ -75,7 +77,9 @@ export function WorkspaceRail({ id, sections, activeId }: WorkspaceRailProps) {
           <li className="mt-auto border-t border-line pt-1.5 max-[860px]:mt-0 max-[860px]:border-t-0 max-[860px]:pt-0">
             <Link to="/" className={itemClass(false)}>
               <IconGrid className="h-5 w-5 shrink-0" />
-              <span className={`${labelBase} ${labelExpanded}`}>All optimizers</span>
+              <span className={`${labelBase} ${labelExpanded}`}>
+                All optimizers
+              </span>
             </Link>
           </li>
         </ul>

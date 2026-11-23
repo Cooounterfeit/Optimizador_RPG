@@ -137,13 +137,14 @@ const seed = JSON.parse(
 /** `useGame` consulta el repositorio remoto solo si el id tiene forma de uuid. */
 const GAME_ID = '11111111-1111-4111-8111-111111111111';
 
-const record = (template: GameTemplate): OptimizerRecord => ({
+const record = (template: GameTemplate, published = true): OptimizerRecord => ({
   id: GAME_ID,
   name: template.name,
   gameName: template.name,
   description: template.description,
   template,
   sampleItems: seed.items,
+  published,
 });
 
 const emptyResult = {
@@ -228,8 +229,9 @@ const buildFromSeed = (score = 100): BuildResult => ({
 const useTemplate = (
   template: GameTemplate = seed.template,
   items: Item[] = seed.items,
+  published = true,
 ): void => {
-  setOptimizerRepository({ getOptimizer: async () => record(template) });
+  setOptimizerRepository({ getOptimizer: async () => record(template, published) });
   setInventoryRepository(inventoryRepo(items));
   setGameRepository(noopGames);
   setSkillsRepository(skillsRepo());
@@ -242,7 +244,7 @@ const page = (id: string = GAME_ID) => workspaceElement(`/optimizer/${id}/optimi
 
 const renderPage = (id: string = GAME_ID) => renderWorkspace(`/optimizer/${id}/optimize`);
 
-const optimizeButton = () => screen.getByRole('button', { name: gameCopy.cockpit.optimize });
+const optimizeButton = () => screen.getByRole('button', { name: gameCopy.cockpit.run });
 const optimizeDisabled = (): boolean => (optimizeButton() as HTMLButtonElement).disabled;
 
 /**
@@ -380,7 +382,9 @@ describe('OptimizerPage con juego real', () => {
     renderPage();
     await runAndFinish();
 
-    fireEvent.click(screen.getAllByRole('radio')[1]);
+    fireEvent.change(screen.getByLabelText(gameCopy.cockpit.target), {
+      target: { value: 'hp-score' },
+    });
 
     await waitForResultCleared();
   });
@@ -396,6 +400,7 @@ describe('OptimizerPage con juego real', () => {
     renderPage();
     await runAndFinish();
 
+    fireEvent.click(screen.getByRole('button', { name: gameCopy.cockpit.showSetup }));
     fireEvent.click(screen.getByRole('button', { name: /Change/ }));
     fireEvent.click(screen.getByRole('button', { name: new RegExp(`^${second.name}`) }));
 
@@ -453,17 +458,10 @@ describe('OptimizerPage con juego real', () => {
     renderPage();
     await runAndFinish();
 
-    fireEvent.click(screen.getByRole('button', { name: gameCopy.cockpit.recordCurrentLevel }));
-    await screen.findByText(gameCopy.cockpit.recordedLevel);
-
-    fireEvent.change(screen.getByLabelText(gameCopy.cockpit.historyFutureLevel), {
-      target: { value: '2' },
-    });
-    const levelUp = screen.getByRole('button', {
-      name: gameCopy.cockpit.levelUpTo(2),
-    }) as HTMLButtonElement;
-    await waitFor(() => expect(levelUp.disabled).toBe(false), { timeout: 15_000 });
-    fireEvent.click(levelUp);
+    fireEvent.click(screen.getByRole('button', { name: gameCopy.cockpit.showSetup }));
+    const levelInput = screen.getByLabelText(gameCopy.cockpit.characterLevel);
+    fireEvent.change(levelInput, { target: { value: '2' } });
+    fireEvent.blur(levelInput);
 
     await waitFor(() => expect(save).toHaveBeenCalled());
     await waitForResultCleared();
@@ -552,6 +550,7 @@ describe('OptimizerPage · build actual', () => {
     fireEvent.click(optimizeButton());
     act(() => workerSent('solve').emit({ type: 'done', result: solveWith(100) }));
 
+    fireEvent.click(await screen.findByRole('button', { name: '#1' }));
     fireEvent.click(await screen.findByRole('button', { name: gameCopy.cockpit.equip }));
 
     await waitFor(() => expect(saved).toHaveLength(1));
@@ -569,9 +568,7 @@ describe('OptimizerPage · build actual', () => {
     setEquipmentRepository(equipmentRepo(equippedWithSeed()));
 
     renderPage();
-    await screen.findByText(gameCopy.cockpit.currentBuild);
-
-    await waitFor(() => expect(FakeWorker.instances.length).toBe(1));
+    await waitFor(() => expect(FakeWorker.instances.length).toBe(1), { timeout: 15_000 });
     expect(lastWorker().sent?.type).toBe('evaluate');
     act(() =>
       lastWorker().emit({
@@ -585,13 +582,15 @@ describe('OptimizerPage · build actual', () => {
       }),
     );
 
+    expect(await screen.findByText(gameCopy.cockpit.currentBuild)).toBeTruthy();
     expect(await screen.findByText('80')).toBeTruthy();
 
     await waitForOptimizeReady();
     fireEvent.click(optimizeButton());
     act(() => workerSent('solve').emit({ type: 'done', result: solveWith(100) }));
 
-    expect(await screen.findByText('-20 vs. best')).toBeTruthy();
+    // La build puesta entra en la lista y la mejor se mide contra ella.
+    expect(await screen.findByText('+20')).toBeTruthy();
   });
 });
 

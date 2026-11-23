@@ -3,7 +3,7 @@ import type { SVGProps } from 'react';
 /**
  * Set de iconos del proyecto: SVG inline, 20x20, trazo 1,5 y color heredado.
  *
- * No hay libreria de iconos y no se agrega una: estos siete trazos cubren la
+ * No hay libreria de iconos y no se agrega una: estos pocos trazos cubren la
  * navegacion del workspace. Nada aqui nombra un juego, un elemento ni una
  * ranura; la guardia `check-genres` recorre este archivo.
  */
@@ -100,6 +100,16 @@ export function IconGrid({ className }: IconProps) {
       <rect x="11.25" y="2.25" width="6.5" height="6.5" />
       <rect x="2.25" y="11.25" width="6.5" height="6.5" />
       <rect x="11.25" y="11.25" width="6.5" height="6.5" />
+    </svg>
+  );
+}
+
+/** Lista con una marca de revision: la configuracion revisada. */
+export function IconConfig({ className }: IconProps) {
+  return (
+    <svg {...shape} className={className}>
+      <path d="M3 5h8M3 10h8M3 15h5" />
+      <path d="M12.5 13.5l2 2 4-4.5" />
     </svg>
   );
 }

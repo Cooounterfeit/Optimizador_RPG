@@ -22,6 +22,8 @@ export interface OptimizerRecord {
   description: string;
   template: GameTemplate;
   sampleItems: Item[];
+  /** Visible en el catalogo. Un borrador propio tambien se puede abrir. */
+  published: boolean;
 }
 
 export interface OptimizerRepository {
@@ -64,6 +66,7 @@ export function mapOptimizerRow(row: JoinedOptimizerRow): OptimizerRecord {
     description: row.description,
     template: template.data,
     sampleItems,
+    published: row.published === true,
   };
 }
 

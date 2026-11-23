@@ -1,30 +1,42 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import type { BuildResult, Constraint, Equipment, Item, SolveRequest } from '@zenith/shared-types';
 
-import { Button } from '../components/ui/Button';
-import { cn } from '../lib/cn';
 import { CharacterPickerDialog } from '../features/game/CharacterPicker';
 import { gameCopy } from '../features/game/copy';
+import { getInventoryRepository } from '../features/game/repositories';
 import { useEquipment } from '../features/game/useEquipment';
 import { useProfileBase } from '../features/game/useProfileBase';
-import { ItemGlyph } from '../features/inventory/ItemGlyph';
-import { inventoryCopy } from '../features/inventory/copy';
-import { getInventoryRepository } from '../features/game/repositories';
-import { ConstraintEditor } from '../features/optimizer/ConstraintEditor';
-import { CharacterPanel } from '../features/optimizer/CharacterPanel';
-import { CurrentBuildPanel } from '../features/optimizer/CurrentBuildPanel';
-import { LevelHistoryPanel } from '../features/optimizer/LevelHistoryPanel';
-import { OptimizerResult } from '../features/optimizer/OptimizerResult';
 import { buildSolveRequest } from '../features/optimizer/request';
+import { equippedBuild, hasEquipped } from '../features/optimizer/equipped-build';
+import { skillPoints } from '../features/optimizer/skill-points';
 import { useOptimizer } from '../features/optimizer/useOptimizer';
+import { SetupBar } from '../features/optimizer/cockpit/SetupBar';
+import { SetupSheet } from '../features/optimizer/cockpit/SetupSheet';
+import {
+  EmptyInventoryPanel,
+  RunningPanel,
+  TemplateGapPanel,
+} from '../features/optimizer/cockpit/ResultStates';
+import { OptimizerResult } from '../features/optimizer/OptimizerResult';
 import { useOptimizerWorkspace } from '../features/optimizer/workspace/OptimizerWorkspaceProvider';
-import { itemIconUrls } from '../lib/images';
 
 /** Lista vacia estable: `inventory.items ?? []` crearia un array nuevo en cada render. */
 const NO_ITEMS: Item[] = [];
 
+const DEFAULT_RESULTS = '5';
+
+const clampResults = (raw: string): number => {
+  const value = Number.parseInt(raw, 10);
+  if (!Number.isFinite(value)) return 5;
+  return Math.min(10, Math.max(1, value));
+};
+
+/**
+ * Seccion Optimize: la barra de setup pegada arriba y la lista de resultados.
+ * Todo lo que se decide cabe en la barra; la hoja esconde lo que se edita poco
+ * (personaje, equipo puesto y reglas completas).
+ */
 export function OptimizerPage() {
   const { id, template, sampleItems, inventory, skills } = useOptimizerWorkspace();
   const inventoryForGame =
@@ -36,6 +48,9 @@ export function OptimizerPage() {
   const [objectiveId, setObjectiveId] = useState('');
   const [constraints, setConstraints] = useState<Constraint[]>([]);
   const [deadlineSeconds, setDeadlineSeconds] = useState('0');
+  const [resultsCount, setResultsCount] = useState(DEFAULT_RESULTS);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [focusBlock, setFocusBlock] = useState<'character' | 'constraints' | null>(null);
   const {
     phase,
     progress,
@@ -44,7 +59,6 @@ export function OptimizerPage() {
     error: optimizerError,
     evaluation,
     evaluationError,
-    evaluating,
     run,
     evaluate,
     cancel,
@@ -65,6 +79,8 @@ export function OptimizerPage() {
   } = useEquipment(template?.gameId, templateProfile?.id, inventoryForGame);
   const [equipError, setEquipError] = useState<string | null>(null);
 
+  const topN = clampResults(resultsCount);
+
   /**
    * Peticion al motor con el estado completo del jugador. La usan la busqueda y
    * la evaluacion de la build actual: asi lo que se ve y lo que se calcula
@@ -81,7 +97,7 @@ export function OptimizerPage() {
       objectiveId,
       constraints,
       skills: skillSelection,
-      topN: 3,
+      topN,
     });
   }, [
     template,
@@ -92,6 +108,7 @@ export function OptimizerPage() {
     inventory.items,
     constraints,
     skillSelection,
+    topN,
   ]);
 
   useEffect(() => {
@@ -110,9 +127,7 @@ export function OptimizerPage() {
    * nivel), no por identidad del array ni solo por ids: un objeto editado con el
    * mismo id tambien invalida. Cada `reload()` devuelve un array nuevo aunque
    * los objetos sean los mismos, y resetear en cada uno mataria una busqueda
-   * recien lanzada (los avisos de escritura llegan con retraso). `profileBase` tampoco entra: su identidad
-   * cambia al resolver Dexie; la carga la cubre el gate `ready` y la subida de
-   * nivel se invalida en `onLevelUp`.
+   * recien lanzada (los avisos de escritura llegan con retraso).
    */
   const inventoryKey = useMemo(
     () => JSON.stringify(inventory.items ?? []),
@@ -120,7 +135,7 @@ export function OptimizerPage() {
   );
   useEffect(() => {
     reset();
-  }, [profileId, objectiveId, constraints, inventoryKey, reset]);
+  }, [profileId, objectiveId, constraints, inventoryKey, topN, reset]);
 
   /**
    * "Mi build" se evalua sola cuando cambia el equipo, el perfil, el objetivo, la
@@ -129,8 +144,7 @@ export function OptimizerPage() {
    */
   useEffect(() => {
     if (!equipmentReady) return;
-    const hasEquipped = Object.values(equipment).some((itemId) => itemId !== '');
-    if (!hasEquipped) return;
+    if (!hasEquipped(equipment)) return;
     const request = buildRequest();
     if (!request) return;
     evaluate(request, equipment);
@@ -146,19 +160,32 @@ export function OptimizerPage() {
     : undefined;
 
   const items = inventory.items ?? NO_ITEMS;
+  const inventoryLoaded = inventory.items !== null;
+  const templateGap =
+    template.baseProfiles.length === 0 || template.objectives.length === 0;
   const canRun =
     items.length > 0 &&
+    inventoryLoaded &&
     !loadingSamples &&
     profileBaseReady &&
     Boolean(profile) &&
     Boolean(objective) &&
     phase !== 'running';
 
-  /** Puntaje de la mejor build para el objetivo que se esta mirando. */
-  const bestScore =
-    result && resultObjective && resultObjective.id === objective?.id
-      ? result.builds[0]?.score
+  const equipped =
+    hasEquipped(equipment) && objective
+      ? equippedBuild(template, equipment, evaluation, objective.id)
+      : null;
+
+  const points =
+    template.skillTrees && template.skillTrees.length > 0
+      ? skillPoints(template, skillSelection)
       : undefined;
+
+  const deadlineMs = (): number | undefined => {
+    const seconds = Number.parseInt(deadlineSeconds, 10);
+    return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : undefined;
+  };
 
   /** Traduce las piezas de la build a ranuras y las guarda como equipo puesto. */
   const equip = async (build: BuildResult) => {
@@ -189,303 +216,184 @@ export function OptimizerPage() {
     }
   };
 
-  const start = () => {
-    const request = buildRequest();
+  const start = (nextConstraints: Constraint[] = constraints) => {
+    if (!template || !templateProfile || !profileBaseReady) return;
+    setSheetOpen(false);
+    setFocusBlock(null);
+    const request = buildSolveRequest({
+      template,
+      profileId: templateProfile.id,
+      profileBase,
+      items,
+      objectiveId,
+      constraints: nextConstraints,
+      skills: skillSelection,
+      topN,
+    });
     if (!request) return;
-    const seconds = Number.parseInt(deadlineSeconds, 10);
-    run(request, Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : undefined);
+    run(request, deadlineMs());
+  };
+
+  const openSheet = (block: 'character' | 'constraints') => {
+    setSheetOpen(true);
+    setFocusBlock(block);
   };
 
   return (
-    <div className="mx-auto max-w-[1280px] px-6 pb-20 pt-6 max-[860px]:px-4">
-      <header className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-line pb-4">
+    <div className="mx-auto max-w-[1560px] px-4 pb-10 pt-3">
+      <header className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-1 pb-2">
         <p className="label-caps m-0">{gameCopy.eyebrow}</p>
-        <h1 className="m-0 text-lg font-extrabold tracking-[-0.02em]">{template.name}</h1>
-        {templateProfile ? (
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            {templateProfile.name}
-          </span>
-        ) : null}
+        <h1 className="m-0 text-[16px] font-extrabold tracking-[-0.02em]">{template.name}</h1>
+        <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+          {template.slots.length} slots · {template.sets.length} sets
+        </span>
       </header>
 
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
-        <div className="flex min-w-0 flex-col gap-4">
-          {profile ? (
-            <CharacterPanel
-              template={template}
-              profile={profile}
-              onChangeCharacter={() => setPickerOpen(true)}
-              onSaveBase={async (base) => {
-                try {
-                  await saveProfileBase(base);
-                } finally {
-                  reset();
-                }
-              }}
-            />
-          ) : null}
+      <SetupBar
+        id={id}
+        template={template}
+        profile={profile}
+        objectiveId={objective?.id ?? ''}
+        onObjective={setObjectiveId}
+        constraints={constraints}
+        onConstraints={setConstraints}
+        skills={points}
+        resultsCount={resultsCount}
+        onResultsCount={setResultsCount}
+        deadlineSeconds={deadlineSeconds}
+        onDeadlineSeconds={setDeadlineSeconds}
+        running={phase === 'running'}
+        canRun={canRun}
+        onRun={() => start()}
+        onStop={cancel}
+        sheetOpen={sheetOpen}
+        onToggleSheet={() => {
+          setFocusBlock(null);
+          setSheetOpen((current) => !current);
+        }}
+      />
 
-          <section className="rounded-[4px] border border-line bg-surface p-4">
-            <p className="label-caps">02 · {gameCopy.cockpit.objective}</p>
-            <p className="mt-1 text-[11.5px] text-muted-foreground">{gameCopy.cockpit.objectiveHint}</p>
-            <div className="mt-3 flex flex-col gap-1" role="radiogroup" aria-label={gameCopy.cockpit.objective}>
-              {template.objectives.map((entry) => {
-                const active = entry.id === objective?.id;
-                return (
-                  <button
-                    key={entry.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setObjectiveId(entry.id)}
-                    className={cn(
-                      'rounded-[3px] border px-3 py-2 text-left transition-colors duration-150',
-                      active
-                        ? 'border-foreground bg-raised'
-                        : 'border-transparent hover:border-line hover:bg-raised',
-                    )}
-                  >
-                    <span className="block text-[13px] font-semibold leading-snug">{entry.name}</span>
-                    <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground line-clamp-2">
-                      {entry.description}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
+      <SetupSheet
+        id={id}
+        template={template}
+        profile={profile}
+        open={sheetOpen}
+        focusBlock={focusBlock}
+        objectiveId={objective?.id ?? ''}
+        onObjective={setObjectiveId}
+        constraints={constraints}
+        onConstraints={setConstraints}
+        equipment={equipment}
+        items={items}
+        equipmentReady={equipmentReady}
+        evaluation={evaluation}
+        skillsSelection={points ? skillSelection : undefined}
+        skillPoints={points}
+        running={phase === 'running'}
+        onChangeCharacter={() => setPickerOpen(true)}
+        onSaveBase={async (base) => {
+          try {
+            await saveProfileBase(base);
+          } finally {
+            reset();
+          }
+        }}
+      />
 
-          <section className="rounded-[4px] border border-line bg-surface p-4">
-            <p className="label-caps">03 · {gameCopy.cockpit.constraints}</p>
-            <p className="mt-1 text-[11.5px] text-muted-foreground">{gameCopy.cockpit.constraintsHint}</p>
-            <ConstraintEditor
-              template={template}
-              constraints={constraints}
-              onChange={setConstraints}
-            />
-          </section>
+      <div className="mt-2 flex min-w-0 flex-col gap-2.5">
+        {optimizerError ? (
+          <p
+            role="alert"
+            className="rounded-[2px] border border-[oklch(0.6_0.19_25)] px-3 py-2 text-[12px] text-[oklch(0.78_0.16_25)]"
+          >
+            {optimizerError}
+          </p>
+        ) : null}
+        {equipError ? (
+          <p
+            role="alert"
+            className="rounded-[2px] border border-[oklch(0.6_0.19_25)] px-3 py-2 text-[12px] text-[oklch(0.78_0.16_25)]"
+          >
+            {equipError}
+          </p>
+        ) : null}
+        {phase === 'cancelled' ? (
+          <p
+            role="status"
+            className="rounded-[2px] border border-line px-3 py-2 text-[12px] text-muted-foreground"
+          >
+            {gameCopy.cockpit.cancelled}
+          </p>
+        ) : null}
+        {evaluationError ? (
+          <p role="status" className="text-[12px] text-muted-foreground">
+            {evaluationError}
+          </p>
+        ) : null}
 
-          <section className="rounded-[4px] border border-line bg-surface p-4">
-            <p className="label-caps">04 · {gameCopy.cockpit.timeLimit}</p>
-            <p className="mt-1 text-[11.5px] text-muted-foreground">{gameCopy.cockpit.timeLimitHint}</p>
-            <label className="sr-only" htmlFor="optimizer-deadline">
-              {gameCopy.cockpit.timeLimit}
-            </label>
-            <div className="mt-3 flex items-center gap-2">
-              <input
-                id="optimizer-deadline"
-                type="number"
-                min={0}
-                step={1}
-                inputMode="numeric"
-                className="h-10 w-24 rounded-[2px] border border-line bg-background px-3 font-mono text-[13px] text-foreground outline-none transition-colors focus:border-line-strong disabled:opacity-60"
-                value={deadlineSeconds}
-                disabled={phase === 'running'}
-                onChange={(event) => {
-                  const next = event.target.value;
-                  if (/^\d*$/.test(next)) setDeadlineSeconds(next);
-                }}
-              />
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                {gameCopy.cockpit.timeUnit}
-              </span>
-            </div>
-          </section>
-        </div>
-
-        <div className="flex min-w-0 flex-col gap-4">
+        {templateGap ? (
+          <TemplateGapPanel
+            missingProfiles={template.baseProfiles.length === 0}
+            missingObjectives={template.objectives.length === 0}
+          />
+        ) : phase === 'running' ? (
+          <RunningPanel
+            progress={progress}
+            totalCombinations={result?.stats.totalCombinations}
+            onStop={cancel}
+          />
+        ) : !inventoryLoaded ? (
+          <p className="px-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            {gameCopy.loading}
+          </p>
+        ) : items.length === 0 ? (
+          <EmptyInventoryPanel
+            id={id}
+            canLoadSamples={sampleItems.length > 0}
+            loadingSamples={loadingSamples}
+            onLoadSamples={() => void loadSamples()}
+          />
+        ) : result && resultObjective ? (
+          <OptimizerResult
+            template={template}
+            objective={resultObjective}
+            result={result}
+            items={items}
+            equipment={equipment}
+            onEquip={(build) => void equip(build)}
+            equipped={equipped}
+            constraints={ranFor?.constraints}
+            profileName={profile?.name}
+            expected={ranFor?.topN ?? topN}
+            onRunWithoutConstraints={
+              ranFor && (ranFor.constraints?.length ?? 0) > 0
+                ? () => start([])
+                : undefined
+            }
+            onEditConstraints={() => openSheet('constraints')}
+          />
+        ) : equipped && objective ? (
+          <OptimizerResult
+            template={template}
+            objective={objective}
+            items={items}
+            equipment={equipment}
+            onEquip={(build) => void equip(build)}
+            equipped={equipped}
+            profileName={profile?.name}
+          />
+        ) : (
           <section className="rounded-[4px] border border-line bg-surface p-5">
-            <p className="label-caps">{gameCopy.cockpit.ready}</p>
-            <p className="mt-1 max-w-[60ch] text-[13px] text-muted-foreground">
-              {gameCopy.cockpit.readyBody}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              <h2 className="m-0 text-[16px] font-semibold tracking-[-0.01em]">
+                {gameCopy.cockpit.bestBuilds}
+              </h2>
+            </div>
+            <p className="mt-2 max-w-[62ch] text-[12.5px] text-muted-foreground">
+              {gameCopy.cockpit.runToSee}
             </p>
-
-            <ol className="mt-5 flex flex-col gap-3">
-              {gameCopy.cockpit.steps.map((step, index) => (
-                <li key={step.title} className="flex gap-3">
-                  <span className="w-6 shrink-0 pt-0.5 font-mono text-[10px] text-muted-foreground tabular-nums">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[13.5px] font-semibold leading-snug">{step.title}</p>
-                    <p className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">
-                      {step.body}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-
-            {template.baseProfiles.length === 0 || template.objectives.length === 0 ? (
-              <div className="mt-4 rounded-[2px] border border-dashed border-line-strong px-3 py-2 text-[12px] text-muted-foreground">
-                {template.baseProfiles.length === 0 ? (
-                  <p className="m-0">{gameCopy.cockpit.missingProfiles}</p>
-                ) : null}
-                {template.objectives.length === 0 ? (
-                  <p className="m-0 mt-1">{gameCopy.cockpit.missingObjectives}</p>
-                ) : null}
-              </div>
-            ) : null}
-
-            <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-4">
-              {phase === 'running' ? (
-                <Button variant="outline" onClick={cancel}>
-                  {gameCopy.cockpit.stop}
-                </Button>
-              ) : (
-                <Button onClick={start} disabled={!canRun}>
-                  {gameCopy.cockpit.optimize}
-                </Button>
-              )}
-              <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
-                {phase === 'running' ? gameCopy.cockpit.running : gameCopy.cockpit.optimizeNote}
-              </span>
-            </div>
-
-            {phase === 'running' ? (
-              <div className="mt-3 rounded-[2px] border border-line px-3 py-2">
-                <p className="m-0 font-mono text-[10.5px] text-muted-foreground">
-                  {progress
-                    ? `${progress.evaluated.toLocaleString('en-US')} evaluated · ${progress.pruned.toLocaleString('en-US')} pruned · ${Math.round(progress.elapsedMs / 1000)}s · ${gameCopy.cockpit.bestScore} ${progress.bestScore.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
-                    : gameCopy.cockpit.running}
-                </p>
-                <p className="m-0 mt-1 text-[11px] leading-snug text-muted-foreground">
-                  {gameCopy.cockpit.stopNote}
-                </p>
-              </div>
-            ) : null}
-
-            {optimizerError ? (
-              <p
-                role="alert"
-                className="mt-3 rounded-[2px] border border-[oklch(0.6_0.19_25)] px-3 py-2 text-[12px] text-[oklch(0.78_0.16_25)]"
-              >
-                {optimizerError}
-              </p>
-            ) : null}
-
-            {phase === 'cancelled' ? (
-              <p
-                role="status"
-                className="mt-3 rounded-[2px] border border-line px-3 py-2 text-[12px] text-muted-foreground"
-              >
-                {gameCopy.cockpit.cancelled}
-              </p>
-            ) : null}
-
-            {inventory.items !== null && items.length === 0 ? (
-              <div className="mt-3 rounded-[2px] border border-dashed border-line-strong px-3 py-2 text-[12px] text-muted-foreground">
-                <p className="m-0">
-                  <strong className="text-foreground">{gameCopy.cockpit.emptyInventoryTitle}.</strong>{' '}
-                  {gameCopy.cockpit.emptyInventoryBody}
-                </p>
-                {sampleItems.length > 0 ? (
-                  <Button
-                    variant="outline"
-                    className="mt-2"
-                    onClick={() => void loadSamples()}
-                    disabled={loadingSamples}
-                  >
-                    {loadingSamples ? inventoryCopy.loadingSamples : inventoryCopy.loadSamples}
-                  </Button>
-                ) : null}
-              </div>
-            ) : null}
           </section>
-
-          {profile && objective ? (
-            <CurrentBuildPanel
-              template={template}
-              objective={objective}
-              equipment={equipment}
-              items={new Map(items.map((item) => [item.id, item]))}
-              evaluation={evaluation}
-              evaluating={evaluating}
-              error={evaluationError ?? equipError}
-              bestScore={bestScore}
-              loading={!equipmentReady}
-            />
-          ) : null}
-
-          {result && resultObjective ? (
-            <OptimizerResult
-              template={template}
-              objective={resultObjective}
-              result={result}
-              items={items}
-              equipment={equipment}
-              onEquip={(build) => void equip(build)}
-            />
-          ) : null}
-
-          {profile ? (
-            <LevelHistoryPanel
-              template={template}
-              profile={profile}
-              onLevelUp={async (base) => {
-                try {
-                  await saveProfileBase(base);
-                } finally {
-                  reset();
-                }
-              }}
-            />
-          ) : null}
-
-          <section className="rounded-[4px] border border-line bg-surface p-5">
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="label-caps">{gameCopy.cockpit.inventory}</p>
-              <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
-                {inventory.items === null ? '…' : gameCopy.cockpit.items(items.length)}
-              </span>
-            </div>
-
-            {inventory.items === null ? (
-              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                {gameCopy.loading}
-              </p>
-            ) : items.length === 0 ? (
-              <p className="mt-3 text-[12.5px] text-muted-foreground">
-                {gameCopy.cockpit.inventoryEmpty}
-              </p>
-            ) : (
-              <ul className="mt-3 divide-y divide-line">
-                {items.slice(0, 4).map((item) => (
-                  <li key={item.id} className="flex items-center gap-3 py-2 first:pt-0">
-                    <ItemGlyph
-                      name={item.name}
-                      rarity={item.rarity}
-                      sources={itemIconUrls(template.assets, item)}
-                      className="h-9 w-9 text-[10px]"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[12.5px] font-semibold">{item.name}</p>
-                      <p className="truncate font-mono text-[9.5px] text-muted-foreground">
-                        {template.slots.find((slot) => slot.id === item.slot)?.name ?? item.slot}
-                        {item.level !== undefined ? ` · Lv. ${item.level}` : ''}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <div className="mt-3 flex flex-wrap items-center gap-4">
-              <Link
-                to={`/optimizer/${id}/inventario`}
-                className="text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {gameCopy.viewAllItems} →
-              </Link>
-              <Link
-                to={`/optimizer/${id}/inventario?tab=catalog`}
-                className="text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {gameCopy.browseCatalog} →
-              </Link>
-            </div>
-          </section>
-        </div>
+        )}
       </div>
 
       {profile ? (

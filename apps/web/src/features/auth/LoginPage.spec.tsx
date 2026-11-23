@@ -23,8 +23,12 @@ const renderLogin = (
   );
 
 const fill = (email: string, password: string) => {
-  fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } });
-  fireEvent.change(screen.getByLabelText('Password'), { target: { value: password } });
+  fireEvent.change(screen.getByLabelText('Email'), {
+    target: { value: email },
+  });
+  fireEvent.change(screen.getByLabelText('Password'), {
+    target: { value: password },
+  });
 };
 
 describe('LoginPage', () => {

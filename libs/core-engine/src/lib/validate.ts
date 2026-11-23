@@ -17,6 +17,7 @@
  * y avisa.
  */
 
+import { statIdProblem } from './ids.js'
 import { compileFormula, formulaVariables, FormulaError } from './formula.js'
 import { findMonotonicViolation, SKILL_SLOT, solve, topoSortDerived } from './optimizer.js'
 import { checkSelection, checkSkillTrees, skillVariables } from './skills.js'
@@ -98,6 +99,28 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
   // vez que ir descubriendolos de a uno.
   dup(t.stats, 'stats'); dup(t.slots, 'slots'); dup(sets, 'sets')
   dup(derivedRaw, 'derived'); dup(t.objectives, 'objectives'); dup(t.baseProfiles, 'baseProfiles')
+
+  // Un id que no sirve como variable rompe las formulas LEJOS de aqui: el
+  // tokenizador lee "ataque-critico" como una resta. Mejor delatarlo aqui, que
+  // es donde se puede explicar, y para cualquier origen: formulario, paquete
+  // importado o plantilla escrita a mano.
+  const checkId = (id: string) => {
+    switch (statIdProblem(id)) {
+      case 'shape':
+        err('E_ID_FORMA', `El id "${id}" no sirve como variable en una formula: solo letras, numeros y guion bajo, y no puede empezar por un numero.`, id)
+        break
+      case 'reserved':
+        err('E_ID_RESERVADO', `"${id}" es el nombre de una funcion del lenguaje de formulas.`, id)
+        break
+      case 'prefix':
+        err('E_ID_RESERVADO', `"${id}" empieza por un prefijo reservado del motor (base_ o skill_).`, id)
+        break
+      default:
+        break
+    }
+  }
+  for (const s of t.stats) if (s?.id) checkId(s.id)
+  for (const d of derivedRaw) if (d?.id) checkId(d.id)
 
   const statIds = new Set(t.stats.map((s) => s.id))
   const derivedIds = new Set(derivedRaw.map((d) => d.id))
@@ -429,7 +452,7 @@ export function validateTemplate(raw: unknown, items?: Item[]): ValidationReport
       }
       for (const [k, v] of Object.entries(test.expectStats ?? {})) {
         const got = b.finalStats[k]
-        if (got === undefined || Math.abs(got - v) > tol) fails.push(`${k} ${got?.toFixed(2) ?? '—'} ≠ ${v}`)
+        if (got === undefined || Math.abs(got - v) > tol) fails.push(`${k} ${got?.toFixed(2) ?? 'n/a'} ≠ ${v}`)
       }
       selfTests.push({
         name: test.name,

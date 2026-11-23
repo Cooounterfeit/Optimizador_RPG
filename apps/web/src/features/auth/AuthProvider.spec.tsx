@@ -10,7 +10,9 @@ function Status() {
   return <p>{`${status}:${user?.displayName ?? '-'}`}</p>;
 }
 
-const renderWith = (service: ReturnType<typeof fakeAuthService>['service'] | null) =>
+const renderWith = (
+  service: ReturnType<typeof fakeAuthService>['service'] | null,
+) =>
   render(
     <AuthProvider service={service}>
       <MemoryRouter>
@@ -42,7 +44,9 @@ describe('login y logout desde el contexto', () => {
     return (
       <>
         <p>{status}</p>
-        <button onClick={() => void signIn('ana@ejemplo.cl', 'secreta123')}>entrar</button>
+        <button onClick={() => void signIn('ana@ejemplo.cl', 'secreta123')}>
+          entrar
+        </button>
         <button onClick={() => void signOut()}>salir</button>
       </>
     );

@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '../../components/ui/Button';
@@ -6,7 +12,7 @@ import { copy } from '../catalog/copy';
 import { monogram } from '../catalog/monogram';
 import { AuthError } from './auth-service';
 import { AuthLoading } from './AuthStatus';
-import { errorClass, fieldClass, labelClass } from './AuthShell';
+import { errorClass, fieldClass, labelClass } from '../../components/ui/form';
 import { useAuth } from './AuthProvider';
 import { validateAvatar } from './avatar';
 import { authErrorMessage } from './error-message';
@@ -92,7 +98,9 @@ export function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-[900px] px-6 py-16">
-      <h1 className="mb-2 text-2xl font-extrabold tracking-[-0.03em]">{copy.profile.title}</h1>
+      <h1 className="mb-2 text-2xl font-extrabold tracking-[-0.03em]">
+        {copy.profile.title}
+      </h1>
       <p className="mb-10 text-sm text-muted-foreground">{copy.profile.lede}</p>
 
       <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
@@ -128,7 +136,9 @@ export function ProfilePage() {
               >
                 {uploading ? copy.auth.working : copy.profile.changeAvatar}
               </Button>
-              <p className="mt-1.5 text-[11.5px] text-muted-foreground">{copy.profile.avatarHint}</p>
+              <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+                {copy.profile.avatarHint}
+              </p>
               <input
                 ref={fileInput}
                 type="file"
@@ -168,7 +178,9 @@ export function ProfilePage() {
               setSaved(false);
             }}
           />
-          <p className="mt-1.5 text-[11.5px] text-muted-foreground">{copy.profile.bioHint}</p>
+          <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+            {copy.profile.bioHint}
+          </p>
 
           <label className={`${labelClass} mt-4`} htmlFor="profile-email">
             {copy.profile.email}
@@ -180,14 +192,19 @@ export function ProfilePage() {
             value={user.email ?? ''}
             readOnly
           />
-          <p className="mt-1.5 text-[11.5px] text-muted-foreground">{copy.profile.emailNote}</p>
+          <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+            {copy.profile.emailNote}
+          </p>
 
           <div className="mt-6 flex items-center gap-3">
             <Button type="submit" disabled={pending}>
               {pending ? copy.profile.saving : copy.profile.save}
             </Button>
             {saved ? (
-              <span role="status" className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground">
+              <span
+                role="status"
+                className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground"
+              >
                 {copy.profile.saved}
               </span>
             ) : null}
@@ -201,12 +218,16 @@ export function ProfilePage() {
           <section className={sectionClass}>
             <h2 className={labelClass}>{copy.profile.subscription}</h2>
             <p className="text-lg font-bold">{copy.profile.planFree}</p>
-            <p className="mt-1 text-[12.5px] text-muted-foreground">{copy.profile.planNote}</p>
+            <p className="mt-1 text-[12.5px] text-muted-foreground">
+              {copy.profile.planNote}
+            </p>
           </section>
 
           <section className={sectionClass}>
             <h2 className={labelClass}>{copy.profile.myOptimizers}</h2>
-            <p className="text-[12.5px] text-muted-foreground">{copy.profile.myOptimizersNote}</p>
+            <p className="text-[12.5px] text-muted-foreground">
+              {copy.profile.myOptimizersNote}
+            </p>
           </section>
 
           <section className="rounded-[4px] border border-dashed border-line p-5">
@@ -214,7 +235,9 @@ export function ProfilePage() {
             <Button variant="outline" size="sm" disabled title={copy.soon}>
               {copy.profile.deleteAccount}
             </Button>
-            <p className="mt-2 text-[11.5px] text-muted-foreground">{copy.profile.deleteNote}</p>
+            <p className="mt-2 text-[11.5px] text-muted-foreground">
+              {copy.profile.deleteNote}
+            </p>
           </section>
         </div>
       </div>
