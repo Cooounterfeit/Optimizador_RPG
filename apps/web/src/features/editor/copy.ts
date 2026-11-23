@@ -53,8 +53,10 @@ export const editorCopy = {
     created: 'Optimizer created. Now you can configure it.',
     eyebrow: 'Configuration',
     lede: 'Everything this optimizer is made of, and what the engine says about it.',
+    // Sin "el boton de arriba": en una instalacion sin cuentas no hay ningun
+    // boton, y la frase quedaba mintiendo en la unica pantalla que la lee.
     autosave:
-      'Changes are written as you make them and stay in this browser. Saving to your account is a separate step, and it is the button above.',
+      'Changes are written as you make them and stay in this browser. Saving to your account is a separate step.',
     stateTitle: 'State of the template',
     ready: 'This template has everything the solver needs. It can run.',
     notReady: 'The solver cannot run yet. These parts are still empty:',
