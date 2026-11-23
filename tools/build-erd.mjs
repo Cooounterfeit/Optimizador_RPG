@@ -12,15 +12,47 @@
 
    Lee el catalogo de la base local por psql (docker exec). */
 import { execFileSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CONTAINER = 'supabase_db_ZenithOptimizer';
 
+/**
+ * Docker por ruta absoluta, nunca por nombre suelto (S4036).
+ *
+ * `execFileSync('docker', ...)` deja que se ejecute el primer `docker` del PATH,
+ * y el PATH puede incluir directorios escribibles por el usuario. Un binario
+ * plantado ahi correria con los permisos de quien ejecuta el script. Las rutas
+ * se arman desde las variables del sistema (no llevan un usuario escrito a
+ * mano) y si ninguna existe se aborta en vez de caer al PATH.
+ *
+ * `DOCKER_BIN` permite forzar una instalacion fuera de lo habitual.
+ */
+const { ProgramFiles, ProgramW6432, LOCALAPPDATA } = process.env;
+
+const DOCKER_CANDIDATES = [
+  process.env.DOCKER_BIN,
+  ProgramFiles && join(ProgramFiles, 'Docker', 'Docker', 'resources', 'bin', 'docker.exe'),
+  ProgramW6432 && join(ProgramW6432, 'Docker', 'Docker', 'resources', 'bin', 'docker.exe'),
+  LOCALAPPDATA &&
+    join(LOCALAPPDATA, 'Programs', 'DockerDesktop', 'resources', 'bin', 'docker.exe'),
+  '/usr/bin/docker',
+  '/usr/local/bin/docker',
+  '/opt/homebrew/bin/docker',
+  '/Applications/Docker.app/Contents/Resources/bin/docker',
+].filter(Boolean);
+
+const dockerBin = DOCKER_CANDIDATES.find((candidate) => existsSync(candidate));
+if (!dockerBin) {
+  throw new Error(
+    'No se encontro docker en las rutas conocidas. Defini DOCKER_BIN con la ruta completa.',
+  );
+}
+
 const psql = (sql) =>
-  execFileSync('docker', ['exec', CONTAINER, 'psql', '-U', 'postgres', '-d', 'postgres', '-tAc', sql], {
+  execFileSync(dockerBin, ['exec', CONTAINER, 'psql', '-U', 'postgres', '-d', 'postgres', '-tAc', sql], {
     encoding: 'utf8',
     maxBuffer: 32 * 1024 * 1024,
   })
