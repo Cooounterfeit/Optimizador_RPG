@@ -2,6 +2,12 @@ import { expect, test, type Page } from '@playwright/test';
 
 import { railLink, section } from './nav';
 
+const runSearch = (page: Page) => page.getByRole('button', { name: 'Run search', exact: true });
+const openSetup = (page: Page) =>
+  page.getByRole('button', { name: 'Show setup' }).click();
+const buildRow = (page: Page, rank: number) =>
+  page.getByRole('button', { name: `#${rank}`, exact: true });
+
 const addItem = async (page: Page, name: string, slot: string) => {
   await page.getByRole('button', { name: 'Add item' }).click();
   await page.getByLabel('Name', { exact: true }).fill(name);
@@ -9,6 +15,10 @@ const addItem = async (page: Page, name: string, slot: string) => {
   await page.getByRole('button', { name: 'Save item' }).click();
   // La seccion Optimize sigue montada y tambien lista los primeros objetos.
   await expect(section(page, 'inventory').getByText(name)).toBeVisible();
+};
+
+const loadSamples = async (page: Page) => {
+  await page.getByRole('button', { name: 'Load sample items' }).click();
 };
 
 test('calcula la mejor build con el inventario del juego sintético', async ({ page }) => {
@@ -32,82 +42,82 @@ test('calcula la mejor build con el inventario del juego sintético', async ({ p
   await railLink(page, 'Optimize').click();
   await expect(page.getByRole('heading', { name: 'Astral Forge', level: 1 })).toBeVisible();
 
-  await expect(page.getByText('Current stats')).toBeVisible();
+  // El boton y las decisiones caben sin scrollear.
+  await expect(runSearch(page)).toBeInViewport();
+
+  await openSetup(page);
+  await expect(page.getByText('Base stats')).toBeVisible();
   await page.getByLabel('Character level').fill('2');
   await page.getByLabel('Character level').press('Enter');
   await expect(page.getByText('Level 2 saved.')).toBeVisible();
 
-  await expect(page.getByText('Level history')).toBeVisible();
-  await page.getByRole('button', { name: 'Record current level' }).click();
-  await expect(page.getByText('Current level recorded.')).toBeVisible();
-  await page.getByLabel('Future level to compare').selectOption('3');
-  await page.getByRole('button', { name: 'Level up to 3' }).click();
-  await expect(page.getByText('Level 3 saved.')).toBeVisible();
-  await expect(page.getByLabel('Past level')).toBeEnabled();
-  await page.getByLabel('Past level').selectOption('2');
-  await expect(page.getByText(/Past · Level 2/)).toBeVisible();
-
-  await page.getByRole('button', { name: 'Optimize build' }).click();
+  await runSearch(page).click();
 
   await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
-  const bestBuild = page.getByRole('article').first();
-  await expect(bestBuild.getByText('Best', { exact: true })).toBeVisible();
+  await expect(page.getByText('Optimal').first()).toBeVisible();
+
+  // La fila se abre en el lugar y muestra las piezas y las condiciones.
+  const best = buildRow(page, 1);
+  await best.click();
+  await expect(best).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByText('Pieces', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('Current stats').first()).toBeVisible();
+
   await expect(page.getByText('Compare builds')).toBeVisible();
   await expect(page.getByLabel('Build A')).toBeVisible();
   await expect(page.getByLabel('Build B')).toBeVisible();
 
+  // Correr cierra la hoja: se vuelve a abrir para editar las condiciones.
+  await openSetup(page);
   await page.getByRole('button', { name: 'Add constraint' }).click();
-  await page.getByLabel('Value').fill('999999');
-  await page.getByRole('button', { name: 'Optimize build' }).click();
-  await expect(page.getByText(/No combination meets the constraints/)).toBeVisible({
-    timeout: 20_000,
-  });
+  await page.getByLabel('Value', { exact: true }).fill('999999');
+  await runSearch(page).click();
+  await expect(page.getByText('No feasible build')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('button', { name: 'Run without constraints' })).toBeVisible();
 });
 
 test('carga el inventario de muestra y optimiza sin agregar objetos a mano', async ({ page }) => {
   await page.goto('/optimizer/gacha-demo/optimize');
 
-  await expect(page.getByText(/Your inventory is empty/)).toBeVisible();
-  await page.getByRole('button', { name: 'Load sample items' }).click();
+  await expect(page.getByText('No items yet')).toBeVisible();
+  await loadSamples(page);
 
-  await expect(page.getByRole('button', { name: 'Optimize build' })).toBeEnabled();
-  await page.getByRole('button', { name: 'Optimize build' }).click();
+  await expect(runSearch(page)).toBeEnabled();
+  await runSearch(page).click();
   await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
 });
 
-test('equipa una build, el panel la compara y sigue equipada al recargar', async ({ page }) => {
+test('equipa una build, la lista la marca y sigue equipada al recargar', async ({ page }) => {
   await page.goto('/optimizer/gacha-demo/optimize');
 
-  const panel = () =>
-    page.locator('section').filter({ has: page.getByText('My build', { exact: true }) });
+  await expect(page.getByText('No items yet')).toBeVisible();
 
-  await expect(panel().getByText(/Nothing equipped yet/)).toBeVisible();
-
-  await page.getByRole('button', { name: 'Load sample items' }).click();
-  await page.getByRole('button', { name: 'Optimize build' }).click();
+  await loadSamples(page);
+  await runSearch(page).click();
   await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
 
-  await page.getByRole('button', { name: 'Equip', exact: true }).first().click();
+  await buildRow(page, 1).click();
+  await page.getByRole('button', { name: 'Equip', exact: true }).click();
 
-  // La tarjeta queda marcada como puesta y el panel la compara con la optima.
-  await expect(page.getByText('Equipped')).toBeVisible();
-  await expect(panel().getByText('Ties the best')).toBeVisible();
+  // La fila de la build equipada queda marcada en su lugar.
+  await expect(page.getByText('Equipped', { exact: true })).toBeVisible();
 
   await page.reload();
 
-  await expect(panel().getByText(/Run an optimization to compare it with the best one/)).toBeVisible();
-  await expect(panel().getByText('Score', { exact: true })).toBeVisible();
+  // Sin corrida, la lista muestra la build puesta y su puntaje.
+  await expect(page.getByText('My build')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Equipped', exact: true })).toBeVisible();
 });
 
 test('muestra las stats de una pieza al pasar el cursor', async ({ page }) => {
   await page.goto('/optimizer/gacha-demo/optimize');
-
-  await page.getByRole('button', { name: 'Load sample items' }).click();
-  await page.getByRole('button', { name: 'Optimize build' }).click();
+  await loadSamples(page);
+  await runSearch(page).click();
   await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
 
-  const bestBuild = page.getByRole('article').first();
-  await bestBuild.getByText('Weapon', { exact: true }).first().hover();
+  await buildRow(page, 1).click();
+  const details = page.getByRole('region', { name: /#1 build details/ });
+  await details.getByText(/^Weapon/).first().hover();
 
   const card = page.getByRole('tooltip');
   await expect(card).toBeVisible();
@@ -120,6 +130,7 @@ test('muestra las stats de una pieza al pasar el cursor', async ({ page }) => {
 
 test('elige personaje desde la rejilla y lo muestra en la tarjeta', async ({ page }) => {
   await page.goto('/optimizer/gacha-demo/optimize');
+  await openSetup(page);
 
   await page.getByRole('button', { name: /Change/ }).click();
 
@@ -132,19 +143,19 @@ test('elige personaje desde la rejilla y lo muestra en la tarjeta', async ({ pag
 
   await dialog.getByRole('button', { name: /^Orion/ }).click();
   await expect(dialog).toBeHidden();
-  // La tarjeta fusionada muestra el nombre junto al retrato, sin boton propio.
-  const optimize = section(page, 'optimize');
-  await expect(optimize.getByRole('group', { name: 'Orion' })).toBeVisible();
-  await expect(optimize.getByText('Current stats')).toBeVisible();
+  // La tarjeta de la hoja muestra el nombre junto al retrato, sin boton propio.
+  await expect(page.getByRole('group', { name: 'Orion' })).toBeVisible();
+  await expect(page.getByText('Base stats')).toBeVisible();
 });
 
 test('hoja de personaje: viste una ranura, avisa el requisito y sigue puesta al recargar', async ({
   page,
 }) => {
   await page.goto('/optimizer/gacha-demo/optimize');
-  await page.getByRole('button', { name: 'Load sample items' }).click();
+  await loadSamples(page);
 
   // El nivel se fija desde el optimizador; la hoja debe mostrarlo, no el de la plantilla.
+  await openSetup(page);
   await page.getByLabel('Character level').fill('2');
   await page.getByLabel('Character level').press('Enter');
   await expect(page.getByText('Level 2 saved.')).toBeVisible();
@@ -201,14 +212,38 @@ test('hoja de personaje: viste una ranura, avisa el requisito y sigue puesta al 
 test('con el inventario vacío no deja optimizar', async ({ page }) => {
   await page.goto('/optimizer/gacha-demo/optimize');
 
-  await expect(page.getByText(/Your inventory is empty/)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Optimize build' })).toBeDisabled();
+  await expect(page.getByText('No items yet')).toBeVisible();
+  await expect(runSearch(page)).toBeDisabled();
+});
+
+test('la barra queda visible al scrollear', async ({ page }) => {
+  await page.goto('/optimizer/gacha-demo/optimize');
+  await loadSamples(page);
+  await runSearch(page).click();
+  await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
+
+  await page.mouse.wheel(0, 1600);
+
+  // El rail es sticky y la barra de setup tambien: correr no exige volver arriba.
+  await expect(runSearch(page)).toBeInViewport();
+});
+
+test('cambiar Results vuelve a correr con esa cantidad', async ({ page }) => {
+  await page.goto('/optimizer/gacha-demo/optimize');
+  await loadSamples(page);
+
+  await page.getByLabel('Results').fill('2');
+  await runSearch(page).click();
+  await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
+
+  await expect(buildRow(page, 2)).toBeVisible();
+  await expect(buildRow(page, 3)).toHaveCount(0);
 });
 
 test('cambiar de sección no recarga la página ni pierde el resultado', async ({ page }) => {
   await page.goto('/optimizer/gacha-demo/optimize');
-  await page.getByRole('button', { name: 'Load sample items' }).click();
-  await page.getByRole('button', { name: 'Optimize build' }).click();
+  await loadSamples(page);
+  await runSearch(page).click();
   await expect(page.getByText('Best builds')).toBeVisible({ timeout: 20_000 });
 
   await railLink(page, 'Inventory').click();
@@ -219,12 +254,13 @@ test('cambiar de sección no recarga la página ni pierde el resultado', async (
   // Ni spinner de carga ni podio perdido: la sección siguió montada.
   await expect(page.getByText('Loading optimizer…')).toHaveCount(0);
   await expect(page.getByText('Best builds')).toBeVisible();
+  await expect(buildRow(page, 1)).toBeVisible();
 });
 
 test('ir a otra sección no cancela una optimización en curso', async ({ page }) => {
   await page.goto('/optimizer/gacha-demo/optimize');
-  await page.getByRole('button', { name: 'Load sample items' }).click();
-  await page.getByRole('button', { name: 'Optimize build' }).click();
+  await loadSamples(page);
+  await runSearch(page).click();
 
   await railLink(page, 'Inventory').click();
   await expect(page.getByRole('tab', { name: /Items/ })).toBeVisible();

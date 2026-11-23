@@ -67,6 +67,7 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: 'jsdom',
+    setupFiles: ['./src/test-setup.ts'],
     testTimeout: 30_000,
     // Las pruebas nunca tocan el proyecto real: sin variables, todo va a mock.
     env: {

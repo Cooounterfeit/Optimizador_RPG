@@ -25,16 +25,13 @@ const profile = {
   base: { nivel: 1, atk: 10, hp: 100 },
 } as unknown as BaseProfile;
 
-const rows = () => screen.getAllByRole('rowheader').map((row) => row.getAttribute('aria-label'));
+const rows = () => screen.getAllByRole('term').map((row) => row.textContent);
 const levelInput = () => screen.getByLabelText('Character level') as HTMLInputElement;
 
 describe('CharacterPanel', () => {
-  it('ordena por valor y permite ordenar por nombre', () => {
+  it('lista la base en el orden de la plantilla', () => {
     render(<CharacterPanel template={template} profile={profile} />);
 
-    expect(rows()).toEqual(['HP', 'ATK']);
-
-    fireEvent.click(screen.getByRole('button', { name: /Stat/ }));
     expect(rows()).toEqual(['ATK', 'HP']);
   });
 
@@ -42,7 +39,8 @@ describe('CharacterPanel', () => {
     const onSaveBase = vi.fn(async () => undefined);
     render(<CharacterPanel template={template} profile={profile} onSaveBase={onSaveBase} />);
 
-    expect(levelInput().type).toBe('number');
+    expect(levelInput().type).toBe('text');
+    expect(levelInput().inputMode).toBe('numeric');
     expect(levelInput().value).toBe('1');
 
     fireEvent.change(levelInput(), { target: { value: '3' } });
