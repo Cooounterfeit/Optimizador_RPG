@@ -22,8 +22,8 @@ En concreto, cuando el producto cambie de etapa:
 - Las capturas de `demo/` muestran el prototipo del Capstone y no el producto publicado.
 
 **Fuente de los datos.** Jira, proyecto `ZO`. Los sprints 1 a 3 se verificaron contra la API el 20
-de noviembre de 2026. El Sprint 4 cerró el 23 a medianoche, y su tabla conserva esa misma foto. La
-evidencia de código al cierre se documenta en
+de noviembre de 2026. El Sprint 4 cerró el 23 a medianoche y se verificó contra la API el 24, con
+cada cierre comprobado contra el commit que lo respalda en
 [`sprint-4/backlog.md`](./sprint-4/backlog.md).
 
 ## Los cuatro sprints
@@ -33,15 +33,21 @@ evidencia de código al cierre se documenta en
 | [1 — Prototipo y motor](./sprint-1/planning.md) | 05-oct → 18-oct | 13 | 35 | 29 | **83 %** |
 | [2 — Catálogo y RLS](./sprint-2/planning.md) | 19-oct → 01-nov | 9 | 32 | 27 | **84 %** |
 | [3 — App real e inventario](./sprint-3/planning.md) | 02-nov → 15-nov | 39 | 182 | 126 | **69 %** |
-| [4 — Cierre y entrega](./sprint-4/planning.md) | 16-nov → 23-nov | 39 | 162 | 3 | al cierre |
+| [4 — Cierre y entrega](./sprint-4/planning.md) | 16-nov → 23-nov | 46 | 196 | 79 | **40 %** |
 
 > En los sprints 1 a 3, las historias que no se cerraron se arrastraron al Sprint 4 al cerrar cada
 > sprint. Fueron 2 del Sprint 1, 2 del Sprint 2 y 14 del Sprint 3. A esas 18 se sumaron, en el
 > ordenamiento del 20 de noviembre, 9 historias sin sprint y SP-01, que volvió desde el Sprint 0.
-> Por esta razón el Sprint 4 tiene 39 historias: 11 propias y 28 llegadas de afuera.
+> El Sprint 4 abrió con 39 historias: 11 propias y 28 llegadas de afuera.
 >
-> **Los totales de los cuatro sprints no se suman.** Sumar 13, 9, 39 y 39 da 100, pero el proyecto
-> tiene **83 historias y 332 puntos**. El Sprint 4 incluye trabajo ya contado en los sprints
+> Durante el sprint se crearon siete historias más, que corresponden a trabajo real sin tarjeta
+> previa: SonarQube, Docker, pipeline de integración continua, documentación técnica, catálogo
+> normalizado, guardado en la cuenta y lectura portable de fixtures. Con ellas el alcance quedó en
+> 46 historias y 196 puntos. El detalle está en
+> [`sprint-4/burndown.md`](./sprint-4/burndown.md#qué-se-agregó-al-alcance-y-por-qué).
+>
+> **Los totales de los cuatro sprints no se suman.** Sumar 13, 9, 39 y 46 da 107, pero el proyecto
+> tiene **90 historias y 381 puntos**. El Sprint 4 incluye trabajo ya contado en los sprints
 > anteriores. El total del proyecto, y no la suma de la columna, es el número que corresponde citar.
 
 Jira incluye además un **Sprint 0 — Arranque del repositorio** (02-sep → 16-sep), con una sola
@@ -62,10 +68,21 @@ Fue la decisión de arranque, y esa historia se cerró recién en el Sprint 4.
 | [`review.md`](./sprint-1/review.md) | qué se demostró y qué no, con el motivo |
 | [`retrospectiva.md`](./sprint-1/retrospectiva.md) | qué se inicia, qué se deja y qué se continúa |
 
+## Gestión y acuerdos de equipo
+
+Documentos de proceso que sustentan la metodología declarada en el informe.
+
+| Documento | Qué responde |
+|---|---|
+| [`gestion/definition-of-ready-done.md`](./gestion/definition-of-ready-done.md) | cuándo una historia puede comenzar y cuándo está terminada |
+| [`gestion/ritmo-de-trabajo.md`](./gestion/ritmo-de-trabajo.md) | cómo trabajó el equipo y cómo interpretar el historial de Git |
+| [`gestion/epicas-2-3.md`](./gestion/epicas-2-3.md) | qué se construyó en las épicas de hub y editor, y en qué se aparta de los criterios |
+| [`gestion/006-cadencia-daily.md`](./gestion/006-cadencia-daily.md) | ADR de la cadencia de la daily: asíncrona, de 2 a 15 minutos |
+
 ## Cadencia
 
 La daily es asíncrona y escrita, con una duración de 2 a 15 minutos y cierre inmediato cuando no
-existen cambios ni bloqueos. Consulte el [ADR 006](../decisiones/006-cadencia-daily.md).
+existen cambios ni bloqueos. Consulte el [ADR 006](./gestion/006-cadencia-daily.md).
 
 El [`registro-cadencia.md`](./registro-cadencia.md) contiene una fila por día hábil, incluidas las
 jornadas sin actividad. Cada entrada incluye el commit que la respalda o la declaración de que no

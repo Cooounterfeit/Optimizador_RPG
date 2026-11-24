@@ -48,7 +48,7 @@ graph TD
 | Supabase | almacena y distribuye | no calcula |
 
 `core-engine` es TypeScript puro: no depende de React, del DOM ni del almacenamiento. Esta
-independencia permite ejecutar 182 casos unitarios sin montar un navegador.
+independencia permite ejecutar 197 casos unitarios sin montar un navegador.
 
 ## Flujo de una optimización
 

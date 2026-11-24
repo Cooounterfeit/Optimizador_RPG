@@ -21,8 +21,8 @@ Se establecen dos reglas:
 2. **Fuente declarada.** Cada entrada indica su origen: un commit, el estado en Jira, o ninguno de
    los dos. Cuando no existe commit, se declara de forma explícita.
 
-El registro reside en [`docs/fase2/registro-cadencia.md`](../fase2/registro-cadencia.md), con una
-fila por día hábil, incluidas las que no tuvieron actividad.
+El registro reside en [`registro-cadencia.md`](../../registro-cadencia.md), con una fila por día
+hábil, incluidas las que no tuvieron actividad.
 
 ## Alternativas consideradas
 

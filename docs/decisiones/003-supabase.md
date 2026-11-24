@@ -24,7 +24,7 @@ Adoptar **Supabase** (Postgres, Auth y RLS), con la `anon key` en el cliente. La
 
 ## Consecuencias
 
-**Beneficios:** autenticación disponible, Postgres real con migraciones versionadas y RLS declarativo. El esquema se verifica de forma local con PGlite (89 casos).
+**Beneficios:** autenticación disponible, Postgres real con migraciones versionadas y RLS declarativo. El esquema se verifica de forma local con PGlite (96 casos).
 
 **Costos:** dependencia de un proveedor, y el equipo debe comprender RLS o los datos quedan
 expuestos. La mitigación consiste en probar automáticamente las políticas y mantener la

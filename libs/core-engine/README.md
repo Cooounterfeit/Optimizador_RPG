@@ -10,7 +10,7 @@ combinación de objetos para un objetivo, con óptimo demostrado.
 npx nx test core-engine
 ```
 
-Ejecuta las pruebas unitarias con [Vitest](https://vitest.dev/). Son 182 casos en 9 archivos, y se
+Ejecuta las pruebas unitarias con [Vitest](https://vitest.dev/). Son 197 casos en 9 archivos, y se
 ejecutan sin montar un navegador.
 
 ## API pública

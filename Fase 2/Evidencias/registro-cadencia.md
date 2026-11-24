@@ -5,7 +5,7 @@ Bitácora diaria del 5 de octubre al 23 de noviembre de 2026, con una entrada po
 **Cómo está escrito este documento.** Cada día tiene su entrada, incluidas las jornadas sin
 movimiento. Cuando no hubo cambios en el repositorio, la entrada lo declara y comenta la situación
 del equipo según la documentación del sprint. La daily es asíncrona y escrita
-([ADR 006](../decisiones/006-cadencia-daily.md)). Cada integrante deja su bloque cuando trabaja, y
+([ADR 006](./gestion/006-cadencia-daily.md)). Cada integrante deja su bloque cuando trabaja, y
 si no hay novedades la sesión termina en la revisión del tablero.
 
 **Por qué se declara la fuente.** Un registro que presente como acta algo que no ocurrió no sirve
@@ -181,20 +181,31 @@ Comentario: desde este día las cifras de los documentos y las de Jira son la mi
 **21-nov (sáb).** Fin de semana, sin actividad. Se declara en lugar de omitirse: la cadencia se
 mide sobre días hábiles, y un sábado sin commits no constituye un día incumplido.
 
-**22-nov (dom).** Fuera de día hábil, con actividad. Se cierra el editor con CFG-01 (`cec1a57`),
-CFG-05 completo (`013e8b3`) y CFG-06 (`6cff5b7`), además de los cimientos para editar la plantilla
-(`998f123`) y la validación contra el inventario del navegador (`fc047d0`). Ingresa también el
-cockpit 6.3.5 (`896debf`) y el registro en el changelog (`6dd2e13`). Comentario: diez commits en
-domingo, con el sprint cerrando al día siguiente. El editor se priorizó sobre las funcionalidades
-sociales y se terminó a tiempo.
+**22-nov (dom).** Fuera de día hábil, con actividad. Primera jornada de la hackatón, en casa de
+Ignacio. Se cierra el editor con CFG-01 (`cec1a57`), CFG-05 completo (`013e8b3`) y CFG-06
+(`6cff5b7`), además de los cimientos para editar la plantilla (`998f123`) y la validación contra el
+inventario del navegador (`fc047d0`). Ingresa también el cockpit 6.3.5 (`896debf`) y el registro en
+el changelog (`6dd2e13`). Comentario: diez commits en domingo. El equipo trabajó junto y se
+repartieron los PR del día siguiente.
 
-**23-nov (lun).** Cierre del sprint. Se consolida 6.3.5 con condiciones desde la barra y
-comparación plegada (`3bd3e2a`), con sus correcciones de superficie (`2f0184a`, `e4bd3bd`). Se
-agregan el presupuesto de habilidades por nivel 6.4a (`6f6d839`), el catálogo de juegos y géneros
-normalizado (`97b46cf`) y la corrección del test intermitente (`275db33`). En calidad, se cierran
-el quality gate de Sonar y el S4036 del generador de ERD (`6c12efa`). Se publica además la
-documentación de entrega (`966524d`). Comentario: el sprint cierra con 182 casos del motor en verde
-y la suite completa pasando.
+**23-nov (lun).** Cierre del sprint, con el equipo trabajando junto desde temprano. Es la jornada
+con más commits del proyecto: 34 sin contar merges.
+
+En el editor entran los tres atributos que faltaban: listar con búsqueda y orden (CFG-02,
+`58c4980`), editar (CFG-03, `40cbc0e`) y eliminar (CFG-04, `bd4b437`). El guardado en la cuenta
+queda operativo (`8eb7884`), con el autor habilitado para estrenar juego (`b98deb0`) y el borrado
+sin filas huérfanas (`5f63bb9`). Se consolida 6.3.5 con condiciones desde la barra y comparación
+plegada (`3bd3e2a`), con sus correcciones de superficie (`2f0184a`, `e4bd3bd`), y entra el
+presupuesto de habilidades por nivel 6.4a (`6f6d839`).
+
+En calidad se cierran el quality gate de Sonar y el S4036 del generador de ERD (`6c12efa`). Se
+normaliza el catálogo de juegos y géneros (`97b46cf`), se corrige el test intermitente por su causa
+real (`275db33`) y los fixtures se leen igual sin symlinks materializados (`4f60139`).
+
+Al cierre de la jornada se crean en Jira las siete historias que faltaban: SonarQube, Docker,
+pipeline de integración continua, documentación técnica, catálogo normalizado, guardado en la
+cuenta y lectura portable de fixtures. Comentario: el sprint cierra con 79 de 196 puntos cerrados,
+825 pruebas unitarias y la suite completa pasando.
 
 ---
 

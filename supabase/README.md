@@ -185,7 +185,7 @@ usuario con sesión puede utilizar la nube. Al integrar Stripe se establece en `
 
 ## Pruebas de seguridad
 
-`tests/rls.spec.ts` ejecuta la migración real sobre un PostgreSQL en memoria (PGlite). Prueba cada regla con distintos usuarios: visitante, dueño, otro usuario y administrador. Cubre 89 casos.
+`tests/rls.spec.ts` ejecuta la migración real sobre un PostgreSQL en memoria (PGlite). Prueba cada regla con distintos usuarios: visitante, dueño, otro usuario y administrador. Cubre 96 casos.
 
 ```bash
 npx nx test supabase

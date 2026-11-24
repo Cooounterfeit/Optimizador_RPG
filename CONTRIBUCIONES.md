@@ -84,7 +84,7 @@ git log --author="Ignacio" --name-only --format="" | sort -u | grep "features/ed
 |---|---|
 | `libs/core-engine/src/lib/` | `optimizer.ts` (solver branch and bound), `formula.ts`, `graph.ts`, `curves.ts`, `leveling.ts`, `skills.ts`, `validate.ts` y `analysis.ts` |
 | `libs/shared-types/src/lib/` | contrato del juego con Zod: `game-template`, `item`, `skills`, `leveling` y `solve` |
-| `supabase/` | esquema completo con 14 tablas, 9 migraciones versionadas y pruebas RLS con PGlite (89 casos) |
+| `supabase/` | esquema completo con 14 tablas, 9 migraciones versionadas y pruebas RLS con PGlite (96 casos) |
 | `libs/data-access/` | repositorios Dexie: inventario, equipo, niveles, habilidades e imágenes |
 | `libs/inventory/` | parseo de inventario y formato GOOD |
 

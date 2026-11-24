@@ -67,7 +67,7 @@ La `anon key` se envía al navegador y resulta visible en las herramientas de de
 comportamiento es el previsto: Supabase la utiliza para identificar el proyecto, y RLS determina
 qué puede hacer cada usuario. Si RLS está mal configurado, la `anon key` no protege los datos.
 
-Por esta razón las políticas se verifican mediante pruebas (`supabase/tests/`, 89 casos) en lugar
+Por esta razón las políticas se verifican mediante pruebas (`supabase/tests/`, 96 casos) en lugar
 de asumir que están correctas.
 
 La `service_role` key omite RLS por completo. Nunca se transfiere al frontend ni se utiliza como
@@ -157,7 +157,7 @@ El target `build` de `apps/web` ejecuta solo `vite build` y no incluye `typechec
 errores de tipos y emite el bundle de todas formas. En consecuencia, un tipo mal escrito no
 interrumpe el build de Vercel, pero falla en el navegador del usuario.
 
-Por esta razón `main` exige CI en verde. El pipeline ejecuta `lint`, `typecheck`, las 700 pruebas y el build. Además aplica las verificaciones de calidad descritas en la sección siguiente.
+Por esta razón `main` exige CI en verde. El pipeline ejecuta `lint`, `typecheck`, las 825 pruebas y el build. Además aplica las verificaciones de calidad descritas en la sección siguiente.
 
 ## Cabeceras y SPA
 

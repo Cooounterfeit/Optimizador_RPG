@@ -170,7 +170,7 @@ formato `sbp_...`. La CLI valida ese formato antes que cualquier otra cosa. Un t
 npx nx test supabase
 ```
 
-Son 89 casos. Se ejecutan contra PGlite (Postgres embebido), por lo que validan las migraciones del
+Son 96 casos. Se ejecutan contra PGlite (Postgres embebido), por lo que validan las migraciones del
 repositorio y no el proyecto remoto.
 
 **Verificación del proyecto remoto.** En el dashboard de staging, abra Authentication → Providers y
