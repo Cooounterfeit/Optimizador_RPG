@@ -1,9 +1,9 @@
 # Sprint 4 — Scrumboard
 
-![Tablero del Sprint 4 en curso](./scrumboard.png)
+![Tablero del Sprint 4 al 20 de noviembre](./scrumboard.png)
 
-> **Render, no captura.** Generado desde los datos de Jira del sprint 4 el 20 de noviembre de 2026.
-> El sprint está activo: el tablero cambia hasta el cierre del 22 o 23 de noviembre.
+> **Render y no captura.** Se genera desde los datos de Jira del sprint 4 el 20 de noviembre de
+> 2026. El sprint cerró el 23 a medianoche, y el tablero refleja esa foto sin redibujarse al cierre.
 
 ## Columnas
 
@@ -14,20 +14,20 @@
 | **En revisión** | 4 | 18 |
 | **Listo** | 1 | 3 |
 
-## Qué hay en cada columna
+## Qué contiene cada columna
 
-**En curso** — el editor de juegos: atributos base (CFG-01), variables simples (CFG-07), variables
-derivadas (CFG-08), variables por categoría (CFG-09A y 09B), variantes (CFG-11) y el refinamiento de
-la redacción de las HUs (TEC-21).
+**En curso.** El editor de juegos: atributos base (CFG-01), variables simples (CFG-07), variables
+derivadas (CFG-08), variables por categoría (CFG-09A y CFG-09B), variantes (CFG-11) y el
+refinamiento de la redacción de las historias (TEC-21).
 
-**En revisión** — trabajo terminado que espera verificación: simulación futura (SIM-02), edición de
-optimizadores (CFG-20), Supabase y auth (TEC-01) y políticas RLS (TEC-03).
+**En revisión.** Trabajo terminado que espera verificación: simulación futura (SIM-02), edición de
+optimizadores (CFG-20), Supabase y autenticación (TEC-01) y políticas RLS (TEC-03).
 
-**Listo** — una sola: SP-01, evaluación de monorepos, cerrada al ordenar Jira.
+**Listo.** Una sola historia: SP-01, evaluación de monorepos, cerrada al ordenar Jira.
 
-**Por hacer** — 27 HUs, de las cuales solo 10 son del cierre de la entrega. Las otras 17 son
-configuración avanzada, comunidad, suscripciones y técnicas que no se van a cerrar en este sprint y
-se mantienen visibles como pendiente declarado.
+**Por hacer.** 27 historias, de las cuales solo 10 corresponden al cierre de la entrega. Las otras
+17 son configuración avanzada, comunidad, suscripciones y técnicas que no se cerrarán en este
+sprint. Se mantienen visibles como pendiente declarado.
 
 ## Flujo de trabajo
 
@@ -37,9 +37,9 @@ Por hacer  →  En curso  →  En revisión  →  Listo
 
 ## Observación
 
-El tablero de este sprint tiene una forma distinta a los anteriores: **por primera vez hay más
-trabajo en «En curso» que en «Listo»**. En los sprints 1 a 3 las tarjetas se movían de «Por hacer»
-a «Listo» sin pasar por el medio; acá el estado intermedio se usa de verdad.
+El tablero de este sprint presenta una forma distinta a la de los anteriores. Por primera vez hay
+más trabajo en «En curso» que en «Listo». En los sprints 1 a 3, las tarjetas pasaban de «Por hacer»
+a «Listo» sin atravesar el estado intermedio. Aquí el estado intermedio se utiliza de verdad.
 
-Es el único indicador de proceso que mejoró respecto del Sprint 2, y no es cosmético: permite ver
-que seis HUs del editor están en marcha aunque ninguna esté terminada.
+Es el único indicador de proceso que mejoró respecto del Sprint 2, y no resulta cosmético: permite
+observar que seis historias del editor están en marcha aunque ninguna esté terminada.

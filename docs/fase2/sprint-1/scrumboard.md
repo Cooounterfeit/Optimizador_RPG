@@ -2,16 +2,16 @@
 
 ![Tablero del Sprint 1 al cierre](./scrumboard.png)
 
-> **Render, no captura.** Generado a partir de los datos de la API de Jira
-> (`sprint = 5`, "Sprint 1 — Prototipo y motor"), no es una captura de pantalla. Las HUs, los
-> estados y los puntos coinciden con lo que devuelve la consulta; el render existe para que la
-> imagen quede versionada y no dependa de una sesión autenticada.
+> **Render y no captura.** El gráfico se genera a partir de los datos de la API de Jira
+> (`sprint = 5`, "Sprint 1 — Prototipo y motor"). Las historias, los estados y los puntos
+> coinciden con lo que devuelve la consulta. El render existe para que la imagen quede versionada y
+> no dependa de una sesión autenticada.
 >
-> Verificado el 20 de noviembre de 2026: 13 HUs, 35 puntos, 11 en Listo y 2 en Por hacer.
+> Verificado el 20 de noviembre de 2026: 13 historias, 35 puntos, 11 en Listo y 2 en Por hacer.
 >
-> Las dos abiertas (CFG-05 y CFG-06) se arrastraron al Sprint 4 al cerrar el sprint, así que hoy
-> Jira muestra 11 HUs en el sprint 5. La imagen sigue mostrando las 13 comprometidas, que es lo que
-> documenta un tablero al cierre.
+> Las dos historias abiertas (CFG-05 y CFG-06) se arrastraron al Sprint 4 al cerrar el sprint, de
+> modo que hoy Jira muestra 11 historias en el sprint 5. La imagen conserva las 13 comprometidas,
+> que es lo que documenta un tablero al cierre.
 
 ## Columnas
 
@@ -28,9 +28,9 @@
 Por hacer  →  En curso  →  En revisión  →  Listo
 ```
 
-La columna **En revisión** existe para PRs abiertos con CI en verde pero sin merge. En este
-sprint no se usó: los dos PRs entraron directos porque no había otros revisores además del
-autor.
+La columna **En revisión** agrupa los pull requests abiertos con CI en verde y sin merge. En este
+sprint no se utilizó: los dos pull requests ingresaron de forma directa porque no existían otros
+revisores además del autor.
 
 ## Distribución por épica
 
@@ -45,6 +45,7 @@ autor.
 
 ## Observación
 
-Once de trece HUs cerraron y todas las épicas con alcance técnico quedaron completas. Lo
-abierto es de **producto** (editor de configuración), no de motor ni de decisión. Eso explica
-que el sprint cumpliera su objetivo declarado aunque no cerrara el 100 % del alcance.
+Once de trece historias cerraron, y todas las épicas con alcance técnico quedaron completas. Lo que
+permanece abierto pertenece al producto, específicamente al editor de configuración, y no al motor
+ni a las decisiones técnicas. Esto explica que el sprint cumpliera su objetivo declarado aun sin
+cerrar el 100 % del alcance.

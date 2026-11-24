@@ -3,16 +3,17 @@
 ![Burndown del Sprint 1](./burndown.png)
 
 > **Gráfico reconstruido.** El sprint permaneció en estado `future` en Jira durante todo el trabajo
-> y se cerró recién el 20 de noviembre de 2026, al ordenar el proyecto. Jira no guarda historial de
-> puntos por día con esa secuencia, así que la curva se reconstruye desde las fechas de commit y el
-> estado final de cada HU. Se declara explícitamente para no presentar como medición lo que es una
-> estimación.
+> y se cerró recién el 20 de noviembre de 2026, al ordenar el proyecto. Jira no conserva el
+> historial de puntos por día con esa secuencia, por lo que la curva se reconstruye a partir de las
+> fechas de commit y del estado final de cada historia. Se declara de forma explícita para no
+> presentar como medición lo que constituye una estimación.
 
 ## Método de reconstrucción
 
-1. Se toma la fecha del commit que evidencia cada HU.
-2. Cada día se descuentan los puntos de las HUs cuyo primer commit aparece ese día o antes.
-3. La línea ideal reparte 35 puntos entre los **10 días hábiles** del sprint (5 al 16 de octubre).
+1. Se toma la fecha del commit que evidencia cada historia.
+2. Cada día se descuentan los puntos de las historias cuyo primer commit aparece ese día o antes.
+3. La línea ideal reparte 35 puntos entre los **10 días hábiles** del sprint, del 5 al 16 de
+   octubre.
 
 ## Tabla
 
@@ -41,29 +42,31 @@ Cumplimiento          29 / 35 = 83 %
 
 ## Lectura
 
-- **La curva es escalonada, no diagonal.** Cinco días sin cierre y dos caídas netas (12 y 16 de
-  octubre). Es el patrón de trabajo concentrado en sesiones, no de dedicación diaria pareja.
-- **Termina 6 puntos por encima de la línea ideal**, que son exactamente las dos HUs que se
-  arrastraron al Sprint 4. No hay desvío no explicado: todo punto abierto tiene destino.
-- **El hueco máximo no está al final.** Llegó a ~16 puntos el 9 de octubre, cuando la línea ideal
-  ya había bajado a 19,4 y el real seguía en 32. Al cierre el hueco es de 6.
+- **La curva es escalonada y no diagonal.** Existen cinco días sin cierre y dos caídas netas, el 12
+  y el 16 de octubre. Es el patrón de un trabajo concentrado en sesiones y no de una dedicación
+  diaria uniforme.
+- **Termina 6 puntos por encima de la línea ideal**, que corresponden exactamente a las dos
+  historias arrastradas al Sprint 4. No existe desvío sin explicación: todo punto abierto tiene
+  destino.
+- **La brecha máxima no se produce al final.** Alcanzó unos 16 puntos el 9 de octubre, cuando la
+  línea ideal había bajado a 19,4 y el valor real seguía en 32. Al cierre, la brecha es de 6.
 
 ## Límite del dato
 
-La caída de 10 puntos del 16 de octubre (AUT-1, AUT-2 e INV-8) **no tiene commit que la respalde**.
-El historial salta del 13 al 19 de octubre, y las rutas que hoy implementan esas HUs
-(`apps/web/src/features/auth/RegisterPage.tsx` y `libs/data-access/`) se crearon en noviembre, en
-el Sprint 3. Jira las da por cerradas dentro del Sprint 1 y esa es la única fuente de la fecha; el
-repositorio no permite fecharlas ahí. Se dibujan el 16 de octubre porque es el último día hábil del
-sprint, no porque exista evidencia de ese día.
+La caída de 10 puntos del 16 de octubre (AUT-1, AUT-2 e INV-8) no tiene commit que la respalde. El
+historial salta del 13 al 19 de octubre, y las rutas que hoy implementan esas historias
+(`apps/web/src/features/auth/RegisterPage.tsx` y `libs/data-access/`) se crearon en noviembre,
+durante el Sprint 3. Jira las considera cerradas dentro del Sprint 1, y esa es la única fuente de
+la fecha. El repositorio no permite datarlas en ese momento.
 
-Es el mismo desfase que afecta a siete HUs cerradas del Sprint 2, documentado en
-[`../sprint-2/backlog.md`](../sprint-2/backlog.md): el estado en Jira y la fecha del código no
-coinciden, y el documento lo dice en vez de taparlo.
+Se dibujan el 16 de octubre porque es el último día hábil del sprint, y no porque exista evidencia
+de ese día. Corresponde al mismo desfase que afecta a siete historias cerradas del Sprint 2,
+documentado en [`../sprint-2/backlog.md`](../sprint-2/backlog.md). El estado en Jira y la fecha del
+código no coinciden, y el documento lo declara en lugar de ocultarlo.
 
-Jira registra SP-02 como `Done` pero **no guarda la fecha de la transición**, así que el paso de
-9 a 6 puntos tampoco se puede ubicar en un día concreto. Se dibuja en el cierre porque es lo único
-verificable.
+Jira registra SP-02 como `Done`, pero no conserva la fecha de la transición. Por esta razón, el
+paso de 9 a 6 puntos tampoco puede ubicarse en un día concreto. Se dibuja en el cierre porque es lo
+único verificable.
 
 ## Datos que respaldan la curva
 

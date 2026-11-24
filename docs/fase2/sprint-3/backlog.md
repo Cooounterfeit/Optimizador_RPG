@@ -1,6 +1,6 @@
 # Sprint 3 — Backlog
 
-Estado al cierre, 15 de noviembre de 2026. Fuente: Jira, proyecto `ZO`, sprint 7
+Estado al cierre, el 15 de noviembre de 2026. Fuente: Jira, proyecto `ZO`, sprint 7
 ("Sprint 3 — App real e inventario"), consultado por API el 20 de noviembre de 2026.
 
 ## Cerradas (25 HUs · 126 puntos)
@@ -27,7 +27,7 @@ Estado al cierre, 15 de noviembre de 2026. Fuente: Jira, proyecto `ZO`, sprint 7
 | ZO-55 · TEC-05 | Repositorio local (CRUD de inventario) | 5 | `libs/data-access` |
 | ZO-56 · TEC-06 | Repositorio remoto (CRUD de optimizadores y votos) | 5 | `features/catalog/supabase-catalog-repository.ts` |
 | ZO-57 · TEC-07 | Tipos e interfaces compartidas | 3 | `libs/shared-types` |
-| ZO-61 · TEC-11 | Infraestructura de pruebas (Vitest + Playwright) | 3 | `vitest.config.mts`, `apps/web-e2e` |
+| ZO-61 · TEC-11 | Infraestructura de pruebas (Vitest y Playwright) | 3 | `vitest.config.mts`, `apps/web-e2e` |
 | ZO-63 · TEC-13 | Enrutamiento y layout (React Router) | 3 | `22f5d22` (shell V4) |
 | ZO-64 · TEC-14 | CI/CD con GitHub Actions | 5 | `f8adce1` |
 | ZO-65 · TEC-15 | Internacionalización (i18next) | 3 | `i18next` en dependencias y recursos |
@@ -66,10 +66,10 @@ Cumplimiento: **126 / 182 = 69 %**.
 ## Lectura
 
 - **Se completaron 126 puntos**, más que en cualquier sprint anterior. El porcentaje bajo no
-  indica poco trabajo: indica que se comprometió el doble.
-- **Las cuatro HUs en revisión al cierre son técnicas** (TEC-01, TEC-03, SIM-02, CFG-20): el
-  trabajo estaba hecho, faltaba la verificación.
-- **Las diez «Por hacer» son funcionalidades de configuración y comunidad**, es decir, lo que
-  depende del editor y de la capa social. Ninguna bloqueaba la demo.
+  indica poco trabajo, sino que se comprometió el doble.
+- **Las cuatro historias en revisión al cierre son técnicas** (TEC-01, TEC-03, SIM-02 y CFG-20).
+  El trabajo estaba hecho y faltaba la verificación.
+- **Las diez historias en «Por hacer» son funcionalidades de configuración y comunidad**, es decir,
+  lo que depende del editor y de la capa social. Ninguna bloqueaba la demostración.
 - En Jira, las catorce arrastradas quedaron en el Sprint 4 durante el ordenamiento del 20 de
-  noviembre; el sprint 7 conserva las 25 cerradas.
+  noviembre. El sprint 7 conserva las 25 cerradas.

@@ -2,16 +2,16 @@
 
 ![Burndown del Sprint 3](./burndown.png)
 
-> **Gráfico reconstruido.** Jira guarda el estado final de cada HU, no el histórico de puntos por
-> día. La curva se reconstruye desde la fecha del commit que evidencia cada HU.
+> **Gráfico reconstruido.** Jira conserva el estado final de cada historia y no el histórico de
+> puntos por día. La curva se reconstruye desde la fecha del commit que evidencia cada historia.
 
 ## Método
 
-1. Se asigna cada HU cerrada al commit que la evidencia.
-2. Los commits de fin de semana (7 y 8 de noviembre) se imputan al lunes 9, primer día hábil
+1. Se asigna cada historia cerrada al commit que la evidencia.
+2. Los commits de fin de semana, del 7 y 8 de noviembre, se imputan al lunes 9, primer día hábil
    siguiente.
-3. La línea ideal reparte 182 puntos entre los **9 intervalos** de los 10 días hábiles (2 al 13 de
-   noviembre): 20,2 puntos por día, y llega a cero el 13.
+3. La línea ideal reparte 182 puntos entre los **9 intervalos** de los 10 días hábiles, del 2 al 13
+   de noviembre. Equivale a 20,2 puntos por día y llega a cero el día 13.
 
 ## Tabla
 
@@ -39,18 +39,19 @@ Cumplimiento           126 / 182 = 69 %
 
 ## Lectura
 
-- **La línea real está por encima de la ideal todo el sprint.** No hay un solo día en que el
-  proyecto vaya adelantado. El sprint nació sobrecomprometido.
-- **El 9 de noviembre cae el 60 % del sprint** (75 puntos en un día). Coincide con el cierre de F7:
-  optimizador, historial y habilidades entraron en un solo commit (`da98ffb`).
-- **La brecha final es de 56 puntos**, todos de configuración y comunidad: HUB-02, HUB-21 a
-  HUB-23, CFG-03/04/13/14/16/20, INV-6, SIM-02 y dos técnicas en revisión.
-- **El ritmo fue el más alto del proyecto**: 126 puntos en diez días hábiles, contra 35 en el
-  Sprint 1 y 27 en el Sprint 2. El porcentaje bajo es un problema de planificación, no de
+- **La línea real permanece por encima de la ideal durante todo el sprint.** No existe un solo día
+  en que el proyecto vaya adelantado. El sprint nació sobrecomprometido.
+- **El 9 de noviembre se cierra el 60 % del sprint**, con 75 puntos en un día. Coincide con el
+  cierre de F7: optimizador, historial y habilidades ingresaron en un solo commit (`da98ffb`).
+- **La brecha final es de 56 puntos**, todos de configuración y comunidad: HUB-02, HUB-21 a HUB-23,
+  CFG-03, CFG-04, CFG-13, CFG-14, CFG-16, CFG-20, INV-6, SIM-02 y dos historias técnicas en
+  revisión.
+- **El ritmo fue el más alto del proyecto**, con 126 puntos en diez días hábiles, frente a 35 en el
+  Sprint 1 y 27 en el Sprint 2. El porcentaje bajo refleja un problema de planificación y no de
   velocidad.
 
 ## Límite del dato
 
-La atribución por día es una reconstrucción: un solo commit puede cerrar varias HUs y el
-documento no pretende que cada punto se haya ganado el día que figura, sino que ese día aparece
-la evidencia que lo respalda.
+La atribución por día constituye una reconstrucción. Un solo commit puede cerrar varias historias,
+y el documento no afirma que cada punto se haya ganado el día que figura. Afirma que ese día
+aparece la evidencia que lo respalda.
