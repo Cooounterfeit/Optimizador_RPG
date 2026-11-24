@@ -252,7 +252,7 @@ La corrección se aplicó en dos frentes:
 
 ### Verificación
 
-La seguridad se verifica y no se declara. `npx nx test supabase` ejecuta 89 casos contra PGlite.
+La seguridad se verifica y no se declara. `npx nx test supabase` ejecuta 96 casos contra PGlite.
 
 Cada caso crea usuarios con roles distintos y a continuación intenta leer y escribir lo que no les
 corresponde. Una política mal escrita interrumpe la prueba.

@@ -8,7 +8,7 @@ decisiones y, sobre todo, la forma en que la implementación se aparta de los cr
 aceptación, junto con su justificación.
 
 > **Cómo se mantiene.** Cada pull request de estas épicas agrega su fila en la tabla siguiente y, si
-> modifica algo visible, su línea en [`CHANGELOG.md`](../CHANGELOG.md). Las divergencias con los
+> modifica algo visible, su línea en [`CHANGELOG.md`](../../../CHANGELOG.md). Las divergencias con los
 > criterios se anotan cuando se descubren y no al final.
 
 ## Alcance
@@ -32,25 +32,25 @@ pantalla que muestre el estado de la plantilla no existía dónde integrar el ed
 |---|---|
 | `17d444e` | CFG-05. Crear un juego vacío y válido, sin pedir cuenta |
 | `c66b41c` | Eliminar rayas largas de textos y comentarios |
-| `56cd74a` | CFG-06. Primera pantalla que consume `validateTemplate` |
-| `3a7aaed` | Pasar el inventario al motor: nueve comprobaciones que no se ejecutaban |
-| `19cc585` | Cerrar cinco criterios de CFG-05 que faltaban |
-| `10bba76` | Cimientos: `statReferences` y el camino único de escritura |
-| `e084013` | CFG-01, y el guardián de ids en el motor |
-| `a1a6097` | Eliminar la duplicación antes de que se triplicara |
-| `2f16ea7` | Lo que señalaría el análisis estático |
-| `b5d69a2` | CFG-02. Búsqueda, orden y estado de uso |
-| `6934864` | Esta bitácora y las entradas de changelog que faltaban |
+| `6cff5b7` | CFG-06. Primera pantalla que consume `validateTemplate` |
+| `fc047d0` | Pasar el inventario al motor: nueve comprobaciones que no se ejecutaban |
+| `013e8b3` | Cerrar cinco criterios de CFG-05 que faltaban |
+| `998f123` | Cimientos: `statReferences` y el camino único de escritura |
+| `cec1a57` | CFG-01, y el guardián de ids en el motor |
+| `8cab9f1` | Eliminar la duplicación antes de que se triplicara |
+| `03bbedb` | Lo que señalaría el análisis estático |
+| `58c4980` | CFG-02. Búsqueda, orden y estado de uso |
+| `2ed649f` | Esta bitácora y las entradas de changelog que faltaban |
 | `40cbc0e` | CFG-03. Edición en la fila, con aviso al cambiar la acumulación |
 | `bd4b437` | CFG-04. Borrado con cascada hasta punto fijo |
-| `4ef30a6` | El modelo de propiedad, escrito para la épica 2 |
-| `4b8aefa` | Listar los borradores locales en la portada |
-| `72c4f74` | Borrarlos, con la cuenta de piezas que se eliminan |
-| `3516e0b` | El menú de los tres puntos: renombrar, duplicar y borrar |
+| `fa59fb9` | El modelo de propiedad, escrito para la épica 2 |
+| `d820677` | Listar los borradores locales en la portada |
+| `17405a8` | Borrarlos, con la cuenta de piezas que se eliminan |
+| `ab5f987` | El menú de los tres puntos: renombrar, duplicar y borrar |
 | `8eb7884` | Guardar el optimizador en la cuenta, privado o comunitario |
 | `5f63bb9` | Cerrar el ciclo: la lista indica dónde reside cada borrador y permite quitarlo de la cuenta |
 | `bcf96cd` | El botón de guardar, siempre visible, y la validación como condición |
-| (este) | El botón pasa a flotante y las reglas se evalúan al hacer clic |
+| `b92a37a` | El botón pasa a flotante y las reglas se evalúan al hacer clic |
 
 ### Tres hallazgos no previstos
 

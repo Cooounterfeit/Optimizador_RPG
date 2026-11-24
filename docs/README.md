@@ -1,14 +1,14 @@
-# Documentación
+# Documentación del software
 
-Documentación técnica del proyecto. El `README.md` de la raíz constituye la puerta de entrada. En
-esta carpeta se encuentra el detalle que no cabe allí.
+Documentación técnica de Zenith Optimizer. El `README.md` de la raíz constituye la puerta de
+entrada, y en esta carpeta se encuentra el detalle que no cabe allí.
 
-## Alcance
+Esta carpeta describe **el software**: cómo está construido, cómo se despliega, qué modelo de
+datos usa y cómo se prueba. Sirve igual durante el Capstone y después de él, porque no depende de
+la asignatura.
 
-Todo el contenido de `docs/` corresponde a la entrega Capstone. Se trata de la versión universitaria del proyecto, que se presenta como **Optimizador RPG**. Si el producto continúa fuera de la facultad
-como **Zenith Optimizer**, estas páginas no se actualizan para reflejar esa etapa. Describen lo que
-se construyó y se decidió durante el Capstone. La versión final del software tendrá su propio
-conjunto de documentos.
+La documentación de la asignatura —los sprints, los acuerdos de equipo y la entrega evaluada— está
+en [`Fase 2/Evidencias/`](../Fase%202/Evidencias/README.md), fuera de esta carpeta.
 
 ## Contenido
 
@@ -20,12 +20,9 @@ conjunto de documentos.
 | [`entornos.md`](./entornos.md) | variables, ambientes y qué es público frente a qué es secreto |
 | [`configurar-despliegue.md`](./configurar-despliegue.md) | procedimiento paso a paso de Vercel y Supabase |
 | [`estrategia-de-pruebas.md`](./estrategia-de-pruebas.md) | qué se prueba, con qué instrumento y qué falta |
-| [`definition-of-ready-done.md`](./definition-of-ready-done.md) | cuándo una historia comienza y cuándo termina |
-| [`ritmo-de-trabajo.md`](./ritmo-de-trabajo.md) | cómo trabajó el equipo y cómo interpretar el historial de Git |
 | [`traspaso-category-a-generos.md`](./traspaso-category-a-generos.md) | migración pendiente del filtro de categorías a géneros |
-| [`epicas-2-3.md`](./epicas-2-3.md) | qué se construyó en las épicas de hub y editor, qué se decidió y en qué se aparta de los criterios |
-| [`fase2/`](./fase2/README.md) | los cuatro sprints: planning, backlog, tablero, burndown, daily, impedimentos, release, review y retrospectiva |
-| [`decisiones/`](./decisiones/) | ADRs: por qué se eligió NX, cliente, Supabase, Docker y Vercel |
+| [`erd.html`](./erd.html) | diagrama entidad-relación interactivo |
+| [`decisiones/`](./decisiones/) | ADR: por qué se eligió NX, el cálculo en el cliente, Supabase, Docker y Vercel |
 
 ## Decisiones de arquitectura (ADR)
 
@@ -41,11 +38,9 @@ Un ADR no se edita para reflejar la realidad actual. Si una decisión cambia, se
 que la reemplaza y se marca el anterior como **sustituido**. De esta forma queda registrado el
 motivo y no solo la decisión vigente.
 
-Decisiones de proceso, fuera del alcance de arquitectura:
-
-| ADR | Decisión |
-|---|---|
-| [006](./decisiones/006-cadencia-daily.md) | cadencia de la daily: asíncrona, de 2 a 15 minutos |
+El sexto ADR, sobre la cadencia de la daily, es una decisión de proceso y no de arquitectura. Se
+conserva junto a los documentos de la asignatura, en
+[`Fase 2/Evidencias/gestion/006-cadencia-daily.md`](../Fase%202/Evidencias/gestion/006-cadencia-daily.md).
 
 ## Otras fuentes
 

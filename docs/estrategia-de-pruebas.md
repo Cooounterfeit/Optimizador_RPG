@@ -7,13 +7,13 @@ El objetivo no consiste en acumular pruebas, sino en impedir que un cambio incor
 
 | Proyecto | Archivos | Pruebas | Cobertura funcional |
 |---|---|---|---|
-| `libs/core-engine` | 10 | 182 | solver, fórmulas, curvas, validación |
-| `apps/web` | 56 | 317 | componentes, hooks, flujos |
-| `supabase` | 1 | 89 | esquema y RLS con PGlite |
-| `libs/data-access` | 12 | 72 | repositorios Dexie, importación |
-| `libs/inventory` | 6 | 29 | parseo y reglas de inventario |
-| `libs/shared-types` | 3 | 11 | contrato Zod |
-| **Total unitarias** | **88** | **700** | |
+| `libs/core-engine` | 10 | 197 | solver, fórmulas, curvas, validación |
+| `apps/web` | 62 | 416 | componentes, hooks, flujos |
+| `supabase` | 1 | 96 | esquema y RLS con PGlite |
+| `libs/data-access` | 11 | 76 | repositorios Dexie, importación |
+| `libs/inventory` | 5 | 29 | parseo y reglas de inventario |
+| `libs/shared-types` | 2 | 11 | contrato Zod |
+| **Total unitarias** | **91** | **825** | |
 | `apps/web-e2e` | 7 | 27 | recorridos en navegador real |
 
 Ejecución completa: `npx nx run-many -t test`. Ejecución de lo afectado: `npx nx affected -t test`.
@@ -22,7 +22,7 @@ Ejecución completa: `npx nx run-many -t test`. Ejecución de lo afectado: `npx 
 
 ### 1. Unitarias (Vitest)
 
-El núcleo. `core-engine` es TypeScript puro, sin React ni DOM, precisamente para permitir esta ejecución. Los 182 casos corren en pocos segundos sin montar un navegador.
+El núcleo. `core-engine` es TypeScript puro, sin React ni DOM, precisamente para permitir esta ejecución. Los 197 casos corren en pocos segundos sin montar un navegador.
 
 Contenido de las pruebas del motor:
 
@@ -38,7 +38,7 @@ Contenido de las pruebas del motor:
 - **Repositorios sobre Dexie real** con `fake-indexeddb`. No se sustituye la base por un mock: se
   utiliza una implementación en memoria. Un mock habría ocultado errores de índices y
   transacciones.
-- **Esquema y RLS contra PGlite** (`supabase/tests/rls.spec.ts`, 89 casos). Un Postgres real embebido aplica las migraciones. Verifica que cada política permita lo que corresponde y bloquee lo que no. Es la única forma de probar RLS sin un proyecto en la nube.
+- **Esquema y RLS contra PGlite** (`supabase/tests/rls.spec.ts`, 96 casos). Un Postgres real embebido aplica las migraciones. Verifica que cada política permita lo que corresponde y bloquee lo que no. Es la única forma de probar RLS sin un proyecto en la nube.
 
 ### 3. Extremo a extremo (Playwright)
 
@@ -139,7 +139,7 @@ Ningún cambio ingresa a `main` sin superar las siguientes verificaciones:
 
 1. `lint`: sin errores.
 2. `typecheck`: sin errores de tipos.
-3. `test`: 700 pruebas en verde.
+3. `test`: 825 pruebas en verde.
 4. `build`: el bundle de producción se genera.
 5. `npm audit --omit=dev --audit-level=high`: sin vulnerabilidades altas en dependencias de
    producción.

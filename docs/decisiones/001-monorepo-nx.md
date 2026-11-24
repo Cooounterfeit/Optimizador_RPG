@@ -33,7 +33,7 @@ libs/shared-types     contrato
 
 **Beneficios:**
 
-- El motor se prueba sin navegador (182 pruebas en pocos segundos).
+- El motor se prueba sin navegador (197 pruebas en pocos segundos).
 - `nx affected` valida solo lo modificado.
 - El grafo (`nx graph`) expone las dependencias reales.
 
