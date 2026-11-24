@@ -1,137 +1,125 @@
 # Estrategia de pruebas
 
-El objetivo no es tener muchas pruebas: es que **un cambio equivocado no pueda llegar a
-`main`**. La pirámide está inclinada a propósito hacia las pruebas unitarias del motor,
-porque ahí vive la lógica que puede estar mal de forma silenciosa.
+El objetivo no consiste en acumular pruebas, sino en impedir que un cambio incorrecto llegue a
+`main`. La pirámide está inclinada de forma deliberada hacia las pruebas unitarias del motor. Allí reside la lógica que puede fallar en silencio.
 
 ## Estado actual
 
-| Proyecto | Archivos | Pruebas | Qué cubre |
+| Proyecto | Archivos | Pruebas | Cobertura funcional |
 |---|---|---|---|
-| `libs/core-engine` | 7 | 142 | Solver, fórmulas, curvas, validación |
-| `libs/data-access` | 11 | 72 | Repositorios Dexie, importación |
-| `libs/inventory` | 5 | 29 | Parseo y reglas de inventario |
-| `libs/shared-types` | 2 | 11 | Contrato Zod |
-| `supabase` | 1 | 68 | Esquema y RLS con PGlite |
-| `apps/web` | 38 | 198 | Componentes, hooks, flujos |
-| `apps/web-e2e` | 7 | — | Recorridos en navegador real |
-| **Total unitarias** | **64** | **520** | |
+| `libs/core-engine` | 10 | 182 | solver, fórmulas, curvas, validación |
+| `apps/web` | 56 | 317 | componentes, hooks, flujos |
+| `supabase` | 1 | 89 | esquema y RLS con PGlite |
+| `libs/data-access` | 12 | 72 | repositorios Dexie, importación |
+| `libs/inventory` | 6 | 29 | parseo y reglas de inventario |
+| `libs/shared-types` | 3 | 11 | contrato Zod |
+| **Total unitarias** | **88** | **700** | |
+| `apps/web-e2e` | 7 | 27 | recorridos en navegador real |
 
-Ejecución: `npx nx run-many -t test`. Solo lo afectado: `npx nx affected -t test`.
+Ejecución completa: `npx nx run-many -t test`. Ejecución de lo afectado: `npx nx affected -t test`.
 
 ## Niveles
 
 ### 1. Unitarias (Vitest)
 
-El núcleo. `core-engine` es TypeScript puro —sin React, sin DOM— precisamente para poder
-probarlo así: 142 casos corren en 10 segundos sin montar un navegador.
+El núcleo. `core-engine` es TypeScript puro, sin React ni DOM, precisamente para permitir esta ejecución. Los 182 casos corren en pocos segundos sin montar un navegador.
 
-**Lo que se prueba en el motor:**
+Contenido de las pruebas del motor:
 
 - **Exactitud del solver.** `solver.spec.ts` compara `solve` contra `solveBruteForceTop`, una
-  fuerza bruta deliberadamente ingenua que no comparte código con el optimizado. Si la poda
-  se equivoca, los resultados divergen y la prueba falla. Es la verificación más importante
-  del proyecto: demuestra que "óptimo" significa óptimo.
-- **Fórmulas y curvas.** Casos con valores conocidos, incluidas las no monotónicas.
+  fuerza bruta deliberadamente simple que no comparte código con la versión optimizada. Si la poda
+  se equivoca, los resultados divergen y la prueba falla. Es la verificación más importante del
+  proyecto, porque demuestra que el término «óptimo» corresponde a un resultado demostrado.
+- **Fórmulas y curvas.** Casos con valores conocidos, incluidas las curvas no monotónicas.
 - **Contrato.** `validateTemplate` rechaza plantillas inválidas con el error correcto.
 
 ### 2. Integración
 
-- **Repositorios sobre Dexie real** con `fake-indexeddb`: no se mockea la base, se usa una
-  implementación en memoria. Un mock habría ocultado errores de índices y transacciones.
-- **Esquema y RLS contra PGlite** (`supabase/tests/rls.spec.ts`, 68 casos): un Postgres real
-  embebido que aplica las migraciones y verifica que cada política permita lo que debe y
-  bloquee lo que no. Es la única forma honesta de probar RLS sin un proyecto en la nube.
+- **Repositorios sobre Dexie real** con `fake-indexeddb`. No se sustituye la base por un mock: se
+  utiliza una implementación en memoria. Un mock habría ocultado errores de índices y
+  transacciones.
+- **Esquema y RLS contra PGlite** (`supabase/tests/rls.spec.ts`, 89 casos). Un Postgres real embebido aplica las migraciones. Verifica que cada política permita lo que corresponde y bloquee lo que no. Es la única forma de probar RLS sin un proyecto en la nube.
 
 ### 3. Extremo a extremo (Playwright)
 
-Siete recorridos sobre el build real: importar inventario, optimizar, ver resultado, hoja de
-personaje, catálogo, cuenta y navegación. Corren con `VITE_USE_MOCKS=1` para no depender de
-datos ni de red.
+Son 27 recorridos en siete archivos sobre el build real. Cubren importar inventario, optimizar, ver el resultado, hoja de personaje, catálogo, cuenta y navegación. Se ejecutan con `VITE_USE_MOCKS=1`
+para no depender de datos ni de red.
 
-En CI se ejecutan con Chromium. En fallo se guardan screenshot, video y trace: sin esa
-evidencia, depurar un fallo de e2e en CI es adivinar.
+En CI se ejecutan con Chromium. Ante un fallo se guardan screenshot, video y trace. Sin esa
+evidencia, depurar un fallo de e2e en CI equivale a adivinar.
 
 ## Qué se prueba y qué no
 
 | Se prueba | No se prueba |
 |---|---|
-| Lógica del motor | Estilos y clases CSS |
-| Contrato y validación | Detalles de implementación de React |
-| Repositorios contra base real | Librerías de terceros |
-| Flujos completos de usuario | Cada variante visual |
-| Políticas RLS | Rendimiento de carga real |
+| lógica del motor | estilos y clases CSS |
+| contrato y validación | detalles de implementación de React |
+| repositorios contra base real | librerías de terceros |
+| flujos completos de usuario | cada variante visual |
+| políticas RLS | rendimiento de carga real |
 
-**Criterio:** si el código tiene una decisión que puede estar mal, va prueba. Si solo tiene
-una forma de escribirse, no.
+**Criterio.** Si el código contiene una decisión que puede estar equivocada, requiere prueba. Si
+solo admite una forma de escribirse, no la requiere.
 
 ## Caja negra: casos derivados de los criterios de aceptación
 
-Las pruebas anteriores miran el código por dentro. Estas miran la aplicación como la ve el
-usuario: se entra por la interfaz, se ejecuta una acción y se compara el resultado observable,
-sin conocer la implementación. Cada caso sale de un criterio de aceptación de una historia, no
-de una función.
+Las pruebas anteriores examinan el código desde dentro. Las siguientes examinan la aplicación como la ve el usuario. Se ingresa por la interfaz, se ejecuta una acción y se compara el resultado observable, sin conocer la implementación. Cada caso proviene de un criterio de aceptación de una
+historia de usuario, no de una función.
 
 | Caso | Entrada | Resultado esperado | Origen |
 |---|---|---|---|
-| Registro válido | correo nuevo y contraseña de 8+ | pide confirmar el correo y no deja entrar todavía | AUT-1 |
+| Registro válido | correo nuevo y contraseña de 8 o más caracteres | solicita confirmar el correo y no permite el ingreso | AUT-1 |
 | Registro duplicado | correo ya existente | mensaje de cuenta existente, sin crear otra | AUT-1 |
 | Contraseña corta | 6 caracteres | rechazo antes de llamar al servidor | AUT-1 |
 | Login sin confirmar | cuenta pendiente | aviso de confirmar el correo, sin sesión | AUT-2 |
 | Importar inventario GOOD | archivo de 2.622 objetos | inventario cargado y contado | INV-7 |
 | Importar archivo corrupto | JSON truncado | error explícito, inventario intacto | INV-7 |
 | Optimizar sin restricciones | objetivo Vida, 2.622 objetos | build con la puntuación más alta del conjunto | SIM-07 |
-| Restricción imposible | mínimo de Defensa inalcanzable | "no hay combinación posible", no un resultado vacío | SIM-07 |
+| Restricción imposible | mínimo de Defensa inalcanzable | mensaje de ausencia de combinación posible, no un resultado vacío | SIM-07 |
 | Cancelar optimización | cancelar a mitad | resultado parcial marcado como no óptimo | SIM-07 |
 | Votar dos veces | mismo usuario y optimizador | el segundo intento no duplica el voto | HUB-02 |
-| Editar rol propio | usuario envía `role: admin` | la base lo rechaza | seguridad |
+| Editar rol propio | usuario envía `role: admin` | la base de datos lo rechaza | seguridad |
 | Leer inventario ajeno | consulta directa sin sesión | cero filas | seguridad |
 
-Los casos de seguridad se automatizan en `supabase` con PGlite; los de interfaz, en las specs
-de Playwright o en las de componente, según dónde esté el comportamiento observable.
+Los casos de seguridad se automatizan en el proyecto `supabase` con PGlite. Los de interfaz se automatizan en las specs de Playwright o en las de componente. La elección depende de dónde resulte observable el comportamiento.
 
 ## Rendimiento: presupuesto explícito
 
-Un solver que tarda cuarenta segundos es correcto y aun así inutilizable. Por eso hay
-presupuestos medidos, no impresiones:
+Un solver que tarda cuarenta segundos es correcto y, aun así, inutilizable. Por esta razón existen
+presupuestos medidos y no impresiones:
 
-| Escenario | Presupuesto | Cómo se mide |
+| Escenario | Presupuesto | Medición |
 |---|---|---|
-| Inventario de 200 objetos, objetivo lineal | < 2 s | prueba de `core-engine` sobre `solve` |
-| Inventario de 2.622 objetos (caso Furina) | < 10 s con podado completo | prueba marcada como lenta |
+| Inventario de 200 objetos, objetivo lineal | menos de 2 s | prueba de `core-engine` sobre `solve` |
+| Inventario de 2.622 objetos (caso Furina) | menos de 10 s con podado completo | prueba marcada como lenta |
 | Comparación contra fuerza bruta | misma solución, sin excepción | `solver.spec.ts` |
-| Interfaz durante la optimización | sin bloqueo perceptible | el cálculo corre en Web Worker |
+| Interfaz durante la optimización | sin bloqueo perceptible | el cálculo corre en un Web Worker |
 
-**Lo que se vigila es el podado, no solo el tiempo.** `SolveStats` reporta cuántas
-combinaciones había, cuántas quedaron tras el filtro y cuántas se descartaron por cota. Si el
-espacio explorado crece sin que crezca el resultado, el podado se rompió aunque el tiempo
-todavía no lo delate.
+**El objeto de vigilancia es el podado, no solo el tiempo.** `SolveStats` informa cuántas
+combinaciones existían, cuántas permanecieron tras el filtro y cuántas se descartaron por cota. Si el espacio explorado crece sin que crezca el resultado, el podado se rompió. El tiempo aún puede no delatarlo.
 
-## Seguridad: qué se intenta romper
+## Seguridad: vectores evaluados
 
 | Vector | Intento | Defensa | Prueba |
 |---|---|---|---|
-| Escalar privilegios | actualizar `role` propio | permiso por columna, no por fila | PGlite |
-| Leer datos ajenos | `select` sobre `cloud_inventory` de otro | política RLS por `auth.uid()` | PGlite |
+| Escalar privilegios | actualizar el `role` propio | permiso por columna, no por fila | PGlite |
+| Leer datos ajenos | `select` sobre el `cloud_inventory` de otro usuario | política RLS por `auth.uid()` | PGlite |
 | Escribir sin sesión | `insert` como `anon` | `revoke` desde el inicio | PGlite |
-| Suplantar autor | crear optimizador con `author_id` ajeno | `default auth.uid()` + política | PGlite |
-| Inyectar HTML en el nombre | `<script>` en `display_name` | React escapa; la base no lo necesita | componente |
+| Suplantar autor | crear un optimizador con `author_id` ajeno | `default auth.uid()` y política | PGlite |
+| Inyectar HTML en el nombre | `<script>` en `display_name` | React escapa el contenido; la base no lo requiere | componente |
 | Exponer la clave de servicio | inspeccionar el bundle | la `service_role` nunca sale del servidor | revisión de build |
-| Contraseña débil | 6 caracteres | mínimo 8 en Supabase Auth | integración |
+| Contraseña débil | 6 caracteres | mínimo de 8 en Supabase Auth | integración |
 
-La `anon key` que viaja en el bundle **no es una brecha**: está diseñada para ser pública. Lo
-que protege los datos son las políticas RLS, y por eso se prueban una por una. La clave
-`service_role` es la que nunca puede aparecer en el bundle, y hay una verificación de eso en
-la revisión de despliegue.
+La `anon key` que viaja en el bundle no constituye una brecha: está diseñada para ser pública. Lo
+que protege los datos son las políticas RLS, y por esta razón se prueban una por una. La clave `service_role` es la que nunca puede aparecer en el bundle. Su ausencia se verifica en la revisión de despliegue.
 
 ## Cobertura medida
 
-Cada proyecto emite su `lcov.info` al correr con `--coverage`, y
-`tools/merge-coverage.mjs` los combina en `coverage/lcov.info` con rutas relativas a la raíz.
-Vitest escribe las rutas relativas a la raíz de cada proyecto, así que sin ese paso Sonar no
-resuelve ningún archivo y la cobertura queda en cero.
+Cada proyecto emite su `lcov.info` al ejecutarse con `--coverage`. La herramienta `tools/merge-coverage.mjs` los combina en `coverage/lcov.info` con rutas relativas a la raíz. Vitest escribe las rutas relativas a
+la raíz de cada proyecto. Sin ese paso, Sonar no resuelve ningún archivo y la cobertura queda en
+cero.
 
-Última medición, sobre el código del producto (sin `demo/`):
+Última medición registrada, sobre el código del producto (sin `demo/`), del 20-nov-2026:
 
 | Área | Líneas | Cubiertas | % |
 |---|---|---|---|
@@ -142,33 +130,35 @@ resuelve ningún archivo y la cobertura queda en cero.
 | `libs/shared-types` | 297 | 217 | 73,1 % |
 | **Total** | **12.332** | **11.121** | **90,2 %** |
 
-Los tipos generados desde Supabase quedan excluidos: no se escriben a mano, así que medirlos
-solo hunde el porcentaje.
+Los tipos generados desde Supabase quedan excluidos. No se escriben a mano, de modo que medirlos
+solo reduce el porcentaje sin aportar información.
 
 ## Puertas de calidad
 
-Ningún cambio entra a `main` sin pasar:
+Ningún cambio ingresa a `main` sin superar las siguientes verificaciones:
 
-1. `lint` — sin errores.
-2. `typecheck` — sin errores de tipos.
-3. `test` — 520 verdes.
-4. `build` — el bundle de producción se genera.
-5. `npm audit --omit=dev --audit-level=high` — sin vulnerabilidades altas en dependencias
-   de producción.
-6. e2e — los siete recorridos pasan.
+1. `lint`: sin errores.
+2. `typecheck`: sin errores de tipos.
+3. `test`: 700 pruebas en verde.
+4. `build`: el bundle de producción se genera.
+5. `npm audit --omit=dev --audit-level=high`: sin vulnerabilidades altas en dependencias de
+   producción.
+6. e2e: los 27 recorridos pasan.
 
-Todo corre en `.github/workflows/ci.yml` con `nx affected`: se valida solo lo que el cambio
-tocó, más sus dependientes.
+Todo se ejecuta en `.github/workflows/ci.yml` con `nx affected`. Se valida solo lo que el cambio
+modificó, más sus dependientes.
 
 ## Brechas conocidas
 
 | Brecha | Estado | Plan |
 |---|---|---|
-| Umbral de cobertura no fijado | Abierto, cobertura medida en 90,2 % | 70 % en `libs/` como condición de la puerta |
-| Una spec e2e es inestable en corrida completa | Abierto | Aislar estado entre archivos |
-| Presupuesto de rendimiento declarado, sin medición automática | Abierto | Medir en CI y fallar si excede |
-| Sin pruebas de accesibilidad | Abierto | `@axe-core/playwright` en las specs e2e |
-| Casos de caja negra documentados, no todos automatizados | Abierto | Llevar la tabla a specs |
+| Umbral de cobertura no fijado | abierto, cobertura medida en 90,2 % | fijar 70 % en `libs/` como condición de la puerta |
+| Presupuesto de rendimiento declarado sin medición automática | abierto | medir en CI y fallar si se excede |
+| Sin pruebas de accesibilidad | abierto | incorporar `@axe-core/playwright` en las specs e2e |
+| Casos de caja negra documentados, no todos automatizados | abierto | trasladar la tabla a specs |
 
-Se documentan en lugar de omitirse: una brecha conocida es deuda técnica; una ignorada es un
-riesgo.
+La prueba de interfaz que resultaba intermitente quedó corregida en el commit `275db33`, por sus
+dos causas reales. Se retiró de esta tabla porque ya no constituye una brecha abierta.
+
+Las brechas se documentan en lugar de omitirse. Una brecha conocida es deuda técnica; una ignorada
+es un riesgo.

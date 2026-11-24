@@ -1,18 +1,16 @@
 # Diagramas UML
 
-Dos vistas del sistema: el **contrato** que hace que el motor sirva para cualquier juego, y
-las **dos funcionalidades principales** en el tiempo —el alta de usuario y el cálculo de la
-mejor build—.
+Este documento presenta dos vistas del sistema. La primera es el contrato que permite que el motor sirva para cualquier juego. La segunda corresponde a las dos funcionalidades principales en el tiempo. Se trata del alta de usuario y del cálculo de la mejor build.
 
-Los diagramas se escriben en Mermaid para que vivan versionados junto al código y se
-actualicen con un pull request. Ninguno se dibuja a mano en una herramienta externa, donde
-quedaría desactualizado en la siguiente iteración.
+Los diagramas se escriben en Mermaid. De esta forma se versionan junto al código y se actualizan
+mediante un pull request. Ninguno se dibuja a mano en una herramienta externa, donde quedaría
+desactualizado en la siguiente iteración.
 
 ## Diagrama de clases: el contrato del juego
 
-`GameTemplate` es el único dato específico de un juego. El motor no conoce Genshin, WoW ni
-Elden Ring: conoce esta estructura. Todo lo demás —interface, listado de atributos, orden de
-cálculo, objetivos— se deriva de ella.
+`GameTemplate` es el único dato específico de un juego. El motor no conoce Genshin, WoW ni Elden
+Ring: conoce esta estructura. El resto de los elementos (interfaz, listado de atributos, orden de
+cálculo y objetivos) se deriva de ella.
 
 ```mermaid
 classDiagram
@@ -185,13 +183,13 @@ classDiagram
     Validator ..> GameTemplate : valida antes de usar
 ```
 
-**Por qué esta forma.** `Item` no conoce `GameTemplate`: solo declara ranura, conjunto y
-estadísticas por clave. Esa indirección es la que permite que el mismo binario del motor
-resuelva cuatro juegos distintos sin una línea de código condicional por juego. Cuando una
-pieza necesita algo propio del género, va en `extensions`, que el core **no interpreta**.
+**Justificación del diseño.** `Item` no conoce `GameTemplate`: solo declara ranura, conjunto y
+estadísticas por clave. Esta indirección permite que el mismo binario del motor resuelva siete plantillas de cinco juegos distintos. No requiere una línea de código condicional por juego. Cuando una
+pieza requiere un atributo propio del género, se declara en `extensions`, que el núcleo no
+interpreta.
 
-`SolveRequest` es serializable: viaja por `postMessage` a un Web Worker sin transformación,
-así que el motor nunca bloquea la interfaz.
+`SolveRequest` es serializable. Viaja por `postMessage` a un Web Worker sin transformación, de modo
+que el motor nunca bloquea la interfaz.
 
 ## Secuencia 1: registro de usuario con confirmación por correo
 
@@ -231,15 +229,15 @@ sequenceDiagram
     P-->>U: sesión activa, redirige al catálogo
 ```
 
-**Lo que este diagrama demuestra:** el perfil no lo crea el cliente. Lo crea un trigger cuando
-nace el usuario en `auth.users`, así que no existe una ventana en la que haya una cuenta sin
-perfil. Y el `redirect_to` que viaja en el registro es el origen real desde donde se registró
-—producción, preview o local—, que es lo que hace que el enlace funcione en los tres entornos.
+**Qué demuestra este diagrama.** El perfil no lo crea el cliente. Lo crea un trigger cuando nace el
+usuario en `auth.users`. Por esta razón no existe una ventana en la que haya una cuenta sin perfil.
+El `redirect_to` que viaja en el registro corresponde al origen real desde donde se registró
+(producción, preview o local). Esto permite que el enlace funcione en los tres entornos.
 
-**El modo de falla conocido** está en `supabase/README.md`: el SMTP integrado de Supabase
-limita los envíos por hora y devuelve `429 over_email_send_rate_limit`. Con confirmación
-activada, el usuario queda sin poder entrar hasta que el correo llegue. Para una demo hace
-falta un SMTP propio.
+**Modo de falla conocido.** Está documentado en `supabase/README.md`. El SMTP integrado de Supabase
+limita los envíos por hora y devuelve `429 over_email_send_rate_limit`. Con la confirmación
+activada, el usuario no puede ingresar hasta que el correo llegue. Para una demostración se requiere
+un SMTP propio.
 
 ## Secuencia 2: cálculo de la mejor build
 
@@ -288,18 +286,21 @@ sequenceDiagram
     end
 
     opt el usuario pide auditar el cálculo
-        W->>E: evaluar(...) en un segundo worker
-        E-->>W: grafo de dependencias del objetivo
+        W->>K: postMessage({ type: 'evaluate', request, equipment })
+        K->>E: evaluar(template, items, equipment, profileId, skills)
+        E-->>K: evaluación con el desglose del objetivo
+        K-->>W: postMessage({ type: 'evaluated', evaluation })
         W-->>U: de dónde sale cada número
     end
 ```
 
-**Lo que este diagrama demuestra:** el cálculo ocurre en el navegador, en un Web Worker, y la
-interfaz nunca se bloquea. El motor informa progreso *y* cota, así que el usuario ve crecer la
-exploración y el podado en vivo: cuando el resultado dice "es la mejor combinación posible",
-no es una expresión de confianza, es que `provenOptimal` salió de haber agotado el espacio. Y
-cuando el usuario cancela, el resultado parcial se marca como tal en lugar de presentarse como
-óptimo.
+**Qué demuestra este diagrama.** El cálculo ocurre en el navegador, dentro de un Web Worker, y la
+interfaz nunca se bloquea. El motor informa progreso y cota, de modo que el usuario observa la
+exploración y el podado en tiempo real. Un resultado no se declara óptimo por confianza.
+`provenOptimal` indica que la búsqueda agotó el espacio. Cuando el usuario cancela, el resultado
+parcial se marca como tal y no se presenta como óptimo.
 
-La evaluación del perfil y del daño usa un segundo worker separado del solver, para que
-auditar un número no interrumpa una búsqueda en curso.
+La evaluación y la auditoría del cálculo utilizan el mismo Worker, mediante el mensaje `evaluate`.
+No existe un segundo Worker. El Worker atiende un mensaje a la vez. El modo `evaluate` no ejecuta
+búsqueda: solo puntúa un equipo ya equipado. Esto permite auditar un número sin lanzar una nueva
+optimización.

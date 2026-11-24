@@ -1,50 +1,51 @@
-# ADR 005 — Desplegar con la integración de Git de Vercel
+# ADR 005: Despliegue mediante la integración de Git de Vercel
 
 **Estado:** aceptada · **Fecha:** noviembre 2026
 
 ## Contexto
 
-El despliegue tenía que resolver dos cosas a la vez: publicar la versión final y ofrecer un
-ambiente de staging para probar cada cambio antes de que llegue a producción.
+El despliegue debía resolver dos objetivos simultáneos. El primero consistía en publicar la versión final. El segundo, en ofrecer un ambiente de staging para probar cada cambio antes de que llegue a producción.
 
-El estado encontrado era confuso: el proyecto de Vercel servía el prototipo archivado
-(*«Zenith Optimizer — Demo»*), la raíz del repo no tenía `vercel.json` y existía un workflow
-`deploy.yml` con la CLI de Vercel que nunca se había ejecutado — dependía de tres secrets que
-no consta que existieran.
+El estado inicial era confuso. El proyecto de Vercel servía el prototipo archivado, titulado «Zenith Optimizer Demo». La raíz del repositorio no tenía `vercel.json`. Además existía un workflow `deploy.yml` con la CLI de Vercel que nunca se había ejecutado. Dependía de tres secrets cuya
+existencia no está registrada.
 
 ## Decisión
 
-**Integración nativa de Git de Vercel** (`main` → producción, cada PR → preview), más
-**protección de rama** que exige los jobs del CI para mergear.
+Utilizar la **integración nativa de Git de Vercel**: `main` despliega producción y cada pull
+request genera un preview. Añadir **protección de rama** que exige los jobs del CI para permitir el
+merge.
 
-Sin secrets de Vercel en GitHub Actions. El workflow `deploy.yml` se elimina.
+No se utilizan secrets de Vercel en GitHub Actions. El workflow `deploy.yml` se elimina.
 
 ## Alternativas consideradas
 
-| Alternativa | Por qué no |
+| Alternativa | Motivo del descarte |
 |---|---|
-| GitHub Actions con `vercel deploy` y un token | Reimplementa lo que Vercel ya hace; no genera previews por PR; un token más que rotar |
-| Híbrido: previews por integración, producción por Actions | Dos caminos para el mismo resultado, con doble deploy como fallo probable |
-| Híbrido: previews por integración y producción manual | El despliegue deja de ser reproducible y depende de que alguien se acuerde |
-| Borrar `demo/` para evitar la confusión | No resuelve nada: la configuración del proyecto vive en el dashboard, no en el repo |
+| GitHub Actions con `vercel deploy` y un token | reimplementa lo que Vercel ya hace, no genera previews por pull request y añade un token que rotar |
+| Previews por integración y producción por Actions | dos caminos para el mismo resultado, con doble despliegue como fallo probable |
+| Previews por integración y producción manual | el despliegue deja de ser reproducible y depende de que alguien lo recuerde |
+| Eliminar `demo/` para evitar la confusión | no resuelve el problema: la configuración del proyecto reside en el dashboard y no en el repositorio |
 
 ## Consecuencias
 
-**Ganamos:** cero credenciales de Vercel que administrar; staging sin hosting adicional (cada
-PR tiene su URL); rollback y logs en un lugar; y el build de producción es el mismo comando
-que se corre en local (`npx nx build web`).
+**Beneficios:**
 
-**Costamos:** el despliegue depende de un servicio externo con su propia UI — hay ajustes que
-no están en el repositorio y solo se ven en el dashboard. Mitigación: los ajustes esperados
-están documentados en `docs/entornos.md` y se verifican leyendo el log del build.
+- No hay credenciales de Vercel que administrar.
+- Staging sin hosting adicional: cada pull request dispone de su URL.
+- Rollback y logs en un solo lugar.
+- El build de producción utiliza el mismo comando que en local (`npx nx build web`).
 
-**Lo que este ADR hace explícito:** la validación **no** la da Vercel. Su build es
-`vite build`, que ignora los errores de TypeScript y emite el bundle igual. Quien impide
-publicar código roto es la protección de rama con el CI en verde. Confundir el deploy con la
+**Costos:** el despliegue depende de un servicio externo con su propia interfaz. Algunos ajustes no
+están en el repositorio y solo se consultan en el dashboard. La mitigación consiste en documentar
+los ajustes esperados en `docs/entornos.md` y verificarlos mediante el log del build.
+
+**Lo que este ADR hace explícito.** La validación no la aporta Vercel. Su build ejecuta
+`vite build`, que omite los errores de TypeScript y emite el bundle de todas formas. Quien impide
+publicar código roto es la protección de rama con el CI en verde. Confundir el despliegue con la
 validación es el error que este ADR documenta para no repetirlo.
 
-## Relación con ADR 004
+## Relación con el ADR 004
 
-No lo contradice. Docker sigue siendo el entorno de verificación reproducible del build; esto
-define cómo llega ese build a producción. Ambos usan el mismo comando de Nx, así que no pueden
-divergir en el artefacto.
+No lo contradice. Docker sigue siendo el entorno de verificación reproducible del build. Este ADR
+define cómo llega ese build a producción. Ambos utilizan el mismo comando de Nx, de modo que no
+pueden divergir en el artefacto.

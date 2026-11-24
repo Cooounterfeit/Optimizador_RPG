@@ -1,14 +1,15 @@
-# Sprint 4 — Burndown (en curso)
+# Sprint 4 — Burndown
 
 ![Burndown del Sprint 4 al 20 de noviembre](./burndown.png)
 
-> **Gráfico parcial.** El sprint está activo y solo transcurrieron 5 de los 6 días hábiles de
-> trabajo. La curva real llega hasta el 20 de noviembre y se detiene ahí; lo que sigue es la
-> proyección ideal, no un dato.
+> **Gráfico parcial.** El gráfico se generó el 20 de noviembre y llega hasta ese día. Lo que sigue
+> constituye la proyección ideal y no un dato. La curva real al cierre no se dibuja aquí, porque
+> exigiría consultar Jira para saber qué historias quedaron en «Listo» al 23, y ese dato no se
+> dispone.
 >
-> **Ventana.** Jira fecha el sprint del 16 al 29 de noviembre, pero el equipo lo cierra el 22 o 23
-> porque la entrega se presenta antes. El burndown usa la ventana real de trabajo, no la del
-> calendario de Jira: seis días hábiles, del 16 al 23.
+> **Ventana.** Jira fecha el sprint del 16 al 29 de noviembre, pero el equipo lo cierra el 23 a
+> medianoche porque la entrega se presenta el 24. El burndown utiliza la ventana real de trabajo y
+> no la del calendario de Jira: seis días hábiles, del 16 al 23.
 
 ## Tabla
 
@@ -19,7 +20,7 @@
 | 18 nov | 108,0 | 162 | — |
 | 19 nov | 81,0 | 162 | — |
 | 20 nov | 54,0 | **159** | SP-01 (−3) |
-| 23 nov | 0,0 | cierre | — |
+| 23 nov | 0,0 | sin dato de Jira | — |
 
 ## Aritmética al 20 de noviembre
 
@@ -33,24 +34,28 @@ Días hábiles transcurridos  5 de 6
 
 ## Lectura
 
-- **La única HU cerrada no es de este sprint.** SP-01 es una evaluación de monorepos del sprint de
-  arranque; se cerró el 20 de noviembre al ordenar Jira porque el monorepo existe desde septiembre.
-  No representa avance de este sprint.
-- **Siete HUs están en curso y ninguna cerrada.** El trabajo del editor de juegos está en marcha
-  —atributos, variables simples, variables derivadas, variables por categoría y variantes— pero
-  nada de eso se puede demostrar todavía.
+- **La única historia cerrada no pertenece a este sprint.** SP-01 es una evaluación de monorepos
+  del sprint de arranque, cerrada el 20 de noviembre al ordenar Jira porque el monorepo existe
+  desde septiembre. No representa avance de este sprint.
+- **Siete historias están en curso y ninguna cerrada.** El trabajo del editor de juegos avanza en
+  atributos, variables simples, variables derivadas, variables por categoría y variantes, pero
+  nada de eso puede demostrarse todavía.
 - **La brecha con la línea ideal es de 105 puntos** al quinto día. Cerrarla exigiría entregar el
   editor completo, y algo más, en un solo día hábil.
-- **El alcance incluye 28 HUs que llegaron en el ordenamiento del 20 de noviembre**: 18 arrastradas
-  de los sprints 1 a 3, 9 que no tenían sprint y SP-01, que volvió desde el Sprint 0 para cerrarse.
-  Con eso, la curva ideal no es alcanzable por construcción: buena parte de esos 162 puntos no se
-  va a cerrar en este sprint.
+- **El alcance incluye 28 historias que llegaron en el ordenamiento del 20 de noviembre**: 18
+  arrastradas de los sprints 1 a 3, 9 que no tenían sprint y SP-01, que volvió desde el Sprint 0
+  para cerrarse. Por esta razón, la curva ideal no resulta alcanzable: buena parte de esos 162
+  puntos no se cerrará en este sprint.
 
-## Qué mirar en el cierre
+## Qué observar en el cierre
 
-Cuando el sprint cierre el 22 o 23 de noviembre, este documento se reemplaza con la curva
-definitiva. Los indicadores que importan entonces son dos:
+El sprint cerró el 23 de noviembre a medianoche. Los dos indicadores relevantes son los mismos que
+se declararon al abrirlo:
 
-1. Cuántas de las 7 HUs en curso llegaron a «Listo», no cuántas se movieron de columna.
-2. Si el editor quedó en un estado demostrable. Es lo que se muestra; TEC-22 ya no se espera para
+1. Cuántas de las 7 historias en curso llegaron a «Listo», y no cuántas se movieron de columna.
+2. Si el editor quedó en un estado demostrable. Es lo que se presenta, y TEC-22 ya no se espera para
    la entrega.
+
+El punto 2 tiene respuesta verificable en el repositorio, y es afirmativa. Al cierre existen CFG-05
+completo (`17d444e`, `013e8b3`), CFG-06 (`6cff5b7`) y CFG-01 (`cec1a57`), con 700 casos de prueba
+unitarios y de integración en verde. El punto 1 depende de Jira y no se declara sin consultarlo.

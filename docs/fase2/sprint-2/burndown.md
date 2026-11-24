@@ -2,16 +2,16 @@
 
 ![Burndown del Sprint 2](./burndown.png)
 
-> **Gráfico reconstruido.** Jira guarda el estado final de cada HU, no el histórico de puntos por
-> día. La curva se reconstruye desde las fechas de commit, y se declara para no presentar como
-> medición lo que es una estimación.
+> **Gráfico reconstruido.** Jira conserva el estado final de cada historia y no el histórico de
+> puntos por día. La curva se reconstruye desde las fechas de commit, y se declara para no
+> presentar como medición lo que constituye una estimación.
 
 ## Método de reconstrucción
 
-1. Se toma la fecha del commit que evidencia cada HU.
-2. Cada día se descuentan los puntos de las HUs cuya evidencia aparece ese día o antes.
-3. La línea ideal reparte 32 puntos entre los **10 días hábiles** del sprint (19 al 30 de octubre):
-   3,56 puntos por día, y llega a cero el último día hábil.
+1. Se toma la fecha del commit que evidencia cada historia.
+2. Cada día se descuentan los puntos de las historias cuya evidencia aparece ese día o antes.
+3. La línea ideal reparte 32 puntos entre los **10 días hábiles** del sprint, del 19 al 30 de
+   octubre. Equivale a 3,56 puntos por día y llega a cero el último día hábil.
 
 ## Tabla
 
@@ -27,7 +27,7 @@
 | 28 oct | 7,1 | 32 | — |
 | 29 oct | 3,6 | 32 | — |
 | 30 oct | 0,0 | 32 | — |
-| 01 nov | 0,0 | **5** | esquema en el repo, tipos generados y pruebas RLS (−27) |
+| 01 nov | 0,0 | **5** | esquema en el repositorio, tipos generados y pruebas RLS (−27) |
 
 ## Aritmética del cierre
 
@@ -40,20 +40,21 @@ Cumplimiento          27 / 32 = 84 %
 
 ## Lectura
 
-- **La curva no baja hasta el último día.** No es un gráfico roto: es lo que muestran los commits.
-  En las dos semanas del sprint solo hay actividad registrada el 19, el 25 y el 1 de noviembre.
-- **El sprint fue de decisiones, no de código.** El reparto de puntos no refleja el esfuerzo real:
-  definir el esquema, las políticas RLS y los criterios visuales ocupa más tiempo del que un
-  commit sugiere.
-- **La caída final es de 27 puntos en un día**, que es exactamente el síntoma de integrar al
-  final en lugar de entregar por partes. Se reconoce como debilidad del proceso y se recoge en
+- **La curva no desciende hasta el último día.** No es un gráfico defectuoso, sino lo que muestran
+  los commits. En las dos semanas del sprint solo existe actividad registrada el 19, el 25 y el 1
+  de noviembre.
+- **El sprint fue de decisiones y no de código.** El reparto de puntos no refleja el esfuerzo real.
+  Definir el esquema, las políticas RLS y los criterios visuales ocupa más tiempo del que un commit
+  sugiere.
+- **La caída final es de 27 puntos en un día.** Es exactamente el síntoma de integrar al final en
+  lugar de entregar por partes. Se reconoce como debilidad del proceso y se recoge en
   `retrospectiva.md`.
 
 ## Límite del dato
 
-Las HUs cerradas en Jira tienen su código en `apps/web` con fecha del 5 al 9 de noviembre, es
-decir, después del cierre del sprint. El escalón del 1 de noviembre se ubica ahí porque es la
-última evidencia dentro de la ventana; el desfase completo está explicado en `backlog.md`.
+Las historias cerradas en Jira tienen su código en `apps/web` con fecha del 5 al 9 de noviembre, es
+decir, posterior al cierre del sprint. El escalón del 1 de noviembre se ubica allí porque es la
+última evidencia dentro de la ventana. El desfase completo se explica en `backlog.md`.
 
 ## Datos que respaldan la curva
 

@@ -1,20 +1,19 @@
-# ADR 001 — Monorepo con NX
+# ADR 001: Monorepo con NX
 
 **Estado:** aceptada · **Fecha:** septiembre 2026
 
 ## Contexto
 
-El proyecto necesita al menos tres piezas con responsabilidades distintas: una interfaz
-React, un motor de optimización sin dependencias de UI y un contrato compartido entre ambos.
-Además, el motor debe poder probarse sin montar un navegador.
+El proyecto requiere al menos tres piezas con responsabilidades distintas. Una es una interfaz React. Otra es un motor de optimización sin dependencias de interfaz. La tercera es un contrato compartido entre ambos. Además,
+el motor debe poder probarse sin montar un navegador.
 
 ## Decisión
 
-Un monorepo con **NX**, con proyectos en `apps/` y librerías en `libs/`, cada uno con su
-propia configuración de TypeScript.
+Adoptar un monorepo con **NX**, con aplicaciones en `apps/` y librerías en `libs/`. Cada proyecto
+mantiene su propia configuración de TypeScript.
 
 ```
-apps/web              UI React + Vite
+apps/web              interfaz React + Vite
 libs/core-engine      motor puro
 libs/data-access      persistencia
 libs/inventory        parseo de inventario
@@ -23,20 +22,26 @@ libs/shared-types     contrato
 
 ## Alternativas consideradas
 
-| Alternativa | Por qué no |
+| Alternativa | Motivo del descarte |
 |---|---|
-| Repo único sin separación | El motor quedaría acoplado a React; imposible probarlo puro |
-| Varios repositorios | Versionar el contrato entre repos es trabajo manual y frágil |
-| Turborepo | Válido, pero NX ya trae grafo de dependencias y `affected` sin configurar |
-| Un solo paquete con carpetas | Sin límites de importación, la separación se erosiona |
+| Repositorio único sin separación | el motor quedaría acoplado a React, lo que impide probarlo de forma aislada |
+| Varios repositorios | versionar el contrato entre repositorios exige trabajo manual y resulta frágil |
+| Turborepo | es válido, pero NX incluye grafo de dependencias y `affected` sin configuración adicional |
+| Un solo paquete con carpetas | sin límites de importación, la separación se degrada con el tiempo |
 
 ## Consecuencias
 
-**Ganamos:** el motor se prueba sin navegador (142 pruebas en 10 s); `nx affected` valida
-solo lo tocado; el grafo (`nx graph`) muestra las dependencias reales.
+**Beneficios:**
 
-**Costamos:** configuración inicial más pesada; quien viene de un repo plano debe entender
-el grafo antes de mover archivos. Documentado en `README.md` y `CONTRIBUTING.md`.
+- El motor se prueba sin navegador (182 pruebas en pocos segundos).
+- `nx affected` valida solo lo modificado.
+- El grafo (`nx graph`) expone las dependencias reales.
 
-**Regla que impone:** `core-engine` no puede importar React ni tocar el DOM. Si algún día lo
-necesita, la decisión está mal, no la regla.
+**Costos:**
+
+- La configuración inicial es más compleja.
+- Quien proviene de un repositorio plano debe comprender el grafo antes de mover archivos. El
+  procedimiento se documenta en `README.md` y `CONTRIBUTING.md`.
+
+**Restricción que impone.** `core-engine` no puede importar React ni acceder al DOM. Si alguna vez
+lo requiere, el error está en la decisión y no en la restricción.
